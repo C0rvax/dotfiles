@@ -13,79 +13,86 @@ RESET='\e[0;m'
 
 # LIST OF PACKAGES
 
-FULL_PKGS=(
+PKGS_CORE_UTILS=(
 	'# --- SYSTEM & UTILS ---'
 	'curl'
-	'nala'
+	'git'
+	'ufw'
 	'wget'
-	'gparted'
-	'tree'
-	'gimp'
+)
+
+PKGS_UTILS=(
+	'# --- SYSTEM & UTILS ---'
 	'htop'
 	'btop'
-	'sensors'
 	'inxi'
-	'gnome-disk-utility'
+	'nala'
 	'neofetch'
-	'ufw'
 	'net-tools'
-	'git'
+	'sensors'
+	'tree'
+)
+
+PKGS_DEV=(
 	'# --- COMPILERS & DEV ---'
 	'clang'
-	'gcc'
 	'cmake'
+	'gcc'
 	'make'
 	'valgrind'
+)
+
+PKGS_SHELL=(
 	'# --- TERMINAL & SHELL ---'
 	'terminator'
 	'zsh'
+)
+
+PKGS_NVIM=(
 	'# --- NEOVIM DEPENDENCIES ---'
-	'fzf'
 	'fd-find'
-	'ripgrep'
+	'fzf'
+	'pipx'
 	'python3'
 	'python3-pip'
-	'pipx'
+	'ripgrep'
 	'xclip'
+)
+
+PKGS_APPS=(
 	'# --- APPLICATIONS ---'
+	'gimp'
+	'gnome-disk-utility'
+	'gparted'
 	'vlc'
 )
 
-LIGHT_PKGS=(
-	'# --- SYSTEM & UTILS ---'
-	'curl'
-	'wget'
-	'git'
-	'tree'
-	'# --- COMPILERS & DEV ---'
-	'clang'
-	'gcc'
-	'cmake'
-	'make'
-	'valgrind'
-	'# --- TERMINAL & SHELL ---'
-	'terminator'
-	'zsh'
-	'# --- NEOVIM DEPENDENCIES ---'
-	'fzf'
-	'fd-find'
-	'ripgrep'
-	'python3'
-	'python3-pip'
-	'pipx'
-)
+# --- Paquets Optionnels ---
 
-EMBEDDED_PKGS=(
+PKGS_EMBEDDED=(
 	'# --- EMBEDDED ---'
-	'nasm'
-	'screen'
 	'avr-libc'
 	'avrdude'
+	'nasm'
+	'screen'
 )
 
-OPTIONAL_PKGS=(
-	'# --- APPLICATIONS ---'
+PKGS_OFFICE=(
+    '# --- APPLICATIONS ---'
 	'libreoffice'
+)
+
+LIGHT_PKGS=(
+    "${PKGS_CORE_UTILS[@]}"
+    "${PKGS_DEV[@]}"
+    "${PKGS_SHELL[@]}"
+    "${PKGS_NVIM[@]}"
+)
+
+FULL_PKGS=(
+    "${LIGHT_PKGS[@]}"
+    "${PKGS_UTILS[@]}"
+    "${PKGS_APPS[@]}"
 )
 
 if false; then
