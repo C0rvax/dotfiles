@@ -19,9 +19,9 @@ function detect_distro {
 	if [ -f /etc/os-release ]; then
 		. /etc/os-release
 		DISTRO=$ID
-		echo "Distro detected: $DISTRO"
+		# echo "Distro detected: $DISTRO"
 	else
-		echo "Unsupported distribution."
+		# echo "Unsupported distribution."
 		exit 1
 	fi
 }
@@ -45,7 +45,7 @@ function detect_desktop {
 	else
 		DESKTOP="unknown"
 	fi
-	echo "Desktop detected: $DESKTOP"
+	# echo "Desktop detected: $DESKTOP"
 }
 
 # INSTALL FIREFOX WITH FLATPAK
@@ -89,11 +89,11 @@ function install_git {
 function install_nvim {
 	cd $HOME
 	check_file $HOME/AppImage/nvim.appimage
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### NeoVim is installed! ####${RESET}"
 	else
 		check_directory $HOME/AppImage
-		if [ "$?" -eq "1" ]; then
+		if [ "$?" -eq "0" ]; then
 			echo -e "${BLUEHI} **** Installing NeoVim ****${YELLOW}"
 		else
 			mkdir AppImage
@@ -106,7 +106,7 @@ function install_nvim {
 	fi
 
 	check_directory $HOME/.config/nvim
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### nvim config is installed! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Installing nvim config ****${YELLOW}"
@@ -124,7 +124,7 @@ function set_bin {
 function install_veracrypt {
 	echo ""
 	check_package "veracrypt"
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Package veracrypt is installed! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Installing veracrypt ****${YELLOW}"
@@ -177,7 +177,7 @@ function install_docker_ubuntu {
 function install_zsh {
 	cd $HOME
 	check_directory $HOME/.oh-my-zsh
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Oh My Zsh is installed! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Installing Oh My Zsh ****${YELLOW}"
@@ -189,21 +189,21 @@ function install_zsh {
 # INSTALL FONTS
 function install_fonts {
 	check_directory $HOME/Themes
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Folder Themes already exist! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Creating folder ****${YELLOW}"
 		mkdir $HOME/Themes
 	fi
 	check_directory $HOME/Themes/Fonts
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Folder Fonts already exist! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Creating folder ****${YELLOW}"
 		mkdir -p $HOME/Themes/Fonts
 	fi
 	check_file $HOME/Themes/Fonts/'MesloLGS NF Regular.ttf'
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Fonts is installed! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Installing fonts ****${YELLOW}"
@@ -216,14 +216,14 @@ function install_fonts {
 		sudo fc-cache -fv
 	fi
 	check_directory $HOME/Themes/Icons
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Folder Icons already exist! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Creating folder ****${YELLOW}"
 		mkdir $HOME/Themes/Icons
 	fi
 	check_directory $HOME/Themes/Icons/buuf-nestort
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### buuf-nestort already exist! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Downloading Pack ****${YELLOW}"
@@ -234,18 +234,35 @@ function install_fonts {
 
 # CREATE SSH KEY
 function create_ssh_key {
-	ssh-keygen -t ed25519 -C "c0rvax" -N "" -f ~/.ssh/id_ed25519
+    echo -e "${BLUEHI} ---- Creating SSH Key ----${RESET}"
+    if [ -f ~/.ssh/id_ed25519 ]; then
+        echo -e "${GREENHI}SSH key ~/.ssh/id_ed25519 already exists. Skipping.${RESET}"
+        return
+    fi
 
-# S'assurer des bonnes permissions pour la clé privée
+    # Prompt user for the comment (usually email)
+    read -p "Enter your email for the SSH key comment: " ssh_email
+    if [ -z "$ssh_email" ]; then
+        echo "${REDHI}Email cannot be empty. Aborting key generation.${RESET}"
+        return
+    fi
+
+	ssh-keygen -t ed25519 -C "$ssh_email" -N "" -f ~/.ssh/id_ed25519
+
+    # S'assurer des bonnes permissions pour la clé privée
 	chmod 600 ~/.ssh/id_ed25519
+	chmod 700 ~/.ssh
 	chmod 644 ~/.ssh/id_ed25519.pub
+    echo -e "${GREENHI}SSH key created successfully.${RESET}"
+    echo "Your public key is:"
+    cat ~/.ssh/id_ed25519.pub
 }
 
 # INSTALL ZSH CONFIG
 function install_zconfig {
 	cd $HOME
 	check_directory $HOME/.zsh
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Zsh config is installed! ####${RESET}"
 	else
 		echo -e "${BLUEHI} **** Installing Zsh config ****${YELLOW}"
@@ -482,17 +499,17 @@ function setup_cinnamon {
 # FUNCTIONS
 function check_file {
 	if [ -f "${1}" ]; then
-		return 1
-	else
 		return 0
+	else
+		return 1
 	fi
 }
 
 function check_directory {
 	if [ -d "${1}" ]; then
-		return 1
-	else
 		return 0
+	else
+		return 1
 	fi
 }
 
@@ -500,15 +517,15 @@ function check_package {
 	dpkg -s ${1} &>/dev/null
 
 	if [ $? -eq 0 ]; then
-		return 1
-	else
 		return 0
+	else
+		return 1
 	fi
 }
 
 function install_package {
 	check_package ${1}
-	if [ "$?" -eq "1" ]; then
+	if [ "$?" -eq "0" ]; then
 		echo -e "${GREENHI} #### Package ${1} is installed! ####"
 	else
 		echo -e "${BLUEHI} **** Installing ${1} ****${YELLOW}"
@@ -579,4 +596,186 @@ function display_logo {
 	echo "██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗"
 	echo "╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝"
 	echo -e "${RESET}"
+}
+
+TABLE_WIDTH=96
+
+function print_table_line {
+    printf "+%.0s" $(seq 1 $TABLE_WIDTH)
+    printf "+\n"
+}
+
+function print_table_header {
+    local title=$1
+    local padding=$(( (TABLE_WIDTH - ${#title} - 2) / 2 ))
+    local remainder=$(( (TABLE_WIDTH - ${#title} - 2) % 2 - 1))
+    print_table_line
+    printf "|"
+    printf " %.0s" $(seq 1 $padding)
+    # Votre calcul pour le reste est un peu complexe, simplifions-le tout en garantissant l'alignement
+    echo -e -n " ${BLUEHI}${title}${RESET} "
+    printf " %.0s" $(seq 1 $((padding + remainder)))
+    printf "|\n"
+    print_table_line
+}
+
+# --- Bulletproof Audit Logic ---
+
+# Generic grid printer: the definitive solution for aligned, colored columns.
+function print_grid {
+    local num_cols=$1
+    shift
+    local items_with_colors=("$@")
+    
+    # Calculate the width of the content area for each column
+    local col_content_width=$(( (TABLE_WIDTH - 1) / num_cols - 2 )) # -2 for spaces
+    
+    for i in $(seq 0 $((num_cols * 2)) $((${#items_with_colors[@]} - 1))); do
+        local line_to_print="|"
+        for j in $(seq 0 $((num_cols - 1))); do
+            local text_idx=$(( i + j * 2 ))
+            local color_idx=$(( text_idx + 1 ))
+            
+            local text=${items_with_colors[text_idx]:-""}
+            local color=${items_with_colors[color_idx]:-$RESET}
+            
+            # 1. Pad the text WITHOUT color to ensure correct width calculation
+            local padded_text
+            printf -v padded_text " %-*s " "$col_content_width" "$text"
+            
+            # 2. Build the line segment with color applied around the padded text
+            line_to_print+="${color}${padded_text}${RESET}|"
+        done
+        echo -e "$line_to_print"
+    done
+}
+
+
+# Prints only the content for packages, without header or footer lines.
+function print_packages_content {
+    declare -A seen_items
+    local master_list=()
+    for item in "${FULL_PKGS[@]}" "${LIGHT_PKGS[@]}" "${EMBEDDED_PKGS[@]}" "${OPTIONAL_PKGS[@]}"; do
+        if [[ -z "${seen_items[$item]}" ]]; then
+            master_list+=("$item")
+            seen_items["$item"]=1
+        fi
+    done
+
+    local current_packages_to_print=()
+    local is_first_category=true 
+    for item in "${master_list[@]}"; do
+        if [[ $item == '#'* ]]; then
+            if [ ${#current_packages_to_print[@]} -gt 0 ]; then
+                print_grid 4 "${current_packages_to_print[@]}"
+                current_packages_to_print=() 
+            fi
+
+            if [ "$is_first_category" = false ]; then
+                print_table_line
+            fi
+            
+            local category_title
+            printf -v category_title ">> %s" "$(echo "$item" | sed -e 's/# --- //' -e 's/ ---//')"
+            local padded_title
+            # Correction de l'alignement du titre de catégorie
+            printf -v padded_title " %-*s" $(($TABLE_WIDTH-2)) "$category_title"
+            echo -e "|${YELLOW}${padded_title}${RESET}|"
+
+            is_first_category=false 
+        else
+            check_package "$item"
+            if [ $? -eq 0 ]; then
+                current_packages_to_print+=("$item" "$GREENHI")
+            else
+                current_packages_to_print+=("$item" "$REDHI")
+            fi
+        fi
+    done
+
+    if [ ${#current_packages_to_print[@]} -gt 0 ]; then
+        print_grid 4 "${current_packages_to_print[@]}"
+    fi
+}
+
+
+# Prints only the content for configurations, without header or footer lines.
+function print_configurations_content {
+    local checks=(
+        "Oh My Zsh" "check_directory '$HOME/.oh-my-zsh'"
+        "Zsh Custom Config" "check_directory '$HOME/.zsh'"
+        "Nvim Config" "check_directory '$HOME/.config/nvim'"
+        "Nvim AppImage" "check_file '$HOME/AppImage/nvim.appimage'"
+        "MesloLGS Fonts" "check_file '$HOME/Themes/Fonts/MesloLGS NF Regular.ttf'"
+        "Buuf Nestort Icons" "check_directory '$HOME/Themes/Icons/buuf-nestort'"
+        "Docker" "check_package 'docker-ce'"
+        "Git User Name" "git config --global user.name >/dev/null 2>&1"
+        "Git User Email" "git config --global user.email >/dev/null 2>&1"
+        "SSH Key (ed25519)" "check_file '$HOME/.ssh/id_ed25519'"
+    )
+    
+    local items_to_print=()
+    local all_dots="............................................................"
+    for i in $(seq 0 2 $((${#checks[@]} - 1))); do
+        local description=${checks[i]}
+        local check_command=${checks[i+1]}
+        local text_to_print color
+        
+        local dot_padding_len=$((42 - ${#description} - 2))
+        local dot_padding=${all_dots:0:$dot_padding_len}
+        
+        if eval "$check_command"; then
+            text_to_print="${description} ${dot_padding} [✔]"
+            color=$GREENHI
+        else
+            text_to_print="${description} ${dot_padding} [✘]"
+            color=$REDHI
+        fi
+        items_to_print+=("$text_to_print" "$color")
+    done
+    
+    print_grid 2 "${items_to_print[@]}"
+}
+
+# ** NEW ** Prints the Distro and Desktop row.
+function print_system_info_row {
+    local all_dots="............................................................"
+    local items_to_print=()
+
+    # Format Distro info
+    local distro_desc="Distribution"
+    local distro_pad_len=$((42 - ${#distro_desc} - ${#DISTRO}))
+    local distro_pad=${all_dots:0:$distro_pad_len}
+    items_to_print+=("${distro_desc} ${distro_pad} ${DISTRO}" "$BLUE")
+
+    # Format Desktop info
+    local desktop_desc="Desktop Env"
+    local desktop_pad_len=$((42 - ${#desktop_desc} - ${#DESKTOP}))
+    local desktop_pad=${all_dots:0:$desktop_pad_len}
+    items_to_print+=("${desktop_desc} ${desktop_pad} ${DESKTOP}" "$BLUE")
+
+    print_grid 2 "${items_to_print[@]}"
+}
+
+# The main function that orchestrates the unified audit table.
+function run_audit {
+	detect_distro
+	detect_desktop
+
+    # --- Start of the Unified Table ---
+    print_table_header "SYSTEM AUDIT"
+    
+    # 1. Print System Info
+    print_system_info_row
+    
+    # 2. Print Separator and Packages
+    print_table_line
+    print_packages_content
+    
+    # 3. Print Separator and Configurations
+    print_table_line
+    print_configurations_content
+
+    # --- End of the Unified Table ---
+    print_table_line
 }

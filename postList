@@ -1,4 +1,3 @@
-# Code couleur
 RED='\e[1;31m'
 GREEN='\e[1;32m'
 YELLOW='\e[1;33m'
@@ -15,18 +14,10 @@ RESET='\e[0;m'
 # LIST OF PACKAGES
 
 FULL_PKGS=(
-
-	# PACMAN
+	'# --- SYSTEM & UTILS ---'
 	'curl'
 	'nala'
 	'wget'
-	# COMPILER
-	'clang'
-	'gcc'
-	'cmake'
-	'make'
-	'valgrind'
-	# UTILS
 	'gparted'
 	'tree'
 	'gimp'
@@ -39,9 +30,16 @@ FULL_PKGS=(
 	'ufw'
 	'net-tools'
 	'git'
-	# TERM
+	'# --- COMPILERS & DEV ---'
+	'clang'
+	'gcc'
+	'cmake'
+	'make'
+	'valgrind'
+	'# --- TERMINAL & SHELL ---'
 	'terminator'
-	# NVIM DEPEDENCIES
+	'zsh'
+	'# --- NEOVIM DEPENDENCIES ---'
 	'fzf'
 	'fd-find'
 	'ripgrep'
@@ -49,49 +47,44 @@ FULL_PKGS=(
 	'python3-pip'
 	'pipx'
 	'xclip'
-	# APP
+	'# --- APPLICATIONS ---'
 	'vlc'
-	# ZSH
-	'zsh'
 )
 
-# LIGHT INSTALLATION PACKAGES
 LIGHT_PKGS=(
-	# PACMAN
+	'# --- SYSTEM & UTILS ---'
 	'curl'
 	'wget'
-	# COMPILER
+	'git'
+	'tree'
+	'# --- COMPILERS & DEV ---'
 	'clang'
 	'gcc'
 	'cmake'
 	'make'
 	'valgrind'
-	# UTILS
-	'git'
-	'tree'
-	# TERM
+	'# --- TERMINAL & SHELL ---'
 	'terminator'
-	# NVIM DEPENDENCIES
+	'zsh'
+	'# --- NEOVIM DEPENDENCIES ---'
 	'fzf'
 	'fd-find'
 	'ripgrep'
 	'python3'
 	'python3-pip'
 	'pipx'
-	# ZSH
-	'zsh'
 )
 
-# EMBEDDED PACKAGES (optional for full installation)
 EMBEDDED_PKGS=(
+	'# --- EMBEDDED ---'
 	'nasm'
 	'screen'
 	'avr-libc'
 	'avrdude'
 )
 
-# OPTIONAL PACKAGES (e.g., libreoffice)
 OPTIONAL_PKGS=(
+	'# --- APPLICATIONS ---'
 	'libreoffice'
 )
 

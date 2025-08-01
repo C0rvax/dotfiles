@@ -4,13 +4,9 @@ source postList
 source postFunctions.sh
 
 display_logo
-
-detect_distro
-detect_desktop
-
 check_sudo
 
-p_update
+run_audit
 
 # Prompt user for installation type
 echo "Select installation type:"
@@ -21,7 +17,6 @@ read -p "Enter your choice [1-2]: " install_type
 case $install_type in
 	1)
 		SELECTED_PKGS=("${FULL_PKGS[@]}")
-		# Prompt for optional components
 		read -p "Do you want to include EMBEDDED packages? [y/n]: " include_embedded
 		if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" ]]; then
 			SELECTED_PKGS+=("${EMBEDDED_PKGS[@]}")
@@ -33,7 +28,6 @@ case $install_type in
 		;;
 	2)
 		SELECTED_PKGS=("${LIGHT_PKGS[@]}")
-		# Prompt for optional embedded components
 		read -p "Do you want to include EMBEDDED packages? [y/n]: " include_embedded
 		if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" ]]; then
 			SELECTED_PKGS+=("${EMBEDDED_PKGS[@]}")
@@ -47,9 +41,18 @@ esac
 
 # INSTALL PACKAGES
 
-for PKG in "${SELECTED_PKGS[@]}"; do
-	install_package ${PKG}
-	echo -e "${neutre}"
+p_update
+
+INSTALL_LIST=()
+for pkg in "${SELECTED_PKGS[@]}"; do
+    if [[ ! $pkg == "#"* ]]; then
+        INSTALL_LIST+=("$pkg")
+    fi
+done
+
+for PKG in "${INSTALL_LIST[@]}"; do
+	install_package "${PKG}"
+	echo -e "${RESET}"
 done
 
 p_update
