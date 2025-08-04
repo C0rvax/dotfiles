@@ -67,7 +67,10 @@ function install_package() {
         fi
 		return 0
 	fi
-	log "INFO" "📦 Installing package: $package"
+	if [[ "$VERBOSE" == "true" ]]; then
+		log "INFO" "📦 Installing package: $package"
+	fi
+
 	if get_package "$package"; then
         if [[ "$VERBOSE" == "true" ]]; then
             log "SUCCESS" "Package $package installed successfully"
