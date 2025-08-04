@@ -69,7 +69,7 @@ if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" || "$include_embe
 	SELECTED_PKGS+=("${PKGS_EMBEDDED[@]}")
 fi
 
-if [[ "$install_type" == "1" ]]; then
+if [[ "$install_type_choice" == "1" ]]; then
 	read -p "Do you want to include LibreOffice? [y/n]: " include_libreoffice
 	if [[ "$include_libreoffice" == "y" || "$include_libreoffice" == "Y" ]]; then
 		SELECTED_PKGS+=("${PKGS_OFFICE[@]}")
@@ -97,15 +97,15 @@ total=${#INSTALL_LIST[@]}
 current=0
 
 for PKG in "${INSTALL_LIST[@]}"; do
-    current=$((current + 1))
+    ((current++))
     if [[ "$VERBOSE" != "true" ]]; then
-        show_progress "$current" "$total" "$PKG"
+        show_progress "$current" "$total" "$PKG" "Installing"
     fi
     install_package "${PKG}"
 done
 
 if [[ "$VERBOSE" != "true" && "$total" -gt 0 ]]; then
-    echo # New line after progress bar
+    echo
 fi
 log "SUCCESS" "Package installation phase complete."
 

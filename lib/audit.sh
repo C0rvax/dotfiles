@@ -196,13 +196,35 @@ function run_audit {
 
 function show_installation_summary() {
     local packages=("$@")
+    local estimated_time=$((${#packages[@]} * 2))  # 2 minutes par package en moyenne
     
-    echo -e "${BLUEHI}📋 Installation Summary${RESET}"
+    echo -e "${BLUEHI}"
     print_table_line
-    echo "Total packages to install: ${#packages[@]}"
-    echo "Estimated time: ~$((${#packages[@]} * 2)) minutes"
-    echo "Internet connection required: Yes"
+    printf "|"
+    printf " %.0s" $(seq 1 30)
+    echo -e " 📋 INSTALLATION SUMMARY "
+    printf " %.0s" $(seq 1 29)
+    printf "|\n"
     print_table_line
+    
+    echo -e "|${RESET} Total packages to install: ${GREENHI}${#packages[@]}${RESET}"
+    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 35 - ${#packages[@]})))
+    echo "|"
+    
+    echo -e "|${RESET} Estimated time: ${YELLOWHI}~${estimated_time} minutes${RESET}"
+    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 25 - ${#estimated_time})))
+    echo "|"
+    
+    echo -e "|${RESET} Internet connection: ${REDHI}Required${RESET}"
+    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 30)))
+    echo "|"
+    
+    echo -e "|${RESET} Backup will be created: ${GREENHI}Yes${RESET}"
+    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 32)))
+    echo "|"
+    
+    print_table_line
+    echo -e "${RESET}"
     
     read -p "Continue with installation? [y/N]: " confirm
     [[ "$confirm" =~ ^[yY]$ ]]
@@ -212,13 +234,15 @@ function show_progress() {
     local current="$1"
     local total="$2"
     local package="$3"
+    local operation="${4:-Installing}"
     
     local percent=$((current * 100 / total))
     local filled=$((percent / 2))
     local empty=$((50 - filled))
     
-    printf "\r["
-    printf "%*s" "$filled" | tr ' ' '█'
-    printf "%*s" "$empty" | tr ' ' '░'
-    printf "] %d%% - Installing: %s" "$percent" "$package"
+    printf "\r\033[K"  # Efface la ligne
+    printf "["
+    printf "%*s" "$filled" '' | tr ' ' '█'
+    printf "%*s" "$empty" '' | tr ' ' '░'
+    printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
 }
