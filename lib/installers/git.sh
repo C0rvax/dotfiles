@@ -34,11 +34,25 @@ function setup_ssh_and_git {
         read -p "Press [Enter] when you have added the key to your Git provider..."
     fi
 
+    setup_github_known_hosts
+}
+
+function setup_github_known_hosts {
+    log "INFO" "Setting up GitHub known hosts..."
+    mkdir -p "$HOME/.ssh"
+    touch "$HOME/.ssh/known_hosts"
+    chmod 644 "$HOME/.ssh/known_hosts"
+    if ssh-keygen -F github.com > /dev/null 2>&1; then
+        log "INFO" "GitHub known hosts already set up."
+        return 0
+    fi
+    ssh-keyscan -t rsa,ed25519 github.com >> "$HOME/.ssh/known_hosts"
+    sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts
     log "INFO" "Testing SSH connection to GitHub..."
-    ssh -T git@github.com
+    timeout 10 ssh -T git@github.com
     # La sortie de ssh -T est sur stderr, donc on redirige pour la capturer.
     # Un test plus robuste vérifierait le code de retour.
-
+    log "SUCCESS" "GitHub known hosts set up successfully."
     install_git
 }
 

@@ -11,25 +11,25 @@ function get_package {
 
     case "$DISTRO" in
         "arch")
-            if ! sudo pacman -S --noconfirm "$package_name"; then
+            if ! sudo pacman -S --noconfirm "$package_name" >> "$LOG_FILE" 2>&1; then
                 log "ERROR" "Failed to install $package_name with pacman"
                 return 1
             fi
             ;;
         "ubuntu"|"debian")
-            if ! sudo apt-get install -y "$package_name"; then
+            if ! sudo apt-get install -y "$package_name" >> "$LOG_FILE" 2>&1; then
                 log "ERROR" "Failed to install $package_name with apt"
                 return 1
             fi
             ;;
         "fedora")
-            if ! sudo dnf install -y "$package_name"; then
+            if ! sudo dnf install -y "$package_name" >> "$LOG_FILE" 2>&1; then
                 log "ERROR" "Failed to install $package_name with dnf"
                 return 1
             fi
             ;;
         "opensuse")
-            if ! sudo zypper install -y "$package_name"; then
+            if ! sudo zypper install -y "$package_name" >> "$LOG_FILE" 2>&1; then
                 log "ERROR" "Failed to install $package_name with zypper"
                 return 1
             fi
@@ -84,7 +84,7 @@ function install_package() {
         if [[ "$VERBOSE" == "true" ]]; then
             log "INFO" "Installing $package"
         fi
-        get_package "$package" >> "$LOG_FILE" 2>&1
+        get_package "$package"
     fi
 }
 
@@ -93,16 +93,16 @@ function p_update {
 	log "INFO" "Updating package lists for $DISTRO..."
 	case "$DISTRO" in
 	"arch")
-		sudo pacman -Sy --noconfirm
+		sudo pacman -Sy --noconfirm >> "$LOG_FILE" 2>&1
 		;;
 	"ubuntu" | "debian")
-		sudo apt-get update -y
+		sudo apt-get update -y >> "$LOG_FILE" 2>&1
 		;;
 	"fedora")
-		sudo dnf check-update -y
+		sudo dnf check-update -y >> "$LOG_FILE" 2>&1
 		;;
 	"opensuse")
-		sudo zypper refresh
+		sudo zypper refresh >> "$LOG_FILE" 2>&1
 		;;
 	*)
 		log "ERROR" "Unsupported distribution for update."
