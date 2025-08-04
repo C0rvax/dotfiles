@@ -9,6 +9,22 @@ function detect_distro {
 	fi
 }
 
+function log() {
+    local level="$1"
+    shift
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
+    
+    case "$level" in
+        ERROR)   echo -e "${REDHI}❌ $message${RESET}" ;;
+        SUCCESS) echo -e "${GREENHI}✅ $message${RESET}" ;;
+        INFO)    echo -e "${BLUEHI}ℹ️  $message${RESET}" ;;
+        WARNING) echo -e "${YELLOW}⚠️  $message${RESET}" ;;
+    esac
+}
+
 # Detect desktop environment
 function detect_desktop {
 	if [[ "$XDG_CURRENT_DESKTOP" == *"KDE"* ]] || [[ "$DESKTOP_SESSION" == "plasma" ]]; then

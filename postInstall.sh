@@ -1,5 +1,9 @@
 #!/bin/bash
 
+VERBOSE=false
+DRY_RUN=false
+ASSUME_YES=false
+
 source config/settings.conf
 source config/packages.conf
 
@@ -9,6 +13,23 @@ source lib/audit.sh
 
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -v|--verbose) VERBOSE=true; shift ;;
+        -d|--dry-run) DRY_RUN=true; shift ;;
+        -y|--yes) ASSUME_YES=true; shift ;;
+        -h|--help)
+            echo "Usage: $0 [-v|--verbose] [-d|--dry-run] [-y|--yes] [-h|--help]"
+            echo "  -v, --verbose    Enable verbose output."
+            echo "  -d, --dry-run    Simulate installation without making changes."
+            echo "  -y, --yes        Assume 'yes' to all prompts."
+            echo "  -h, --help       Show this help message."
+            exit 0
+            ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+done
 
 display_logo
 check_sudo
@@ -58,12 +79,30 @@ for pkg in "${SELECTED_PKGS[@]}"; do
 	fi
 done
 
+if ! show_installation_summary "${INSTALL_LIST[@]}"; then
+    log "WARNING" "Installation aborted by user."
+    exit 0
+fi
+
+log "INFO" "Starting package installation..."
+p_update
+
+local total=${#INSTALL_LIST[@]}
+local current=0
+
 for PKG in "${INSTALL_LIST[@]}"; do
-	install_package "${PKG}"
-	echo -e "${RESET}"
+    current=$((current + 1))
+    if [[ "$VERBOSE" != "true" ]]; then
+        show_progress "$current" "$total" "$PKG"
+    fi
+    install_package "${PKG}"
 done
 
-p_update
+# Terminer la ligne de la barre de progression
+if [[ "$VERBOSE" != "true" ]]; then
+    echo
+fi
+log "SUCCESS" "Package installation phase complete."
 
 # INSTALL SPECIFIC PACKAGES
 install_git

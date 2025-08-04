@@ -75,4 +75,21 @@ Ce script est un excellent point de départ si vous souhaitez créer votre propr
 
 ## 📜 Licence
 
+## ⚙️ Comment l'utiliser
+
+### Options de Ligne de Commande
+
+Le script supporte plusieurs options pour personnaliser son exécution :
+
+-   `./postInstall.sh --help`: Affiche l'aide et les options disponibles.
+-   `./postInstall.sh --dry-run`: Mode de simulation. Le script affichera tout ce qu'il *ferait* (création de dossiers, installation de paquets) sans rien modifier sur votre système. Idéal pour vérifier les actions avant de les lancer.
+-   `./postInstall.sh --verbose`: Affiche des informations détaillées sur chaque étape en cours d'exécution.
+-   `./postInstall.sh --yes`: Répond automatiquement "oui" à toutes les questions de confirmation, permettant une exécution entièrement non-interactive.
+
+### Journalisation (Logging)
+
+Toutes les actions, qu'elles réussissent ou échouent, sont enregistrées dans un fichier de log situé à `~/.dotfiles_install.log`. Si quelque chose se passe mal, consultez ce fichier pour obtenir des détails complets sur l'erreur.
+
+---
+
 Ce projet est distribué sous la licence MIT. Voir le fichier `LICENSE` pour plus de détails.

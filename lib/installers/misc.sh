@@ -2,9 +2,11 @@
 
 # INSTALL FIREFOX WITH FLATPAK
 function install_firefox {
-	sudo apt install flatpak
-	flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-	flatpak install flathub org.mozilla.firefox
+    log "INFO" "Installing Firefox with Flatpak..."
+	install_package "flatpak"
+	flatpak remote-add --if-not-exists flathub "$URL_FLATHUB_REPO"
+	flatpak install "$URL_FLATHUB_FIREFOX" -y
+    log "SUCCESS" "Firefox installed successfully via Flatpak."
 }
 
 # SET BINARIES

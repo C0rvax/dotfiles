@@ -11,7 +11,7 @@ function setup_xfce {
 		xfconf-query -c xsettings -p /Net/IconThemeName -s "'$BUUF_ICONS_NAME'"
 
 		# Définir le thème GTK
-		xfconf-query -c xsettings -p /Net/ThemeName -s "'$KDE_THEME_DARK'"
+		xfconf-query -c xsettings -p /Net/ThemeName -s "'$THEME_GTK_DARK'"
 
 		# Modifier le terminal par défaut
 		xfconf-query -c xfce4-terminal -p /general/default-emulator -s "'$TERMINAL_APP'"

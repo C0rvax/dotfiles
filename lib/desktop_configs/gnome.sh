@@ -14,8 +14,8 @@ function setup_gnome {
 		gsettings set org.gnome.desktop.interface icon-theme "'$BUUF_ICONS_NAME'"
 
 		# Définir le thème sombre Breeze
-		gsettings set org.gnome.desktop.interface gtk-theme "'$KDE_THEME_DARK'"
-		gsettings set org.gnome.desktop.wm.preferences theme "'$KDE_THEME_DARK'"
+		gsettings set org.gnome.desktop.interface gtk-theme "'$THEME_GTK_DARK'"
+		gsettings set org.gnome.desktop.wm.preferences theme "'$THEME_GTK_DARK'"
 
 		# Modifier le terminal par défaut
 		gsettings set org.gnome.desktop.default-applications.terminal exec "'$TERMINAL_APP'"

@@ -3,44 +3,44 @@ function get_package {
     local package_name="$1"
 
     if [[ -z "$package_name" ]]; then
-        echo "❌ ERROR: Package name not specified" >&2
+        echo "${REDHI}❌ ERROR: Package name not specified${RESET}" >&2
         return 1
     fi
 
-    echo "📦 Installing package: $package_name"
+    echo "${BLUEHI}📦 Installing package: $package_name${RESET}"
 
     case "$DISTRO" in
         "arch")
             if ! sudo pacman -S --noconfirm "$package_name"; then
-                echo "❌ ERROR: Failed to install $package_name with pacman" >&2
+                echo "${REDHI}❌ ERROR: Failed to install $package_name with pacman${RESET}" >&2
                 return 1
             fi
             ;;
         "ubuntu"|"debian")
             if ! sudo apt-get install -y "$package_name"; then
-                echo "❌ ERROR: Failed to install $package_name with apt" >&2
+                echo "${REDHI}❌ ERROR: Failed to install $package_name with apt${RESET}" >&2
                 return 1
             fi
             ;;
         "fedora")
             if ! sudo dnf install -y "$package_name"; then
-                echo "❌ ERROR: Failed to install $package_name with dnf" >&2
+                echo "${REDHI}❌ ERROR: Failed to install $package_name with dnf${RESET}" >&2
                 return 1
             fi
             ;;
         "opensuse")
             if ! sudo zypper install -y "$package_name"; then
-                echo "❌ ERROR: Failed to install $package_name with zypper" >&2
+                echo "${REDHI}❌ ERROR: Failed to install $package_name with zypper${RESET}" >&2
                 return 1
             fi
             ;;
         *)
-            echo "❌ ERROR: Unsupported distribution for package installation: $DISTRO" >&2
+            echo "${REDHI}❌ ERROR: Unsupported distribution for package installation: $DISTRO${RESET}" >&2
             return 1
             ;;
     esac
 
-    echo "✅ Package $package_name installed successfully"
+    echo "${GREENHI}✅ Package $package_name installed successfully${RESET}"
     return 0
 }
 
@@ -64,19 +64,33 @@ function check_package {
 	esac
 }
 
-function install_package {
-	check_package ${1}
-	if [ "$?" -eq "0" ]; then
-		echo -e "${GREENHI} #### Package ${1} is installed! ####"
-	else
-		echo -e "${BLUEHI} **** Installing ${1} ****${YELLOW}"
-		get_package ${1}
-	fi
+function install_package() {
+    local package="$1"
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would install package: $package"
+        if [[ "$VERBOSE" == "true" ]]; then
+            echo "[DRY-RUN] Package: $package"
+        fi
+        return 0
+    fi
+    
+    check_package "$package"
+    if [ "$?" -eq "0" ]; then
+        if [[ "$VERBOSE" == "true" ]]; then
+            log "SUCCESS" "Package $package is already installed"
+        fi
+    else
+        if [[ "$VERBOSE" == "true" ]]; then
+            log "INFO" "Installing $package"
+        fi
+        get_package "$package" >> "$LOG_FILE" 2>&1
+    fi
 }
 
 # Update
 function p_update {
-	echo -e "${BLUEHI}===> Looking for '$DISTRO'updates...${RESET}"
+	echo -e "${BLUEHI}===> Looking for '$DISTRO' updates...${RESET}"
 	case "$DISTRO" in
 	"arch")
 		sudo pacman -Sy --noconfirm

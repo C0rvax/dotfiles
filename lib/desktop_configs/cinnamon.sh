@@ -14,7 +14,7 @@ function setup_cinnamon {
 		gsettings set org.cinnamon.desktop.interface icon-theme "'$BUUF_ICONS_NAME'"
 
 		# Définir le thème GTK
-		gsettings set org.cinnamon.desktop.interface gtk-theme "'$KDE_THEME_DARK'"
+		gsettings set org.cinnamon.desktop.interface gtk-theme "'$THEME_GTK_DARK'"
 
 		# Modifier le terminal par défaut
 		gsettings set org.cinnamon.desktop.default-applications.terminal exec "'$TERMINAL_APP'"

@@ -6,7 +6,14 @@ function install_zsh {
         echo -e "${GREENHI}Oh My Zsh is already installed!${RESET}"
     else
         echo -e "${BLUEHI}**** Installing Oh My Zsh ****${YELLOW}"
-        sh -c "$(curl -fsSL ${URL_OH_MY_ZSH})"
+        sh -c "$(curl -fsSL ${URL_OH_MY_ZSH})" "" --unattended --keep-zshrc
+		if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(which zsh)" ]]; then
+            echo -e "${BLUEHI}Setting Zsh as the default shell...${RESET}"
+            chsh -s "$(which zsh)"
+            if [[ $? -ne 0 ]]; then
+                echo -e "${REDHI}Failed to set Zsh as default shell. Please do it manually with 'chsh -s \$(which zsh)'${RESET}"
+            fi
+        fi
     fi
 }
 

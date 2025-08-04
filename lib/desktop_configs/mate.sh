@@ -14,7 +14,7 @@ function setup_mate {
 		gsettings set org.mate.interface icon-theme "'$BUUF_ICONS_NAME'"
 
 		# Définir le thème GTK
-		gsettings set org.mate.interface gtk-theme "'$KDE_THEME_DARK'"
+		gsettings set org.mate.interface gtk-theme "'$THEME_GTK_DARK'"
 
 		# Modifier le terminal par défaut
 		gsettings set org.mate.applications-terminal exec "'$TERMINAL_APP'"

@@ -193,3 +193,32 @@ function run_audit {
 
 	print_table_line
 }
+
+function show_installation_summary() {
+    local packages=("$@")
+    
+    echo -e "${BLUEHI}📋 Installation Summary${RESET}"
+    print_table_line
+    echo "Total packages to install: ${#packages[@]}"
+    echo "Estimated time: ~$((${#packages[@]} * 2)) minutes"
+    echo "Internet connection required: Yes"
+    print_table_line
+    
+    read -p "Continue with installation? [y/N]: " confirm
+    [[ "$confirm" =~ ^[yY]$ ]]
+}
+
+function show_progress() {
+    local current="$1"
+    local total="$2"
+    local package="$3"
+    
+    local percent=$((current * 100 / total))
+    local filled=$((percent / 2))
+    local empty=$((50 - filled))
+    
+    printf "\r["
+    printf "%*s" "$filled" | tr ' ' '█'
+    printf "%*s" "$empty" | tr ' ' '░'
+    printf "] %d%% - Installing: %s" "$percent" "$package"
+}
