@@ -242,7 +242,9 @@ function show_progress() {
     
     printf "\r\033[K"  # Efface la ligne
     printf "["
-    printf "%*s" "$filled" '' | tr ' ' '█'
-    printf "%*s" "$empty" '' | tr ' ' '░'
+    # printf "%*s" "$filled" '' | tr ' ' '█'
+    # printf "%*s" "$empty" '' | tr ' ' '░'
+	printf "%*s" "$filled" '' | tr ' ' '='
+    printf "%*s" "$empty" '' | tr ' ' '-'
     printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
 }
