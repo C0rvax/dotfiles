@@ -4,20 +4,20 @@ function install_nvim {
 
     local nvim_path="$home_dir/AppImage/nvim.appimage"
     if check_file "$nvim_path"; then
-        echo -e "${GREENHI} #### NeoVim is already installed! ####${RESET}"
+        log "INFO" "NeoVim is already installed!"
     else
-        echo -e "${BLUEHI} **** Installing NeoVim ****${YELLOW}"
+        log "INFO" "Installing NeoVim..."
 
         local appimage_dir="$home_dir/AppImage"
         if ! check_directory "$appimage_dir"; then
             mkdir -p "$appimage_dir" || {
-                echo "❌ Could not create directory $appimage_dir" >&2
+                log "ERROR" "Could not create directory $appimage_dir"
                 return 1
             }
         fi
 
         cd "$appimage_dir" || {
-            echo "❌ Could not access directory $appimage_dir" >&2
+            log "ERROR" "Could not access directory $appimage_dir"
             return 1
         }
 
@@ -29,7 +29,7 @@ function install_nvim {
         fi
 
         chmod u+x nvim.appimage || {
-            echo "❌ Could not make nvim.appimage executable" >&2
+            log "ERROR" "Could not make nvim.appimage executable"
             return 1
         }
 
@@ -40,12 +40,12 @@ function install_nvim {
     # Install Nvim configuration
     local nvim_config_dir="$home_dir/.config/nvim"
     if check_directory "$nvim_config_dir"; then
-        echo -e "${GREENHI} #### Nvim configuration already installed! ####${RESET}"
+        log "INFO" "Nvim configuration already installed!"
     else
-        echo -e "${BLUEHI} **** Installing nvim configuration ****${YELLOW}"
+        log "INFO" "Installing nvim configuration..."
 
         mkdir -p "$home_dir/.config" || {
-            echo "❌ Could not create .config directory" >&2
+            log "ERROR" "Could not create .config directory"
             return 1
         }
 
@@ -57,6 +57,6 @@ function install_nvim {
         fi
     fi
 
-    echo "✅ NeoVim installation completed successfully"
+    log "SUCCESS" "NeoVim installation completed successfully"
     return 0
 }

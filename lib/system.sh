@@ -1,5 +1,5 @@
+#!/bin/bash
 
-# Detect Linux distribution
 function detect_distro {
 	if [ -f /etc/os-release ]; then
 		. /etc/os-release
@@ -49,10 +49,10 @@ function detect_desktop {
 # Check if launched with sudo
 function check_sudo {
 	if [ "$UID" -eq "0" ]; then
-		echo -e "${REDHI}Do not execute with sudo, Your password will be asked in the console.${RESET}"
+		log "ERROR" "Do not execute with sudo, Your password will be asked in the console."
 		exit
 	else
-		echo -e "${BLUEHI}Please enter your password to continue...${RESET}"
+		log "INFO" "Please enter your password to continue..."
 		sudo -v
 		while true; do
 			sudo -n true
@@ -84,22 +84,22 @@ function safe_download {
     local output="$2"
     local description="$3"
 
-    echo "📥 Downloading $description..."
+    log "INFO" "📥 Downloading $description..."
 
     if ! wget -O "$output" "$url"; then
-        echo "❌ ERROR: Failed to download $description" >&2
-        echo "   URL: $url" >&2
+        log "ERROR" "Failed to download $description"
+        log "INFO" "   URL: $url"
         return 1
     fi
 
     # Check that the file exists and is not empty
     if [[ ! -s "$output" ]]; then
-        echo "❌ ERROR: The downloaded file is empty or does not exist" >&2
+        log "ERROR" "The downloaded file is empty or does not exist"
         rm -f "$output"  # Clean up the empty file
         return 1
     fi
 
-    echo "✅ $description downloaded successfully"
+    log "SUCCESS" "$description downloaded successfully"
     return 0
 }
 
@@ -109,26 +109,26 @@ function safe_git_clone {
     local destination="$2"
     local description="$3"
 
-    echo "📦 Cloning $description..."
+    log "INFO" "📦 Cloning $description..."
 
     # Check if the directory already exists
     if [[ -d "$destination" ]]; then
-        echo "⚠️  The directory $destination already exists"
+        log "WARNING" "The directory $destination already exists"
         read -p "Do you want to replace it? [y/N]: " replace
         if [[ "$replace" =~ ^[yY]$ ]]; then
             rm -rf "$destination"
         else
-            echo "⏭️  Cloning skipped"
+            log "INFO" "⏭️  Cloning skipped"
             return 0
         fi
     fi
 
     if ! git clone "$repo_url" "$destination"; then
-        echo "❌ ERROR: Failed to clone $description" >&2
-        echo "   Repo: $repo_url" >&2
+        log "ERROR" "Failed to clone $description"
+        log "INFO" "   Repo: $repo_url"
         return 1
     fi
 
-    echo "✅ $description cloned successfully"
+    log "SUCCESS" "$description cloned successfully"
     return 0
 }

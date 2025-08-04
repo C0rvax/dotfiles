@@ -1,15 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 function create_ssh_key {
-	echo -e "${BLUEHI} ---- Creating SSH Key ----${RESET}"
+    log "INFO" "Creating SSH key..."
 	if [ -f ~/.ssh/id_ed25519 ]; then
-		echo -e "${GREENHI}SSH key ~/.ssh/id_ed25519 already exists. Skipping.${RESET}"
+		log "INFO" "SSH key ~/.ssh/id_ed25519 already exists. Skipping."
 		return
 	fi
 
 	read -p "Enter your email for the SSH key comment: " ssh_email
 	if [ -z "$ssh_email" ]; then
-		echo "${REDHI}Email cannot be empty. Aborting key generation.${RESET}"
+		log "ERROR" "Email cannot be empty. Aborting key generation."
 		return
 	fi
 
@@ -18,7 +18,7 @@ function create_ssh_key {
 	chmod 600 ~/.ssh/id_ed25519
 	chmod 700 ~/.ssh
 	chmod 644 ~/.ssh/id_ed25519.pub
-	echo -e "${GREENHI}SSH key created successfully.${RESET}"
-	echo "Your public key is:"
+	log "SUCCESS" "SSH key created successfully."
+	log "INFO" "Your public key is:"
 	cat ~/.ssh/id_ed25519.pub
 }

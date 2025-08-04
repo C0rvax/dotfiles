@@ -3,44 +3,44 @@ function get_package {
     local package_name="$1"
 
     if [[ -z "$package_name" ]]; then
-        echo "${REDHI}❌ ERROR: Package name not specified${RESET}" >&2
+		log "ERROR" "Package name not specified"
         return 1
     fi
 
-    echo "${BLUEHI}📦 Installing package: $package_name${RESET}"
+    log "INFO" "📦 Installing package: $package_name"
 
     case "$DISTRO" in
         "arch")
             if ! sudo pacman -S --noconfirm "$package_name"; then
-                echo "${REDHI}❌ ERROR: Failed to install $package_name with pacman${RESET}" >&2
+                log "ERROR" "Failed to install $package_name with pacman"
                 return 1
             fi
             ;;
         "ubuntu"|"debian")
             if ! sudo apt-get install -y "$package_name"; then
-                echo "${REDHI}❌ ERROR: Failed to install $package_name with apt${RESET}" >&2
+                log "ERROR" "Failed to install $package_name with apt"
                 return 1
             fi
             ;;
         "fedora")
             if ! sudo dnf install -y "$package_name"; then
-                echo "${REDHI}❌ ERROR: Failed to install $package_name with dnf${RESET}" >&2
+                log "ERROR" "Failed to install $package_name with dnf"
                 return 1
             fi
             ;;
         "opensuse")
             if ! sudo zypper install -y "$package_name"; then
-                echo "${REDHI}❌ ERROR: Failed to install $package_name with zypper${RESET}" >&2
+                log "ERROR" "Failed to install $package_name with zypper"
                 return 1
             fi
             ;;
         *)
-            echo "${REDHI}❌ ERROR: Unsupported distribution for package installation: $DISTRO${RESET}" >&2
+            log "ERROR" "Unsupported distribution for package installation: $DISTRO"
             return 1
             ;;
     esac
 
-    echo "${GREENHI}✅ Package $package_name installed successfully${RESET}"
+    log "SUCCESS" "Package $package_name installed successfully"
     return 0
 }
 
@@ -90,7 +90,7 @@ function install_package() {
 
 # Update
 function p_update {
-	echo -e "${BLUEHI}===> Looking for '$DISTRO' updates...${RESET}"
+	log "INFO" "Updating package lists for $DISTRO..."
 	case "$DISTRO" in
 	"arch")
 		sudo pacman -Sy --noconfirm
@@ -105,7 +105,7 @@ function p_update {
 		sudo zypper refresh
 		;;
 	*)
-		echo -e "${REDHI}Unsupported distribution for update.${RESET}"
+		log "ERROR" "Unsupported distribution for update."
 		return 1
 		;;
 	esac
@@ -113,7 +113,7 @@ function p_update {
 
 # Clean
 function p_clean {
-	echo -e "${BLUEHI}"
+	log "INFO" "Cleaning up unused packages for $DISTRO..."
 	case "$DISTRO" in
 	"arch")
 		if [[ -n "$(pacman -Qdtq)" ]]; then
@@ -130,6 +130,4 @@ function p_clean {
 		sudo zypper clean --all
 		;;
 	esac
-
-	echo -e "${RESET}"
 }

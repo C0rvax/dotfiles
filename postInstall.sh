@@ -24,11 +24,9 @@ done
 
 source config/settings.conf
 source config/packages.conf
-
 source lib/system.sh
 source lib/package_manager.sh
 source lib/audit.sh
-
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
 
@@ -129,7 +127,7 @@ case "$DESKTOP" in
     lxqt)     setup_lxqt ;;
     mate)     setup_mate ;;
     cinnamon) setup_cinnamon ;;
-    *) echo -e "${YELLOW}No specific desktop configuration for '$DESKTOP'.${RESET}" ;;
+    *) log "WARNING" "No specific desktop configuration for '$DESKTOP'." ;;
 esac
 
 setup_vlc
@@ -140,7 +138,7 @@ p_update
 p_clean
 
 
-echo -e "${GREENHI}✅ Post-installation script finished! Please reboot your system for all changes to take effect.${RESET}"
+log "SUCCESS" "Post-installation script finished! Please reboot your system for all changes to take effect."
 # A AJOUTER
 # icon fix
 # driver nvidia sudo apt install nvidia-driver-550
