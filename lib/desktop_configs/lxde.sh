@@ -14,8 +14,7 @@ function setup_lxde {
 		sed -i 's/^ *gtk-theme-name=.*$/gtk-theme-name="'$THEME_GTK_DARK'"/' ~/.config/lxsession/LXDE/desktop.conf
 
 		# Modifier le terminal par défaut
-		sed -i 's/^ *terminal=.*$|terminal=$TERMINAL_APP|' ~/.config/lxsession/LXDE/desktop.conf
-
+		sed -i "s|^ *terminal=.*$|terminal=$TERMINAL_APP|" ~/.config/lxsession/LXDE/desktop.conf
 		echo "LXDE configuration applied successfully!"
 	fi
 }

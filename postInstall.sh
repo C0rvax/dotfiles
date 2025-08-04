@@ -4,16 +4,6 @@ VERBOSE=false
 DRY_RUN=false
 ASSUME_YES=false
 
-source config/settings.conf
-source config/packages.conf
-
-source lib/system.sh
-source lib/package_manager.sh
-source lib/audit.sh
-
-for f in lib/installers/*.sh; do source "$f"; done
-for f in lib/desktop_configs/*.sh; do source "$f"; done
-
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         -v|--verbose) VERBOSE=true; shift ;;
@@ -31,33 +21,47 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
+
+source config/settings.conf
+source config/packages.conf
+
+source lib/system.sh
+source lib/package_manager.sh
+source lib/audit.sh
+
+for f in lib/installers/*.sh; do source "$f"; done
+for f in lib/desktop_configs/*.sh; do source "$f"; done
+
 display_logo
 check_sudo
 run_audit
 
 echo ""
-read -p "Do you want to install the packages? [y/n]: " confirm_install
-if [[ "$confirm_install" != "y" && "$confirm_install" != "Y" && "$confirm_install" != "o" && "$confirm_install" != "O" ]]; then
-	echo "Installation aborted."
-	exit 0
+log "INFO" "Starting user interaction for package selection."
+
+if [[ "$ASSUME_YES" != "true" ]]; then
+    read -p "Do you want to proceed with the installation? [y/N]: " confirm_install
+    if [[ ! "$confirm_install" =~ ^[yYoO]$ ]]; then
+        log "WARNING" "Installation aborted by user."
+        exit 0
+    fi
 fi
 
-echo "Select installation type:"
-echo "1) Full (everything)"
-echo "2) Light (minimal: PACMAN, COMPILER, TERM, NVIM DEPENDENCIES, ZSH)"
-read -p "Enter your choice [1-2]: " install_type
+install_type_choice=""
+if [[ "$ASSUME_YES" == "true" ]]; then
+    install_type_choice="1" # Default to Full install in non-interactive mode
+    log "INFO" "Non-interactive mode: Defaulting to a 'Full' installation."
+else
+    echo "Select installation type:"
+    echo "1) Full (everything)"
+    echo "2) Light (minimal)"
+    read -p "Enter your choice [1-2]: " install_type_choice
+fi
 
-case $install_type in
-1)
-	SELECTED_PKGS=("${FULL_PKGS[@]}")
-	;;
-2)
-	SELECTED_PKGS=("${LIGHT_PKGS[@]}")
-	;;
-*)
-	echo "Invalid choice. Exiting."
-	exit 1
-	;;
+case $install_type_choice in
+    1) SELECTED_PKGS=("${FULL_PKGS[@]}");;
+    2) SELECTED_PKGS=("${LIGHT_PKGS[@]}");;
+    *) log "ERROR" "Invalid choice. Exiting."; exit 1;;
 esac
 
 read -p "Do you want to include EMBEDDED packages? [y/n]: " include_embedded
@@ -79,16 +83,18 @@ for pkg in "${SELECTED_PKGS[@]}"; do
 	fi
 done
 
-if ! show_installation_summary "${INSTALL_LIST[@]}"; then
-    log "WARNING" "Installation aborted by user."
-    exit 0
+if [[ "$ASSUME_YES" != "true" ]]; then
+    if ! show_installation_summary "${INSTALL_LIST[@]}"; then
+        log "WARNING" "Installation aborted by user at summary."
+        exit 0
+    fi
 fi
 
 log "INFO" "Starting package installation..."
 p_update
 
-local total=${#INSTALL_LIST[@]}
-local current=0
+total=${#INSTALL_LIST[@]}
+current=0
 
 for PKG in "${INSTALL_LIST[@]}"; do
     current=$((current + 1))
@@ -98,13 +104,13 @@ for PKG in "${INSTALL_LIST[@]}"; do
     install_package "${PKG}"
 done
 
-# Terminer la ligne de la barre de progression
-if [[ "$VERBOSE" != "true" ]]; then
-    echo
+if [[ "$VERBOSE" != "true" && "$total" -gt 0 ]]; then
+    echo # New line after progress bar
 fi
 log "SUCCESS" "Package installation phase complete."
 
 # INSTALL SPECIFIC PACKAGES
+log "INFO" "Running specific installers and configurations..."
 install_git
 install_fonts
 install_nvim
@@ -113,6 +119,7 @@ install_docker
 install_node
 install_zsh
 install_zconfig
+log "SUCCESS" "All configurations applied."
 
 case "$DESKTOP" in
     kde)      setup_kde ;;
