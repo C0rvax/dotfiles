@@ -5,6 +5,7 @@ function install_fonts {
     local fonts_dir="$themes_dir/Fonts"
     local icons_dir="$themes_dir/Icons"
     local sys_fonts_dir="/usr/share/fonts/truetype/custom"
+    local icon_dest_dir="/usr/share/icons/$BUUF_ICONS_NAME"
 
     log "INFO" "Installing custom fonts and icons..."
     mkdir -p "$fonts_dir"
@@ -30,6 +31,11 @@ function install_fonts {
         log "INFO" "Icon pack already exists."
     else
         safe_git_clone "$BUUF_ICONS_REPO" "$icons_dir/$BUUF_ICONS_NAME" "Buuf Nestort Icon Pack"
-        sudo ln -sfn "$icons_dir/$BUUF_ICONS_NAME" "/usr/share/icons/$BUUF_ICONS_NAME"
+    fi
+    sudo ln -sfn "$icons_dir/$BUUF_ICONS_NAME" "$icon_dest_dir"
+    if [ -f "$icon_dest_dir/index.theme" ]; then
+        sudo gtk-update-icon-cache -f -t "$icon_dest_dir"
+    else
+        log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
     fi
 }

@@ -109,7 +109,8 @@ log "SUCCESS" "Package installation phase complete."
 
 # INSTALL SPECIFIC PACKAGES
 log "INFO" "Running specific installers and configurations..."
-install_git
+install_firefox
+setup_ssh_and_git
 install_fonts
 install_nvim
 install_veracrypt

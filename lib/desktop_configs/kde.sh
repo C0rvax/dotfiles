@@ -10,16 +10,16 @@ function setup_kde {
 		kwriteconfig5 --file kdeglobals --group General --key toolBarFont "$FONT_SYSTEM_NAME,10,-1,5,50,0,0,0,0,0,Regular"
 		kwriteconfig5 --file kdeglobals --group WM --key activeFont "$FONT_SYSTEM_NAME,10,-1,5,50,0,0,0,0,0"
 
+		# Activer le thème Breeze sombre
+		lookandfeeltool -a "$KDE_THEME_DARK"
+
 		# Modifier teminal par défaut
 		kwriteconfig5 --file kdeglobals --group General --key TerminalApplication "$TERMINAL_APP"
 		kwriteconfig5 --file kdeglobals --group General --key TerminalService "${TERMINAL_APP}.desktop"
 
 		# Vérifier et ajouter le groupe [Icons] si nécéssaire
-		grep -q '^\[Icons\]' ~/.config/kdeglobals || echo -e "\n[Icons]" >>~/.config/kdeglobals
+		# grep -q '^\[Icons\]' ~/.config/kdeglobals || echo -e "\n[Icons]" >>~/.config/kdeglobals
 		kwriteconfig5 --file kdeglobals --group Icons --key Theme "$BUUF_ICONS_NAME"
-
-		# Activer le thème Breeze sombre
-		lookandfeeltool -a "$KDE_THEME_DARK"
 
 		# Config de KFileDialiog
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Sort directories first" true
@@ -28,8 +28,9 @@ function setup_kde {
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "View Style" "DetailTree"
 
 		# Raccourci terminal
-		#kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"
-		sed -i 's|konsole|$TERMINAL_APP|' ~/.config/kglobalshortcutsrc
+		# kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"
+		kwriteconfig5 --file kglobalshortcutsrc --group "${TERMINAL_APP}.desktop" --key "_launch" "Ctrl+Alt+T,none,${TERMINAL_APP^}"
+		sed -i 's|konsole|${TERMINAL_APP}|g' ~/.config/kglobalshortcutsrc
 
 		# Configurer un simple clic pour ouvrir les fichiers
 		kwriteconfig5 --file kdeglobals --group KDE --key SingleClick false

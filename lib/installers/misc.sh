@@ -3,9 +3,22 @@
 # INSTALL FIREFOX WITH FLATPAK
 function install_firefox {
     log "INFO" "Installing Firefox with Flatpak..."
-	install_package "flatpak"
-	flatpak remote-add --if-not-exists flathub "$URL_FLATHUB_REPO"
-	flatpak install "$URL_FLATHUB_FIREFOX" -y
+    wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc  > /dev/null
+	gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | awk '/pub/{getline; gsub(/^ +| +$/,""); if($0 == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3") print "\nLʼempreinte de la clé correspond ("$0").\n"; else print "\nÉchec de la vérification : lʼempreinte ("$0") ne correspond pas à celle attendue.\n"}'
+    echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
+    Package: *
+    Pin: origin packages.mozilla.org
+    Pin-Priority: 1000
+    echo '
+    Package: *
+    Pin: origin packages.mozilla.org
+    Pin-Priority: 1000
+    ' | sudo tee /etc/apt/preferences.d/mozilla
+    sudo apt-get update
+    sudo apt install firefox firefox-l10n-fr -y
+    # install_package "flatpak"
+	# flatpak remote-add --if-not-exists flathub "$URL_FLATHUB_REPO"
+	# flatpak install "$URL_FLATHUB_FIREFOX" -y
     log "SUCCESS" "Firefox installed successfully via Flatpak."
 }
 
