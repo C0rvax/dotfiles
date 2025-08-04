@@ -1,11 +1,17 @@
 #!/bin/bash
 
-source postList
-source postFunctions.sh
+source config/settings.conf
+source config/packages.conf
+
+source lib/system.sh
+source lib/package_manager.sh
+source lib/audit.sh
+
+for f in lib/installers/*.sh; do source "$f"; done
+for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 display_logo
 check_sudo
-
 run_audit
 
 echo ""
@@ -45,10 +51,6 @@ if [[ "$install_type" == "1" ]]; then
 	fi
 fi
 
-# INSTALL PACKAGES
-
-p_update
-
 INSTALL_LIST=()
 for pkg in "${SELECTED_PKGS[@]}"; do
 	if [[ ! $pkg == "#"* ]]; then
@@ -63,58 +65,36 @@ done
 
 p_update
 
-# INSTALL SPEC
-
+# INSTALL SPECIFIC PACKAGES
 install_git
-
-install_nvim
-
-install_veracrypt
-
 install_fonts
-
-# CLEANING
-
-p_clean
-
-# INSTALL OH MY ZSH
-
+install_nvim
+install_veracrypt
+install_docker
+install_node
 install_zsh
-
-# INSTALL ZSH CONFIG
-
 install_zconfig
 
-p_update
-
-# INSTALL DESKTOP CONFIG
-if [[ "$DESKTOP" == "kde" ]]; then
-	setup_kde
-	install_docker_ubuntu
-elif [[ "$DESKTOP" == "gnome" ]]; then
-	setup_gnome
-elif [[ "$DESKTOP" == "xfce" ]]; then
-	setup_xfce
-elif [[ "$DESKTOP" == "lxde" ]]; then
-	setup_lxde
-elif [[ "$DESKTOP" == "lxqt" ]]; then
-	setup_lxqt
-elif [[ "$DESKTOP" == "mate" ]]; then
-	setup_mate
-elif [[ "$DESKTOP" == "cinnamon" ]]; then
-	setup_cinnamon
-fi
+case "$DESKTOP" in
+    kde)      setup_kde ;;
+    gnome)    setup_gnome ;;
+    xfce)     setup_xfce ;;
+    lxde)     setup_lxde ;;
+    lxqt)     setup_lxqt ;;
+    mate)     setup_mate ;;
+    cinnamon) setup_cinnamon ;;
+    *) echo -e "${YELLOW}No specific desktop configuration for '$DESKTOP'.${RESET}" ;;
+esac
 
 setup_vlc
-
 # set-bin
-
 create_ssh_key
-install_node
 
 p_update
 p_clean
 
+
+echo -e "${GREENHI}✅ Post-installation script finished! Please reboot your system for all changes to take effect.${RESET}"
 # A AJOUTER
 # icon fix
 # driver nvidia sudo apt install nvidia-driver-550
