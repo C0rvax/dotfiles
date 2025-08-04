@@ -3,45 +3,30 @@ function get_package {
     local package_name="$1"
 
     if [[ -z "$package_name" ]]; then
-		log "ERROR" "Package name not specified"
+		echo "[$(date '+%Y-%m-%d %H:%M:%S')] [FATAL] get_package called with no package name" >> "$LOG_FILE"
         return 1
     fi
 
-    log "INFO" "📦 Installing package: $package_name"
-
     case "$DISTRO" in
         "arch")
-            if ! sudo pacman -S --noconfirm "$package_name" >> "$LOG_FILE" 2>&1; then
-                log "ERROR" "Failed to install $package_name with pacman"
-                return 1
-            fi
+            sudo pacman -S --noconfirm "$package_name" >> "$LOG_FILE" 2>&1
             ;;
         "ubuntu"|"debian")
-            if ! sudo apt-get install -y "$package_name" >> "$LOG_FILE" 2>&1; then
-                log "ERROR" "Failed to install $package_name with apt"
-                return 1
-            fi
+            sudo apt-get install -y "$package_name" >> "$LOG_FILE" 2>&1
             ;;
         "fedora")
-            if ! sudo dnf install -y "$package_name" >> "$LOG_FILE" 2>&1; then
-                log "ERROR" "Failed to install $package_name with dnf"
-                return 1
-            fi
+            sudo dnf install -y "$package_name" >> "$LOG_FILE" 2>&1
             ;;
         "opensuse")
-            if ! sudo zypper install -y "$package_name" >> "$LOG_FILE" 2>&1; then
-                log "ERROR" "Failed to install $package_name with zypper"
-                return 1
-            fi
+            sudo zypper install -y "$package_name" >> "$LOG_FILE" 2>&1
             ;;
         *)
-            log "ERROR" "Unsupported distribution for package installation: $DISTRO"
-            return 1
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] [FATAL] get_package called with no package name" >> "$LOG_FILE"
+			return 1
             ;;
     esac
 
-    log "SUCCESS" "Package $package_name installed successfully"
-    return 0
+    return $?
 }
 
 function check_package {
@@ -80,11 +65,16 @@ function install_package() {
         if [[ "$VERBOSE" == "true" ]]; then
             log "SUCCESS" "Package $package is already installed"
         fi
-    else
+		return 0
+	fi
+	log "INFO" "📦 Installing package: $package"
+	if get_package "$package"; then
         if [[ "$VERBOSE" == "true" ]]; then
-            log "INFO" "Installing $package"
+            log "SUCCESS" "Package $package installed successfully"
         fi
-        get_package "$package"
+     else
+		log "ERROR" "Failed to install package $package"
+		return 1
     fi
 }
 
@@ -117,17 +107,17 @@ function p_clean {
 	case "$DISTRO" in
 	"arch")
 		if [[ -n "$(pacman -Qdtq)" ]]; then
-			sudo pacman -Rns $(pacman -Qdtq) --noconfirm
+			sudo pacman -Rns $(pacman -Qdtq) --noconfirm >> "$LOG_FILE" 2>&1
 		fi
 		;;
 	"ubuntu" | "debian")
-		sudo apt-get autoclean -y && sudo apt-get autoremove -y
+		sudo apt-get autoclean -y && sudo apt-get autoremove -y >> "$LOG_FILE" 2>&1
 		;;
 	"fedora")
-		sudo dnf autoremove -y
+		sudo dnf autoremove -y >> "$LOG_FILE" 2>&1
 		;;
 	"opensuse")
-		sudo zypper clean --all
+		sudo zypper clean --all >> "$LOG_FILE" 2>&1
 		;;
 	esac
 }

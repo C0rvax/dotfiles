@@ -20,7 +20,6 @@ function install_firefox {
 }
 
 # SET BINARIES
-
 function set_bin {
     echo -e "${BLUEHI}Setting up custom binaries in $PATH_LOCAL_BIN...${RESET}"
     mkdir -p "$PATH_LOCAL_BIN"
