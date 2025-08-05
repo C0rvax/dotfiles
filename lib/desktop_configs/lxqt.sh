@@ -2,7 +2,7 @@
 
 function setup_lxqt {
 	if [[ "$DESKTOP" == "lxqt" ]]; then
-		echo "Setting up LXQt-specific configurations..."
+		log "INFO" "Setting up LXQt-specific configurations..."
 
 		# Modifier la police du système
 		lxqt-config-appearance --set-font "'$FONT_SYSTEM_NAME 10"
@@ -16,6 +16,6 @@ function setup_lxqt {
 		# Modifier le terminal par défaut
 		lxqt-config-session --set-terminal "'$TERMINAL_APP'"
 
-		echo "LXQt configuration applied successfully!"
+		log "SUCCESS" "LXQt configuration applied successfully!"
 	fi
 }

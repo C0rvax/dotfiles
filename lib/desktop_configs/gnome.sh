@@ -2,7 +2,7 @@
 
 function setup_gnome {
 	if [[ "$DESKTOP" == "gnome" ]]; then
-		echo "Setting up GNOME-specific configurations..."
+		log "INFO" "Setting up GNOME desktop environment..."
 
 		# Modifier la police du système
 		gsettings set org.gnome.desktop.interface font-name "'$FONT_SYSTEM_NAME 10'"
@@ -42,6 +42,6 @@ function setup_gnome {
 			killall -3 gnome-shell
 		fi
 
-		echo "GNOME configuration applied successfully!"
+		log "SUCCESS" "GNOME configuration applied successfully!"
 	fi
 }

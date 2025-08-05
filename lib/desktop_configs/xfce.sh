@@ -2,7 +2,7 @@
 
 function setup_xfce {
 	if [[ "$DESKTOP" == "xfce" ]]; then
-		echo "Setting up XFCE-specific configurations..."
+		log "INFO" "Setting up XFCE-specific configurations..."
 
 		# Modifier la police du système
 		xfconf-query -c xsettings -p /Gtk/FontName -s "'$FONT_SYSTEM_NAME' 10"
@@ -20,6 +20,6 @@ function setup_xfce {
 		xfconf-query -c thunar -p /misc-small-toolbar-icons -s false
 		xfconf-query -c thunar -p /misc-show-hidden -s true
 
-		echo "XFCE configuration applied successfully!"
+		log "SUCCESS" "XFCE configuration applied successfully!"
 	fi
 }

@@ -1,0 +1,294 @@
+commit 1785b8b4e5374d6d02e5ca1db0c16ec2df725e4a
+Author: c0rvax <C0rvax@pm.me>
+Date:   Wed Jan 29 00:11:52 2025 +0100
+
+    peaufinage snippet
+
+commit 1ec8b11f2f2626add8fa7780a42cdf1c550eaf1d
+Author: c0rvax <C0rvax@pm.me>
+Date:   Sat Jan 18 17:27:07 2025 +0100
+
+    apport copilot
+
+commit 88358e4889d06e8ec03792982542b2ee6e451e85
+Author: c0rvax <C0rvax@pm.me>
+Date:   Sat Dec 28 11:52:53 2024 +0100
+
+    nouveau mapping
+
+commit dd48caf719f14fee72bc7e4d577892bc7baee521
+Author: c0rvax <C0rvax@pm.me>
+Date:   Thu Dec 26 14:39:18 2024 +0100
+
+    ajout option recherche non sensitives
+
+commit 364cd1dd7b444696b4fa85d9fecde4835cfdddae
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Dec 24 14:26:41 2024 +0100
+
+    fix de enter sans fallback et nouveau snippet cout
+
+commit a2de620287740d94caf58a765b1f4c24fafce8ae
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Dec 24 11:33:51 2024 +0100
+
+    ajout du floating term
+
+commit 78031f2393f4554a190c910940c3f485cb87be13
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Dec 24 10:04:39 2024 +0100
+
+    nettoyage de la nouvelle config avec blink et suppression de cmp
+
+commit 30c878a2e7b58c1f526663d5f6101e6f803fbcb4
+Author: aduvilla <aduvilla@student.42.fr>
+Date:   Mon Dec 23 13:57:38 2024 +0100
+
+    tout good pour nouvelle version
+
+commit f3bf22394202177e65ee344d4bc7da915c8b05e4
+Author: c0rvax <C0rvax@pm.me>
+Date:   Wed Dec 18 00:19:16 2024 +0100
+
+    ajout en comment de la config pas testée de blink.cmp
+
+commit 16b69ef2d188b1ae1cd236c24e4f8e0102ea6fda
+Author: c0rvax <C0rvax@pm.me>
+Date:   Thu Nov 7 19:37:52 2024 +0100
+
+    maj lsp
+
+commit 73c6b759d947c41831388b4200fe8f1d774cb791
+Author: c0rvax <C0rvax@pm.me>
+Date:   Thu Nov 7 15:58:23 2024 +0100
+
+    retouches
+
+commit 405c71dfa20e5b13a2e187de745d38c5c18ff0b1
+Author: c0rvax <C0rvax@pm.me>
+Date:   Thu Nov 7 15:42:30 2024 +0100
+
+    corrections
+
+commit cd3803f8a33708d5f74fbb25f28dd345d7c98a28
+Author: c0rvax <C0rvax@pm.me>
+Date:   Thu Nov 7 01:27:49 2024 +0100
+
+    maj appImage v0.10
+
+commit 2f181aa8ea1817777300f3b3936e528350e5c045
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Nov 5 15:18:29 2024 +0100
+
+    new config
+
+commit 4cbbee8e2ba65610e8739a9b01d3ca199ac15248
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Nov 5 13:20:36 2024 +0100
+
+    maj pour appimage v0.10
+
+commit 76a4c64ed1864243debb7864ddb27d8c9d321574
+Author: c0rvax <C0rvax@pm.me>
+Date:   Mon Nov 4 13:21:45 2024 +0100
+
+    on peaufine
+
+commit 55c201159c922135a499c3742b4f1dd781ca0b07
+Author: c0rvax <C0rvax@pm.me>
+Date:   Wed Oct 30 11:43:16 2024 +0100
+
+    snippets opti
+
+commit a32f09632a512aa36e2080bfc58cc3a4e0f8b648
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Oct 29 21:44:43 2024 +0100
+
+    snippets ok
+
+commit cc020c5eee48a80b621775f471a6b9808ccb8dee
+Author: aduvilla <aduvilla@student.42.fr>
+Date:   Tue Oct 29 16:50:18 2024 +0100
+
+    les snippets marchent
+
+commit 3f0772acce86bdab20b4fce0610938ebb8241b3b
+Author: aduvilla <aduvilla@student.42.fr>
+Date:   Tue Oct 29 15:32:48 2024 +0100
+
+    maj gitignore
+
+commit f9160818527854e12279418c507438259134dc59
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Oct 29 14:54:29 2024 +0100
+
+    on essaie les snippets, mais ca les load pas...
+
+commit c3ab06ab4530b93fc56423533ccf2357c85d83f8
+Author: c0rvax <C0rvax@pm.me>
+Date:   Fri Apr 19 17:07:08 2024 +0200
+
+    ajout de leader r pour bracket
+
+commit 1dd04934f993a084b3022d7cd2280e68a38182dc
+Author: c0rvax <C0rvax@pm.me>
+Date:   Fri Apr 19 15:04:06 2024 +0200
+
+    lsp et clangd config
+
+commit 103b3303aff4127691ef86424e20f499e048e683
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Fri Jan 19 10:31:39 2024 +0100
+
+    ajout cpp
+
+commit 59958513d84339cfbdfd75ff9d2fd9228099aa0d
+Author: c0rvax <C0rvax@pm.me>
+Date:   Tue Jan 16 23:00:31 2024 +0100
+
+    virer le autoformat pour cpp (prochaine fois editer ces autoformat
+
+commit e139183e15f7b4ece23b3d0fd39f0e53bf5ab49b
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Tue Jan 16 11:47:03 2024 +0100
+
+    ajout de clangd mason
+
+commit 6b0e48ec7e66a3d15bca3b586d4cd290c89ec67e
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Thu Dec 28 01:38:39 2023 +0100
+
+    auto brackets
+
+commit 7782babcaeaa52cc04c0330218f0cc7709e8ce9b
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Wed Dec 27 19:37:44 2023 +0100
+
+    auto parenthesis
+
+commit eeb4271d99c6ce21e626f70ca877061bfe20eddc
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Tue Dec 19 19:58:58 2023 +0100
+
+    cmp disable/enable avec ua
+
+commit b928a1ad0ba5dae57b073b44127bf1daec7c5f30
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Tue Dec 19 19:34:46 2023 +0100
+
+    cmp disable/ enable avec ua
+
+commit 5160d0977f69cd79930fa408379edc2bf6d8e539
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Wed Dec 13 20:36:53 2023 +0100
+
+    un peu mieux5
+
+commit ab335a8ad56a5083da3cde2838fd4f6f9b387bc4
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Wed Dec 13 20:21:12 2023 +0100
+
+    un peu mieux4
+
+commit c0ee7290c0965f180a39228b235bdba5047a11f1
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Wed Dec 13 19:46:05 2023 +0100
+
+    un peu mieux3
+
+commit af16e32ecd97193630056da99e2941a9099232e7
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Wed Dec 13 19:04:38 2023 +0100
+
+    un peu mieux2
+
+commit df900ac395856e342424e70026e7240bd0b24cd9
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Wed Dec 13 18:35:02 2023 +0100
+
+    un peu mieux
+
+commit a3eccbc221df1ad25a32f8339f9e59f6bdd68dca
+Merge: 45ec365 474e92c
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sun Dec 10 17:39:46 2023 +0100
+
+    merde
+
+commit 45ec365c4fec4b9ba2ef55e3016da77a3feb3ef5
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sun Dec 10 17:38:07 2023 +0100
+
+    hmm
+
+commit 474e92c954d64f0b0948918ccf4940f573d60975
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Wed Dec 6 16:02:44 2023 +0100
+
+    update json
+
+commit ecd02e442004eb0b72ee7f1c9974fe1a04c8fbe5
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Mon Dec 4 17:24:34 2023 +0100
+
+    avec multi-visual
+
+commit 15f84207f07c21ba713895a1691fedbf862dcb32
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Mon Dec 4 16:48:51 2023 +0100
+
+    all
+
+commit cdf916919cc15f73c6f1a2f59757c3d23c3caa97
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Mon Dec 4 16:47:20 2023 +0100
+
+    gitignore v2
+
+commit 9e8d490575b2eb88ac41b93e1366c61e79b9c43f
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Mon Dec 4 15:58:10 2023 +0100
+
+    gitignore
+
+commit 075fcf05312a3f90271167d7af4845fd331581b2
+Author: Arthur Duvillaret <aduvilla@bess-f4r3s14.clusters.42paris.fr>
+Date:   Mon Dec 4 15:57:34 2023 +0100
+
+    gitignore
+
+commit fd43a90e007c6ac245c6eab0330ec385783aeb3d
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sun Dec 3 23:17:56 2023 +0100
+
+    organisation
+
+commit 51ab4e6f876da6635a63b534e38522afc06d29d0
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sun Dec 3 20:09:12 2023 +0100
+
+    gestion des leader w
+
+commit a8f5c9047e3f88f3f076af6cd78526753871a142
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sun Dec 3 18:35:38 2023 +0100
+
+    debut de config
+
+commit 2d487025c8c333fbcfd57450eb8177c1c82b500d
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sat Dec 2 21:32:19 2023 +0100
+
+    3rd push
+
+commit 213353a384fa55a4ccb868dcdd6643f8b108bbff
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sat Dec 2 20:58:59 2023 +0100
+
+    2nd push
+
+commit 45ddf5677e9dad7086f81fc3526c734611f7250c
+Author: C0rvax <arthurduvillaret@gmail.com>
+Date:   Sat Dec 2 20:44:49 2023 +0100
+
+    1st push

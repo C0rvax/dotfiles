@@ -2,7 +2,7 @@
 
 function setup_mate {
 	if [[ "$DESKTOP" == "mate" ]]; then
-		echo "Setting up MATE-specific configurations..."
+		log "INFO" "Setting up MATE-specific configurations..."
 
 		# Modifier la police du système
 		gsettings set org.mate.interface font-name "'$FONT_SYSTEM_NAME' 10"
@@ -23,6 +23,6 @@ function setup_mate {
 		gsettings set org.mate.caja.preferences show-hidden-files true
 		gsettings set org.mate.caja.preferences sort-directories-first true
 
-		echo "MATE configuration applied successfully!"
+		log "SUCCESS" "MATE configuration applied successfully!"
 	fi
 }

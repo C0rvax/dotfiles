@@ -2,7 +2,7 @@
 
 function setup_lxde {
 	if [[ "$DESKTOP" == "lxde" ]]; then
-		echo "Setting up LXDE-specific configurations..."
+		log "INFO" "Setting up LXDE-specific configurations..."
 
 		# Modifier la police du système (Openbox)
 		sed -i 's/^ *<font .*$/  <font>$FONT_SYSTEM_NAME 10<\/font>/' ~/.config/openbox/lxde-rc.xml
@@ -15,6 +15,6 @@ function setup_lxde {
 
 		# Modifier le terminal par défaut
 		sed -i "s|^ *terminal=.*$|terminal=$TERMINAL_APP|" ~/.config/lxsession/LXDE/desktop.conf
-		echo "LXDE configuration applied successfully!"
+		log "SUCCESS" "LXDE configuration applied successfully!"
 	fi
 }

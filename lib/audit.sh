@@ -41,30 +41,106 @@ function print_table_line {
 }
 
 get_display_width() {
-	local str="$1"
-	awk -v s="$str" '
-	BEGIN {
-		n = split(s, a, "")
-		for (i = 1; i <= n; i++) {
-			printf "%s", a[i]
-		}
-	} ' | wc -m
+    local str="$1"
+    local clean_str=$(printf '%s' "$str" | sed 's/\x1b\[[0-9;]*m//g')
+    local base_length=$(printf '%s' "$clean_str" | wc -m)
+    local info_count=$(printf '%s' "$clean_str" | grep -o -E '[ℹ️✅⚠️📦📥⏭️]' | wc -l 2>/dev/null || echo 0)
+    local error_count=$(printf '%s' "$clean_str" | grep -o -E '[❌❓]' | wc -l 2>/dev/null || echo 0)	
+	if (( info_count > 0 )); then
+		echo $((base_length - error_count - info_count + 1))
+	elif (( error_count > 0 )); then
+		echo $((base_length - error_count + 2))
+	else
+		echo $((base_length))
+	fi
+}
+
+function print_center_element {
+	local text="$1"
+	local color="$2"
+	local visible_len=$(get_display_width "$text")
+	local padding=$(((TABLE_WIDTH - visible_len - 2) / 2))
+	local remainder=$(((TABLE_WIDTH - visible_len - 2) % 2))
+
+	printf "|"
+	printf " %.0s" $(seq 1 $padding)
+	echo -e -n "${color}${text}${RESET}"
+	printf " %.0s" $(seq 1 $((padding + remainder)))
+	printf "|\n"
+}
+
+function print_left_element {
+	local text="$1"
+	local color="$2"
+	local visible_len=$(get_display_width "$text")
+	local padding=$((TABLE_WIDTH - visible_len - 3))
+
+	printf "|"
+	echo -e -n " ${color}${text}${RESET}"
+	printf " %.0s" $(seq 1 $padding)
+	printf "|\n"
+}
+
+# function ask_question {
+#     local question="$1"
+#     local -n result_var="$2" # -n (nameref) pour passer le nom de la variable de retour
+    
+#     local formatted_prompt="| ${YELLOWHI}❓ ${question}${RESET} "
+    
+#     # On utilise read sans -p, après avoir affiché notre propre prompt formaté.
+#     printf "%b" "$formatted_prompt"
+#     read -r result_var
+# }
+
+function ask_question {
+    local question="$1"
+    local -n result_var="$2"
+    
+    local response=""
+    
+    # Boucle de lecture caractère par caractère
+    while true; do
+        local prompt_text="❓ ${question}: "
+        
+        local prompt_len
+        prompt_len=$(get_display_width "$prompt_text")
+
+        local response_len=${#response}
+
+        printf "\r\033[K| %b" "${YELLOWHI}${prompt_text}${RESET}"
+        printf "%s" "$response"
+        
+        # On calcule et affiche le padding
+        local padding=$((TABLE_WIDTH - prompt_len - response_len - 3))
+        if (( padding < 0 )); then padding=0; fi
+        printf "%*s|" "$padding" ""
+
+        printf "\r\033[%dC" $((2 + prompt_len + response_len))
+
+        # Lire un seul caractère
+        read -s -r -n 1 key
+
+        if [[ $key == "" ]]; then # Si la touche est vide (entrée)
+            break
+        elif [[ $key == $'\x7f' ]]; then # Touche Retour arrière (Backspace)
+            if [ -n "$response" ]; then
+                response="${response%?}"
+            fi
+        else
+            response+="$key"
+        fi
+    done
+    
+    # Un saut de ligne final pour que le prompt suivant soit propre
+    echo ""
+    result_var="$response"
 }
 
 function print_table_header {
 	local title=$1
 
-	local visible_len=$(get_display_width "$title")
-
-	local padding=$(((TABLE_WIDTH - visible_len - 4) / 2))
-	local remainder=$(((TABLE_WIDTH - visible_len - 4) % 2))
-
 	print_table_line
-	printf "|"
-	printf " %.0s" $(seq 1 $padding)
-	echo -e -n " ${BLUEHI}${title}${RESET} "
-	printf " %.0s" $(seq 1 $((padding + remainder)))
-	printf "|\n"
+	print_center_element "$title" "$BLUEHI"
 	print_table_line
 }
 
@@ -144,9 +220,7 @@ function print_packages_content {
 
 			local category_title
 			printf -v category_title ">> %s" "$(echo "$item" | sed -e 's/# --- //' -e 's/ ---//')"
-			local padded_title
-			printf -v padded_title " %-*s" $(($TABLE_WIDTH - 3)) "$category_title"
-			echo -e "|${YELLOW}${padded_title}${RESET}|"
+			print_left_element "$category_title" "$YELLOW"
 
 			is_first_category=false
 		else
@@ -258,17 +332,25 @@ function print_summary_row {
 
 function show_installation_summary() {
 	local packages=("$@")
-	local estimated_time=$((${#packages[@]} * 1)) # 1 minute par package en moyenne
 
 	print_table_header "INSTALLATION SUMMARY"
-	print_summary_row "Total packages to install:" "${#packages[@]}" "$RESET" "$GREENHI"
-	print_summary_row "Estimated time:" "~${estimated_time} minutes" "$RESET" "$YELLOWHI"
-	print_summary_row "Internet connection:" "Required" "$RESET" "$REDHI"
+	print_summary_row "Total packages to install:" "${#packages[@]}" "$BLUEHI" "$GREENHI"
+	print_summary_row "Internet connection:" "Required" "$BLUEHI" "$REDHI"
+	if [ ${#packages[@]} -gt 0 ]; then
+		print_left_element "The following packages will be installed:" "$BLUEHI"
+		# Préparer la liste des paquets pour la fonction print_grid.
+		# Chaque paquet est un élément, et on leur donne une couleur neutre (RESET).
+		local packages_for_grid=()
+		for pkg in "${packages[@]}"; do
+			packages_for_grid+=("$pkg" "$GREEN")
+		done
 
-	print_table_line
-	echo -e "${RESET}"
+		# Afficher la grille de paquets
+		print_grid 4 "${packages_for_grid[@]}"
+		print_table_line
+	fi
+	ask_question "Do you want to continue? [y/N]: " confirm
 
-	read -p "Continue with installation? [y/N]: " confirm
 	[[ "$confirm" =~ ^[yY]$ ]]
 }
 

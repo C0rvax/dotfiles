@@ -2,7 +2,7 @@
 
 function setup_cinnamon {
 	if [[ "$DESKTOP" == "cinnamon" ]]; then
-		echo "Setting up Cinnamon-specific configurations..."
+		log "INFO" "Setting up Cinnamon desktop environment..."
 
 		# Modifier la police du système
 		gsettings set org.cinnamon.desktop.interface font-name "'$FONT_SYSTEM_NAME' 10"
@@ -23,6 +23,6 @@ function setup_cinnamon {
 		gsettings set org.nemo.preferences show-hidden-files true
 		gsettings set org.nemo.preferences sort-directories-first true
 
-		echo "Cinnamon configuration applied successfully!"
+		log "SUCCESS" "Cinnamon configuration applied successfully!"
 	fi
 }

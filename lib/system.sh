@@ -18,10 +18,10 @@ function log() {
     echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
     
     case "$level" in
-        ERROR)   echo -e "${REDHI}❌ $message${RESET}" ;;
-        SUCCESS) echo -e "${GREENHI}✅ $message${RESET}" ;;
-        INFO)    echo -e "${BLUEHI}ℹ️  $message${RESET}" ;;
-        WARNING) echo -e "${YELLOW}⚠️  $message${RESET}" ;;
+        ERROR)   print_left_element "❌ $message" "$REDHI" ;;
+        SUCCESS) print_left_element "✅  $message" "$GREENHI" ;;
+        INFO)    print_left_element "ℹ️  $message" "$BLUEHI" ;;
+        WARNING) print_left_element "⚠️  $message" "$YELLOWHI" ;;
     esac
 }
 
@@ -46,20 +46,29 @@ function detect_desktop {
 	fi
 }
 
-# Check if launched with sudo
-function check_sudo {
-	if [ "$UID" -eq "0" ]; then
-		log "ERROR" "Do not execute with sudo, Your password will be asked in the console."
-		exit
-	else
-		log "INFO" "Please enter your password to continue..."
-		sudo -v
-		while true; do
-			sudo -n true
-			sleep 60
-			kill -0 "$$" || exit
-		done 2>/dev/null &
-	fi
+function prompt_for_sudo {
+    if [ "$UID" -eq "0" ]; then
+        log "ERROR" "Do not execute with sudo. Your password will be asked in the console."
+        exit 1
+    fi
+    log "INFO" "Sudo privileges will be required. Please enter your password if prompted."
+    # Demande le mot de passe et met à jour le timestamp de sudo
+    sudo -v 
+    # Vérifie si la commande précédente a réussi
+    if [ $? -ne 0 ]; then
+        log "ERROR" "Failed to obtain sudo privileges. Aborting."
+        exit 1
+    fi
+}
+
+# Lance une boucle en arrière-plan pour maintenir la session sudo active.
+function start_sudo_keep_alive {
+    log "INFO" "Starting sudo keep-alive loop."
+    while true; do
+        sudo -n true
+        sleep 60
+        kill -0 "$$" || exit
+    done 2>/dev/null &
 }
 
 function check_file {
