@@ -22,8 +22,8 @@ function install_fonts {
 
         log "INFO" "Copying fonts to system directory..."
         sudo mkdir -p "$sys_fonts_dir"
-        sudo cp "$fonts_dir"/*.ttf "$sys_fonts_dir/"
-        sudo fc-cache -fv
+        sudo cp "$fonts_dir"/*.ttf "$sys_fonts_dir/" > ${LOG_FILE} 2>&1
+        sudo fc-cache -fv "$sys_fonts_dir"
     fi
 
     log "INFO" "**** Installing Buuf Nestort Icons ****"

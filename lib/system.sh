@@ -22,6 +22,8 @@ function log() {
         SUCCESS) print_left_element "✅  $message" "$GREENHI" ;;
         INFO)    print_left_element "ℹ️  $message" "$BLUEHI" ;;
         WARNING) print_left_element "⚠️  $message" "$YELLOWHI" ;;
+        DL)      print_left_element "📥 $message" "$CYANHI" ;;
+        CLONE)   print_left_element "📦 $message" "$CYAN" ;;
     esac
 }
 
@@ -130,9 +132,9 @@ function safe_download {
     local output="$2"
     local description="$3"
 
-    log "INFO" "📥 Downloading $description..."
+    log "DL" "Downloading $description..."
 
-    if ! wget -O "$output" "$url"; then
+    if ! wget -O "$output" "$url" > ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to download $description"
         log "INFO" "   URL: $url"
         return 1
@@ -155,7 +157,7 @@ function safe_git_clone {
     local destination="$2"
     local description="$3"
 
-    log "INFO" "📦 Cloning $description..."
+    log "CLONE" "Cloning $description..."
 
     # Check if the directory already exists
     if [[ -d "$destination" ]]; then
@@ -164,12 +166,12 @@ function safe_git_clone {
         if [[ "$replace" =~ ^[yY]$ ]]; then
             rm -rf "$destination"
         else
-            log "INFO" "⏭️  Cloning skipped"
+            log "INFO" "Cloning skipped"
             return 0
         fi
     fi
 
-    if ! git clone "$repo_url" "$destination"; then
+    if ! git clone "$repo_url" "$destination" > ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to clone $description"
         log "INFO" "   Repo: $repo_url"
         return 1

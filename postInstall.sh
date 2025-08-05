@@ -67,18 +67,11 @@ current_check=0
 
 for PKG in "${INSTALL_LIST[@]}"; do
     ((current_check++))
-    if [[ "$VERBOSE" != "true" ]]; then
-        show_progress "$current_check" "$total_check" "$PKG" "Checking"
-    fi
     
     if ! check_package "$PKG"; then
         PACKAGES_TO_INSTALL+=("$PKG")
     fi
 done
-
-if [[ "$VERBOSE" != "true" ]]; then
-    echo
-fi
 
 INSTALL_LIST=("${PACKAGES_TO_INSTALL[@]}")
 # --- FIN DE LA SECTION DE FILTRAGE ---
