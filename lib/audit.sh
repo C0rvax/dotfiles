@@ -291,7 +291,7 @@ function print_audit_content {
         if [ ${#ids_in_category[@]} -eq 0 ]; then continue; fi
 
         print_table_line
-        print_left_element ">> $(echo "$category_title" | sed 's/--- //g')" "$YELLOW"
+        print_left_element ">> $(echo "$category_title")" "$YELLOW"
 
         local packages_to_print=()
         for id in "${ids_in_category[@]}"; do
