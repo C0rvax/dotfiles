@@ -42,8 +42,6 @@ detect_desktop
 run_pre_install_audit # Vérifie TOUT et remplit la map INSTALL_STATUS
 run_audit_display     # Affiche l'état du système (rouge/vert)
 
-log "INFO" "Starting the installation process with the following settings:"
-
 # --- Étape 2: Sélection par l'utilisateur ---
 declare -a SELECTED_IDS=()
 
