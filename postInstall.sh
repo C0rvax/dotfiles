@@ -80,7 +80,6 @@ INSTALL_LIST=("${PACKAGES_TO_INSTALL[@]}")
 if [ ${#INSTALL_LIST[@]} -eq 0 ]; then
     log "SUCCESS" "All selected packages are already installed. Nothing to do."
     print_table_line
-    exit 0
 fi
 
 if [[ "$ASSUME_YES" != "true" ]]; then
