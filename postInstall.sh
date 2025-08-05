@@ -34,17 +34,17 @@ source lib/ui.sh
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
 
+trap "cleanup_sudo_config" EXIT SIGINT SIGTERM
 # --- Étape 1: Affichage initial et Audit ---
 
 ensure_sudo_global_timestamp
-#prompt_for_sudo
 start_sudo_keep_alive
 clear
 display_logo
 detect_distro
 detect_desktop
-run_pre_install_audit # Vérifie TOUT et remplit la map INSTALL_STATUS
-run_audit_display     # Affiche l'état du système (rouge/vert)
+run_pre_install_audit
+run_audit_display
 
 # --- Étape 2: Sélection par l'utilisateur ---
 declare -a SELECTED_IDS=()
@@ -76,7 +76,6 @@ fi
 
 # --- Étape 4: Installation ---
 print_table_header "INSTALLATION IN PROGRESS"
-# start_sudo_keep_alive
 
 # Filtrer une dernière fois pour ne garder que les items manquants
 INSTALL_QUEUE=()
@@ -121,12 +120,15 @@ log "SUCCESS" "Main installation phase complete."
 print_table_header "FINAL CONFIGURATIONS"
 log "INFO" "Applying final desktop and system configurations..."
 
-# La configuration du bureau reste séparée car elle dépend de la détection et non d'un choix.
+# --- Étape 6: Configuration du bureau ---
 case "$DESKTOP" in
     kde)      setup_kde ;;
     gnome)    setup_gnome ;;
     xfce)     setup_xfce ;;
-    # ... autres DE ...
+    lxde)     setup_lxde ;;
+    lxqt)     setup_lxqt ;;
+    mate)     setup_mate ;;
+    cinnamon) setup_cinnamon ;;
     *) log "WARNING" "No specific desktop configuration for '$DESKTOP'." ;;
 esac
 
@@ -138,7 +140,9 @@ p_update
 p_clean
 
 stop_sudo_keep_alive
+cleanup_sudo_config
 log "SUCCESS" "Post-install script finished! Please reboot your system for all changes to take effect."
+print_table_line
 exit 0
 
 # # À AJOUTER

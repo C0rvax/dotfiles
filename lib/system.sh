@@ -94,10 +94,6 @@ function start_sudo_keep_alive {
 
     SUDO_PID=$!
 
-    # Utiliser trap pour tuer la boucle quand le script se termine
-    # EXIT: fin normale
-    # SIGINT: Ctrl+C
-    # SIGTERM: commande kill
     trap "stop_sudo_keep_alive" EXIT SIGINT SIGTERM
 }
 
@@ -159,7 +155,6 @@ function safe_git_clone {
 
     log "CLONE" "Cloning $description..."
 
-    # Check if the directory already exists
     if [[ -d "$destination" ]]; then
         log "WARNING" "The directory $destination already exists"
         read -p "Do you want to replace it? [y/N]: " replace
@@ -183,12 +178,12 @@ function safe_git_clone {
 
 function ensure_sudo_global_timestamp {
     local config_file="/etc/sudoers.d/10-global-timestamp"
-    local config_content="Defaults timestamp_type=global\nDefaults !authenticate"
+    local config_content="Defaults timestamp_type=global\nDefaults !authenticate\nDefaults timestamp_timeout=30"
 
-    # Si le fichier de configuration existe déjà, on n'a rien à faire.
     if [ -f "$config_file" ]; then
-        # On vérifie si le contenu est à jour, au cas où on voudrait changer les règles
-        if grep -q "timestamp_type=global" "$config_file" && grep -q "!authenticate" "$config_file"; then
+        if grep -q "timestamp_type=global" "$config_file" && \
+           grep -q "!authenticate" "$config_file" && \
+           grep -q "timestamp_timeout=30" "$config_file"; then
             return 0
         fi
         log "INFO" "Updating sudo configuration for the script..."
@@ -215,4 +210,22 @@ function ensure_sudo_global_timestamp {
 
     log "SUCCESS" "Sudo timestamp is now set to 'global'."
     print_table_line
+}
+
+function cleanup_sudo_config {
+    local config_file="/etc/sudoers.d/10-dotfiles-script-rules"
+
+    if [ ! -f "$config_file" ]; then
+        return 0
+    fi
+
+    if [[ "$DRY_RUN" != "true" ]]; then
+        log "INFO" "Restoring default sudo behavior by removing custom rules..."
+        if ! sudo rm -f "$config_file"; then
+            log "ERROR" "Could not remove the sudo configuration file: $config_file"
+            log "WARNING" "Please remove it manually to restore default sudo behavior."
+        else
+            log "SUCCESS" "Sudo configuration restored to default."
+        fi
+    fi
 }
