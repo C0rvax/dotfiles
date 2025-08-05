@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# INSTALL OH MY ZSH
 function install_zsh {
     if check_directory "$HOME/.oh-my-zsh"; then
         log "INFO" "Oh My Zsh is already installed."
@@ -17,21 +16,6 @@ function install_zsh {
     fi
 }
 
-# INSTALL ZSH CONFIG
-# function install_zconfig {
-#     if check_directory "$HOME/.zsh"; then
-#         log "INFO" "Zsh custom config is already installed."
-#     else
-#         log "INFO" "Installing Zsh custom config"
-#         safe_git_clone "$ZSH_CONFIG_REPO" "$HOME/.zsh" "Zsh Custom Config"
-#         bash "$HOME/.zsh/install_zshrc.sh"
-#     fi
-
-#     log "INFO" "Installing Powerlevel10k theme"
-#     local p10k_path="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-#     safe_git_clone "$URL_POWERLEVEL10K_REPO" "$p10k_path" "Powerlevel10k Theme"
-# }
-
 function install_zconfig {
     local dotfiles_dir
     dotfiles_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd) # Chemin vers la racine du dépôt
@@ -44,7 +28,6 @@ function install_zconfig {
         ln -sfn "$dotfiles_dir/home/.p10k.zsh" "$HOME/.p10k.zsh"
     fi
     
-    # --- Création des liens pour que Oh My Zsh trouve les thèmes et plugins ---
     local omz_custom_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
     mkdir -p "$omz_custom_dir/themes"
     mkdir -p "$omz_custom_dir/plugins"

@@ -60,6 +60,36 @@ fi
 # Remove potential duplicates (important!)
 INSTALL_LIST=($(printf "%s\n" "${INSTALL_LIST[@]}" | sort -u))
 
+# --- SECTION DE FILTRAGE DES PAQUETS À INSTALLER ---
+PACKAGES_TO_INSTALL=()
+total_check=${#INSTALL_LIST[@]}
+current_check=0
+
+for PKG in "${INSTALL_LIST[@]}"; do
+    ((current_check++))
+    if [[ "$VERBOSE" != "true" ]]; then
+        show_progress "$current_check" "$total_check" "$PKG" "Checking"
+    fi
+    
+    if ! check_package "$PKG"; then
+        PACKAGES_TO_INSTALL+=("$PKG")
+    fi
+done
+
+if [[ "$VERBOSE" != "true" ]]; then
+    echo
+fi
+
+INSTALL_LIST=("${PACKAGES_TO_INSTALL[@]}")
+# --- FIN DE LA SECTION DE FILTRAGE ---
+
+# Si la liste est maintenant vide, cela signifie que tout est déjà installé.
+if [ ${#INSTALL_LIST[@]} -eq 0 ]; then
+    log "SUCCESS" "All selected packages are already installed. Nothing to do."
+    print_table_line
+    exit 0
+fi
+
 if [[ "$ASSUME_YES" != "true" ]]; then
     if ! show_installation_summary "${INSTALL_LIST[@]}"; then
         log "WARNING" "Installation aborted by user at summary."
