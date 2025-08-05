@@ -18,16 +18,48 @@ function install_zsh {
 }
 
 # INSTALL ZSH CONFIG
-function install_zconfig {
-    if check_directory "$HOME/.zsh"; then
-        log "INFO" "Zsh custom config is already installed."
-    else
-        log "INFO" "Installing Zsh custom config"
-        safe_git_clone "$ZSH_CONFIG_REPO" "$HOME/.zsh" "Zsh Custom Config"
-        bash "$HOME/.zsh/install_zshrc.sh"
-    fi
+# function install_zconfig {
+#     if check_directory "$HOME/.zsh"; then
+#         log "INFO" "Zsh custom config is already installed."
+#     else
+#         log "INFO" "Installing Zsh custom config"
+#         safe_git_clone "$ZSH_CONFIG_REPO" "$HOME/.zsh" "Zsh Custom Config"
+#         bash "$HOME/.zsh/install_zshrc.sh"
+#     fi
 
-    log "INFO" "Installing Powerlevel10k theme"
-    local p10k_path="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-    safe_git_clone "$URL_POWERLEVEL10K_REPO" "$p10k_path" "Powerlevel10k Theme"
+#     log "INFO" "Installing Powerlevel10k theme"
+#     local p10k_path="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+#     safe_git_clone "$URL_POWERLEVEL10K_REPO" "$p10k_path" "Powerlevel10k Theme"
+# }
+
+function install_zconfig {
+    local dotfiles_dir
+    dotfiles_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd) # Chemin vers la racine du dépôt
+
+    log "INFO" "Linking Zsh configurations and plugins..."
+
+    # 1. Lier le dossier .zsh (qui contient maintenant myconfig.zsh, les plugins, etc.)
+    ln -sfn "$dotfiles_dir/home/.zsh" "$HOME/.zsh"
+
+    # 2. Lier le fichier .zshrc principal
+    ln -sfn "$dotfiles_dir/home/.zshrc" "$HOME/.zshrc"
+
+    # 3. Lier la configuration de Powerlevel10k (si elle existe)
+    if [ -f "$dotfiles_dir/home/.p10k.zsh" ]; then
+        ln -sfn "$dotfiles_dir/home/.p10k.zsh" "$HOME/.p10k.zsh"
+    fi
+    
+    # --- Création des liens pour que Oh My Zsh trouve les thèmes et plugins ---
+    local omz_custom_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+    mkdir -p "$omz_custom_dir/themes"
+    mkdir -p "$omz_custom_dir/plugins"
+
+    # 4. Lier le thème Powerlevel10k
+    ln -sfn "$HOME/.zsh/powerlevel10k" "$omz_custom_dir/themes/powerlevel10k"
+
+    # 5. Lier les plugins que .zshrc charge par leur nom
+    ln -sfn "$HOME/.zsh/plugins/zsh-autosuggestions" "$omz_custom_dir/plugins/zsh-autosuggestions"
+    ln -sfn "$HOME/.zsh/plugins/zsh-syntax-highlighting" "$omz_custom_dir/plugins/zsh-syntax-highlighting"
+    
+    log "SUCCESS" "Zsh custom configuration linked successfully."
 }
