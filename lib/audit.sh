@@ -1,173 +1,6 @@
 #!/bin/bash
 
-function display_logo {
-	local max_width=0
-	local temp_logo_lines=()
-
-	while IFS= read -r line; do
-		temp_logo_lines+=("$line")
-		if [[ ${#line} -gt max_width ]]; then
-			max_width=${#line}
-		fi
-	done <<< "${LOGO[0]}"
-
-	local left_padding=$(((TABLE_WIDTH - max_width - 2) / 2))
-	[[ $left_padding -lt 1 ]] && left_padding=1
-
-	print_table_line
-
-	for line in "${temp_logo_lines[@]}"; do
-		if [[ -z "$line" ]]; then # Si la ligne est vide, on affiche une ligne vide
-			printf "|%*s|\n" $((TABLE_WIDTH - 2)) ""
-			continue
-		fi
-
-		local right_padding=$((TABLE_WIDTH - left_padding - ${#line} - 2))
-		[[ $right_padding -lt 0 ]] && right_padding=0
-
-		printf "|"
-		printf "%*s" $left_padding ""
-		echo -e -n "$line"
-		printf "%*s" $right_padding ""
-		printf "|\n"
-	done
-
-	print_table_line
-}
-
-function print_table_line {
-	printf "+%.0s" $(seq 1 $((TABLE_WIDTH)))
-	printf "\n"
-}
-
-get_display_width() {
-    local str="$1"
-    local clean_str=$(printf '%s' "$str" | sed 's/\x1b\[[0-9;]*m//g')
-    local base_length=$(printf '%s' "$clean_str" | wc -m)
-    local info_count=$(printf '%s' "$clean_str" | grep -o -E '[⏭️ℹ️⚠️]' | wc -l 2>/dev/null || echo 0)
-    local error_count=$(printf '%s' "$clean_str" | grep -o -E '[✅📦📥❌❓]' | wc -l 2>/dev/null || echo 0)	
-	if (( info_count > 0 )); then
-		echo $((base_length - info_count + 2))
-	elif (( error_count > 0 )); then
-		echo $((base_length - error_count + 2))
-	else
-		echo $((base_length))
-	fi
-}
-
-function print_center_element {
-	local text="$1"
-	local color="$2"
-	local visible_len=$(get_display_width "$text")
-	local padding=$(((TABLE_WIDTH - visible_len - 2) / 2))
-	local remainder=$(((TABLE_WIDTH - visible_len - 2) % 2))
-
-	printf "|"
-	printf " %.0s" $(seq 1 $padding)
-	echo -e -n "${color}${text}${RESET}"
-	printf " %.0s" $(seq 1 $((padding + remainder)))
-	printf "|\n"
-}
-
-function print_left_element {
-	local text="$1"
-	local color="$2"
-	local visible_len=$(get_display_width "$text")
-	local padding=$((TABLE_WIDTH - visible_len - 3))
-
-	printf "|"
-	echo -e -n " ${color}${text}${RESET}"
-	printf " %.0s" $(seq 1 $padding)
-	printf "|\n"
-}
-
-# function ask_question {
-#     local question="$1"
-#     local -n result_var="$2" # -n (nameref) pour passer le nom de la variable de retour
-    
-#     local formatted_prompt="| ${YELLOWHI}❓ ${question}${RESET} "
-    
-#     # On utilise read sans -p, après avoir affiché notre propre prompt formaté.
-#     printf "%b" "$formatted_prompt"
-#     read -r result_var
-# }
-
-function ask_question {
-    local question="$1"
-    local -n result_var="$2"
-    
-    local response=""
-    
-    # Boucle de lecture caractère par caractère
-    while true; do
-        local prompt_text="❓ ${question}: "
-        
-        local prompt_len
-        prompt_len=$(get_display_width "$prompt_text")
-
-        local response_len=${#response}
-
-        printf "\r\033[K| %b" "${YELLOWHI}${prompt_text}${RESET}"
-        printf "%s" "$response"
-        
-        # On calcule et affiche le padding
-        local padding=$((TABLE_WIDTH - prompt_len - response_len - 3))
-        if (( padding < 0 )); then padding=0; fi
-        printf "%*s|" "$padding" ""
-
-        printf "\r\033[%dC" $((2 + prompt_len + response_len))
-
-        # Lire un seul caractère
-        read -s -r -n 1 key
-
-        if [[ $key == "" ]]; then # Si la touche est vide (entrée)
-            break
-        elif [[ $key == $'\x7f' ]]; then # Touche Retour arrière (Backspace)
-            if [ -n "$response" ]; then
-                response="${response%?}"
-            fi
-        else
-            response+="$key"
-        fi
-    done
-    
-    # Un saut de ligne final pour que le prompt suivant soit propre
-    echo ""
-    result_var="$response"
-}
-
-function print_table_header {
-	local title=$1
-
-	print_table_line
-	print_center_element "$title" "$BLUEHI"
-	print_table_line
-}
-
-function print_grid {
-	local num_cols=$1
-	shift
-	local items_with_colors=("$@")
-
-	local col_content_width=$(((TABLE_WIDTH) / num_cols - 3))
-
-	for i in $(seq 0 $((num_cols * 2)) $((${#items_with_colors[@]} - 1))); do
-		local line_to_print="|"
-		for j in $(seq 0 $((num_cols - 1))); do
-			local text_idx=$((i + j * 2))
-			local color_idx=$((text_idx + 1))
-
-			local text=${items_with_colors[text_idx]:-""}
-			local color=${items_with_colors[color_idx]:-$RESET}
-
-			local padded_text
-			printf -v padded_text " %-*s " "$col_content_width" "$text"
-
-			line_to_print+="${color}${padded_text}${RESET}|"
-		done
-		echo -e "$line_to_print"
-	done
-}
+declare -gA MISSING_PACKAGES_MAP
 
 function print_packages_content {
 	declare -A categories
@@ -229,6 +62,7 @@ function print_packages_content {
 				current_packages_to_print+=("$item" "$GREENHI")
 			else
 				current_packages_to_print+=("$item" "$REDHI")
+				MISSING_PACKAGES_MAP["$item"]=1
 			fi
 		fi
 	done
@@ -330,28 +164,74 @@ function print_summary_row {
 		""
 }
 
+# function show_installation_summary() {
+# 	local packages=("$@")
+
+# 	print_table_header "INSTALLATION SUMMARY"
+# 	print_summary_row "Total packages to install:" "${#packages[@]}" "$BLUEHI" "$GREENHI"
+# 	print_summary_row "Internet connection:" "Required" "$BLUEHI" "$REDHI"
+# 	if [ ${#packages[@]} -gt 0 ]; then
+# 		print_left_element "The following packages will be installed:" "$BLUEHI"
+# 		local packages_for_grid=()
+# 		for pkg in "${packages[@]}"; do
+# 			packages_for_grid+=("$pkg" "$GREEN")
+# 		done
+
+# 		print_grid 4 "${packages_for_grid[@]}"
+# 		print_table_line
+# 	fi
+# 	if [[ "$ASSUME_YES" != "true" ]]; then
+# 		ask_question "Do you want to continue? [y/N]: " confirm
+# 		[[ "$confirm" =~ ^[yY]$ ]]
+# 	fi
+# }
+
 function show_installation_summary() {
-	local packages=("$@")
+    local items_with_structure=("$@")
+    local packages_to_install=()
+    local categories_in_summary=()
 
-	print_table_header "INSTALLATION SUMMARY"
-	print_summary_row "Total packages to install:" "${#packages[@]}" "$BLUEHI" "$GREENHI"
-	print_summary_row "Internet connection:" "Required" "$BLUEHI" "$REDHI"
-	if [ ${#packages[@]} -gt 0 ]; then
-		print_left_element "The following packages will be installed:" "$BLUEHI"
-		# Préparer la liste des paquets pour la fonction print_grid.
-		# Chaque paquet est un élément, et on leur donne une couleur neutre (RESET).
-		local packages_for_grid=()
-		for pkg in "${packages[@]}"; do
-			packages_for_grid+=("$pkg" "$GREEN")
-		done
+    # On ne compte que les vrais paquets, pas les en-têtes de catégorie
+    for item in "${items_with_structure[@]}"; do
+        if [[ ! $item == '#'* ]]; then
+            packages_to_install+=("$item")
+        fi
+    done
 
-		# Afficher la grille de paquets
-		print_grid 4 "${packages_for_grid[@]}"
-		print_table_line
-	fi
-	ask_question "Do you want to continue? [y/N]: " confirm
+    print_table_header "INSTALLATION SUMMARY"
+    print_left_element "Total packages to install: ${#packages_to_install[@]}" "$BLUEHI"
+    print_left_element "Internet connection:       Required" "$REDHI"
 
-	[[ "$confirm" =~ ^[yY]$ ]]
+    if [ ${#packages_to_install[@]} -gt 0 ]; then
+        print_left_element "The following packages will be installed:" "$BLUEHI"
+
+        local current_packages_for_grid=()
+        for item in "${items_with_structure[@]}"; do
+            if [[ $item == '#'* ]]; then
+                # Si on a des paquets en attente, on les affiche avant le nouveau titre
+                if [ ${#current_packages_for_grid[@]} -gt 0 ]; then
+                    print_grid 4 "${current_packages_for_grid[@]}"
+                    current_packages_for_grid=()
+                fi
+                # Affiche le titre de la catégorie
+                local category_title
+                printf -v category_title ">> %s" "$(echo "$item" | sed -e 's/# --- //' -e 's/ ---//')"
+                print_left_element "$category_title" "$YELLOW"
+            else
+                current_packages_for_grid+=("$item" "$GREEN")
+            fi
+        done
+        # Afficher les paquets restants de la dernière catégorie
+        if [ ${#current_packages_for_grid[@]} -gt 0 ]; then
+            print_grid 4 "${current_packages_for_grid[@]}"
+        fi
+        print_table_line
+    fi
+
+    if [[ "$ASSUME_YES" != "true" ]]; then
+        ask_question "Do you want to continue? [y/N]: " confirm
+        [[ "$confirm" =~ ^[yY]$ ]]
+    fi
 }
 
 function show_progress() {

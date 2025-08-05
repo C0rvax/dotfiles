@@ -28,11 +28,13 @@ source config/packages.conf
 source lib/system.sh
 source lib/package_manager.sh
 source lib/audit.sh
+source lib/ui.sh
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 display_logo
 prompt_for_sudo
+declare -A MISSING_PACKAGES_MAP=()
 run_audit </dev/null
 
 INSTALL_LIST=()
@@ -58,22 +60,32 @@ fi
 
 
 # Remove potential duplicates (important!)
-INSTALL_LIST=($(printf "%s\n" "${INSTALL_LIST[@]}" | sort -u))
+# INSTALL_LIST=($(printf "%s\n" "${INSTALL_LIST[@]}" | sort -u))
 
-# --- SECTION DE FILTRAGE DES PAQUETS À INSTALLER ---
-PACKAGES_TO_INSTALL=()
-total_check=${#INSTALL_LIST[@]}
-current_check=0
+# # --- SECTION DE FILTRAGE DES PAQUETS À INSTALLER ---
+# PACKAGES_TO_INSTALL=()
+# total_check=${#INSTALL_LIST[@]}
+# current_check=0
 
-for PKG in "${INSTALL_LIST[@]}"; do
-    ((current_check++))
+# for PKG in "${INSTALL_LIST[@]}"; do
+#     ((current_check++))
     
-    if ! check_package "$PKG"; then
-        PACKAGES_TO_INSTALL+=("$PKG")
+#     if ! check_package "$PKG"; then
+#         PACKAGES_TO_INSTALL+=("$PKG")
+#     fi
+# done
+
+# INSTALL_LIST=("${PACKAGES_TO_INSTALL[@]}")
+FINAL_INSTALL_LIST=()
+PACKAGES_TO_INSTALL_COUNT=0
+for PKG in "${INSTALL_LIST[@]}"; do
+    if [[ $PKG == '#'* ]]; then
+        FINAL_INSTALL_LIST+=("$PKG")
+    elif [[ -v MISSING_PACKAGES_MAP[$PKG] ]]; then
+        FINAL_INSTALL_LIST+=("$PKG")
+        ((PACKAGES_TO_INSTALL_COUNT++))
     fi
 done
-
-INSTALL_LIST=("${PACKAGES_TO_INSTALL[@]}")
 # --- FIN DE LA SECTION DE FILTRAGE ---
 
 # Si la liste est maintenant vide, cela signifie que tout est déjà installé.
@@ -82,12 +94,10 @@ if [ ${#INSTALL_LIST[@]} -eq 0 ]; then
     print_table_line
 fi
 
-if [[ "$ASSUME_YES" != "true" ]]; then
-    if ! show_installation_summary "${INSTALL_LIST[@]}"; then
-        log "WARNING" "Installation aborted by user at summary."
-        print_table_line
-        exit 0
-    fi
+if ! show_installation_summary "${INSTALL_LIST[@]}"; then
+    log "WARNING" "Installation aborted by user at summary."
+    print_table_line
+    exit 0
 fi
 
 print_table_header "PACKAGE INSTALLATION"
