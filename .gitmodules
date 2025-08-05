@@ -10,3 +10,6 @@
 [submodule "home/.zsh/powerlevel10k"]
 	path = home/.zsh/powerlevel10k
 	url = https://github.com/romkatv/powerlevel10k.git
+[submodule "vendor/oh-my-zsh"]
+	path = vendor/oh-my-zsh
+	url = https://github.com/ohmyzsh/ohmyzsh.git

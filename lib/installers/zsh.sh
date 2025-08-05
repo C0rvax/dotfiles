@@ -1,17 +1,47 @@
 #!/bin/bash
 
+# function install_zsh {
+#     if check_directory "$HOME/.oh-my-zsh"; then
+#         log "INFO" "Oh My Zsh is already installed."
+#     else
+#         log "INFO" "Installing Oh My Zsh"
+#         sh -c "$(curl -fsSL ${URL_OH_MY_ZSH})" "" --unattended --keep-zshrc
+# 		if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(which zsh)" ]]; then
+#             log "INFO" "Setting Zsh as the default shell..."
+#             chsh -s "$(which zsh)"
+#             if [[ $? -ne 0 ]]; then
+#                 log "ERROR" "Failed to set Zsh as default shell. Please do it manually with 'chsh -s \$(which zsh)'"
+#             fi
+#         fi
+#     fi
+# }
+
+
 function install_zsh {
-    if check_directory "$HOME/.oh-my-zsh"; then
-        log "INFO" "Oh My Zsh is already installed."
-    else
-        log "INFO" "Installing Oh My Zsh"
-        sh -c "$(curl -fsSL ${URL_OH_MY_ZSH})" "" --unattended --keep-zshrc
-		if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(which zsh)" ]]; then
-            log "INFO" "Setting Zsh as the default shell..."
-            chsh -s "$(which zsh)"
-            if [[ $? -ne 0 ]]; then
-                log "ERROR" "Failed to set Zsh as default shell. Please do it manually with 'chsh -s \$(which zsh)'"
-            fi
+    local dotfiles_dir
+    dotfiles_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd) # Chemin vers la racine du dépôt
+
+    local omz_source_path="$dotfiles_dir/vendor/oh-my-zsh"
+    local omz_target_path="$HOME/.oh-my-zsh"
+
+    # Vérifier si le submodule a bien été cloné localement
+    if [ ! -d "$omz_source_path" ] || [ -z "$(ls -A "$omz_source_path")" ]; then
+        log "ERROR" "Oh My Zsh submodule is missing or empty at '$omz_source_path'."
+        log "INFO" "Please run 'git submodule update --init --recursive' in your dotfiles directory."
+        return 1
+    fi
+    
+    log "INFO" "Linking Oh My Zsh from local submodule..."
+    # Crée un lien symbolique du submodule vers l'emplacement attendu par Zsh
+    ln -sfn "$omz_source_path" "$omz_target_path"
+
+    # Le reste de la logique pour définir Zsh comme shell par défaut ne change pas
+    if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(which zsh)" ]]; then
+        log "INFO" "Setting Zsh as the default shell..."
+        if ! sudo chsh -s "$zsh_path" "$USER"; then
+            log "ERROR" "Failed to set Zsh as default shell. Please do it manually."
+        else
+            log "SUCCESS" "Zsh is now the default shell."
         fi
     fi
 }
