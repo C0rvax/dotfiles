@@ -47,7 +47,7 @@ get_display_width() {
     local info_count=$(printf '%s' "$clean_str" | grep -o -E '[⏭️ℹ️⚠️]' | wc -l 2>/dev/null || echo 0)
     local error_count=$(printf '%s' "$clean_str" | grep -o -E '[✅📦📥❌❓]' | wc -l 2>/dev/null || echo 0)	
 	if (( info_count > 0 )); then
-		echo $((base_length - info_count + 1))
+		echo $((base_length - info_count + 2))
 	elif (( error_count > 0 )); then
 		echo $((base_length - error_count + 2))
 	else

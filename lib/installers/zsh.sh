@@ -24,7 +24,6 @@ function install_zsh {
     local omz_source_path="$dotfiles_dir/vendor/oh-my-zsh"
     local omz_target_path="$HOME/.oh-my-zsh"
 
-    # Vérifier si le submodule a bien été cloné localement
     if [ ! -d "$omz_source_path" ] || [ -z "$(ls -A "$omz_source_path")" ]; then
         log "ERROR" "Oh My Zsh submodule is missing or empty at '$omz_source_path'."
         log "INFO" "Please run 'git submodule update --init --recursive' in your dotfiles directory."
@@ -32,11 +31,18 @@ function install_zsh {
     fi
     
     log "INFO" "Linking Oh My Zsh from local submodule..."
-    # Crée un lien symbolique du submodule vers l'emplacement attendu par Zsh
     ln -sfn "$omz_source_path" "$omz_target_path"
 
-    # Le reste de la logique pour définir Zsh comme shell par défaut ne change pas
-    if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(which zsh)" ]]; then
+local zsh_path
+    zsh_path=$(which zsh)
+
+    if [ -z "$zsh_path" ]; then
+        log "ERROR" "zsh executable not found. Please make sure the 'zsh' package is installed."
+        return 1
+    fi
+
+
+    if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$zsh_path" ]]; then
         log "INFO" "Setting Zsh as the default shell..."
         if ! sudo chsh -s "$zsh_path" "$USER"; then
             log "ERROR" "Failed to set Zsh as default shell. Please do it manually."

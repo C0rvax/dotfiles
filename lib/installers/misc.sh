@@ -34,9 +34,6 @@ function install_firefox {
     ' | sudo tee /etc/apt/preferences.d/mozilla > /dev/null
     sudo apt update >> "$LOG_FILE" 2>&1
     sudo apt install firefox firefox-l10n-fr -y >> "$LOG_FILE" 2>&1
-    # install_package "flatpak"
-	# flatpak remote-add --if-not-exists flathub "$URL_FLATHUB_REPO"
-	# flatpak install "$URL_FLATHUB_FIREFOX" -y
     log "SUCCESS" "Firefox installed successfully from the official Mozilla repository."
 }
 

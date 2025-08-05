@@ -114,7 +114,7 @@ function p_clean {
 		fi
 		;;
 	"ubuntu" | "debian")
-		sudo apt-get autoclean -y && sudo apt-get autoremove -y >> "$LOG_FILE" 2>&1
+		sudo apt-get autoclean -y >> "$LOG_FILE" 2>&1 && sudo apt-get autoremove -y >> "$LOG_FILE" 2>&1
 		;;
 	"fedora")
 		sudo dnf autoremove -y >> "$LOG_FILE" 2>&1
