@@ -11,7 +11,7 @@ function install_fonts {
     mkdir -p "$fonts_dir"
     mkdir -p "$icons_dir"
 
-    log "INFO" "**** Installing MesloLGS Fonts ****"
+    log "INFO" "Installing MesloLGS Fonts"
     if check_file "$fonts_dir/MesloLGS NF Regular.ttf"; then
         log "INFO" "Fonts seem to be already downloaded."
     else
@@ -26,7 +26,7 @@ function install_fonts {
         sudo fc-cache -fv "$sys_fonts_dir" > ${LOG_FILE} 2>&1
     fi
 
-    log "INFO" "**** Installing Buuf Nestort Icons ****"
+    log "INFO" "Installing Buuf Nestort Icons"
     if check_directory "$icons_dir/$BUUF_ICONS_NAME"; then
         log "INFO" "Icon pack already exists."
     else
@@ -38,4 +38,6 @@ function install_fonts {
     else
         log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
     fi
+    log "SUCCESS" "Fonts and icons installed successfully."
+    print_table_line
 }

@@ -6,8 +6,8 @@ function select_pak_interactive {
     local packages_to_process=()
     local install_type_choice
     if [[ "$ASSUME_YES" == "true" ]]; then
-        install_type_choice="1"
-        log "INFO" "Non-interactive mode: Defaulting to a 'Full' installation."
+        install_type_choice="2"  # Default to 'Light' installation in non-interactive mode
+        log "INFO" "Non-interactive mode: Defaulting to a 'Light' installation."
     else
         log "INFO" "Select installation type:"
         print_left_element "1) Full (Recommended: everything for a complete dev environment)" "$BLUEHI"
@@ -21,12 +21,12 @@ function select_pak_interactive {
         *) log "ERROR" "Invalid choice. Exiting."; print_table_line; exit 1;;
     esac
 
-    # read -p "Do you want to include EMBEDDED packages? [y/n]: " include_embedded
-    ask_question "Include EMBEDDED packages (avr-libc, etc.)? [y/N]" include_embedded
-    if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" || "$include_embedded" == "o" || "$include_embedded" == "O" ]]; then
-        packages_to_process+=("${PKGS_EMBEDDED[@]}")
+    if [[ "$ASSUME_YES" != "true" ]]; then
+        ask_question "Include EMBEDDED packages (avr-libc, etc.)? [y/N]" include_embedded
+        if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" || "$include_embedded" == "o" || "$include_embedded" == "O" ]]; then
+            packages_to_process+=("${PKGS_EMBEDDED[@]}")
+        fi
     fi
-
     if [[ "$install_type_choice" == "1" ]]; then
         read -p "Do you want to include LibreOffice? [y/n]: " include_libreoffice
         if [[ "$include_libreoffice" == "y" || "$include_libreoffice" == "Y" ]]; then

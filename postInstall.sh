@@ -90,6 +90,7 @@ if [[ "$ASSUME_YES" != "true" ]]; then
     fi
 fi
 
+print_table_header "PACKAGE INSTALLATION"
 start_sudo_keep_alive
 log "INFO" "Starting package installation..."
 p_update
@@ -111,7 +112,7 @@ fi
 log "SUCCESS" "Package installation phase complete."
 
 # INSTALL SPECIFIC PACKAGES
-log "INFO" "Running specific installers and configurations..."
+print_table_header "SPECIFIC PACKAGE INSTALLATIONS"
 install_firefox
 setup_ssh_and_git
 install_fonts

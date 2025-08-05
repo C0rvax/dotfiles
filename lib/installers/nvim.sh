@@ -43,8 +43,9 @@ function install_nvim {
         log "SUCCESS" "Neovim configuration linked."
     else
         log "ERROR" "Failed to link Neovim configuration."
+        print_table_line
         return 1
     fi
-
+    print_table_line
     return 0
 }
