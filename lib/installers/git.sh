@@ -25,7 +25,7 @@ function setup_ssh_and_git {
     log "INFO" "3. Paste the key above."
 
     if [[ "$ASSUME_YES" != "true" ]]; then
-        ask_question "Press [Enter] when you have added the key to your Git provider..." ""
+        ask_question "Press [Enter] when you have added the key to your Git provider..." response
     fi
 
     setup_github_known_hosts

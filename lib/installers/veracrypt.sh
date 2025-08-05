@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 function install_veracrypt {
-	echo ""
 	check_package "veracrypt"
 	if [ "$?" -eq "0" ]; then
 		log "INFO" "Veracrypt is already installed."
