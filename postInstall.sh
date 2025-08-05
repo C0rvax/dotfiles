@@ -21,7 +21,6 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-
 source config/settings.conf
 source config/packages.conf
 source lib/system.sh
@@ -35,22 +34,12 @@ check_sudo
 run_audit
 
 echo ""
-log "INFO" "Starting user interaction for package selection."
-
-if [[ "$ASSUME_YES" != "true" ]]; then
-    read -p "Do you want to proceed with the installation? [y/N]: " confirm_install
-    if [[ ! "$confirm_install" =~ ^[yYoO]$ ]]; then
-        log "WARNING" "Installation aborted by user."
-        exit 0
-    fi
-fi
-
 install_type_choice=""
 if [[ "$ASSUME_YES" == "true" ]]; then
-    install_type_choice="1" # Default to Full install in non-interactive mode
+    install_type_choice="1"
     log "INFO" "Non-interactive mode: Defaulting to a 'Full' installation."
 else
-    echo "Select installation type:"
+	log "INFO" "Select installation type:"
     echo "1) Full (everything)"
     echo "2) Light (minimal)"
     read -p "Enter your choice [1-2]: " install_type_choice

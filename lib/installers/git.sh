@@ -3,28 +3,21 @@
 function setup_ssh_and_git {
     log "INFO" "Setting up SSH and Git configurations..."
     
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would check for SSH key, create if missing, prompt to add to Git provider, and configure Git user."
+        return
+    fi
+
     if [ -f "$HOME/.ssh/id_ed25519" ]; then
 		log "SUCCESS" "SSH key already exists. Skipping creation."
     else
-        log "INFO" "Creating a new SSH key..."
-        local ssh_email
-        read -p "Enter your email for the SSH key comment: " ssh_email
-        if [ -z "$ssh_email" ]; then
-            log "ERROR" "Email cannot be empty. Aborting key generation."
-            return 1
-        fi
-        
-        # Le -N "" crée une clé sans passphrase pour l'automatisation.
-        ssh-keygen -t ed25519 -C "$ssh_email" -N "" -f "$HOME/.ssh/id_ed25519"
-        chmod 700 "$HOME/.ssh"
-        chmod 600 "$HOME/.ssh/id_ed25519"
-        chmod 644 "$HOME/.ssh/id_ed25519.pub"
-        log "SUCCESS" "SSH key created successfully."
+        create_ssh_key
+        if [[ $? -ne 0 ]]; then return 1; fi
     fi
 
     log "INFO" "Your public SSH key is:"
     cat "$HOME/.ssh/id_ed25519.pub"
-    
+    echo ""
     log "WARNING" "ACTION REQUIRED: You must add this public key to your Git provider (GitHub, GitLab, etc.)"
     log "INFO" "1. Go to your SSH keys settings on the website."
     log "INFO" "2. Click 'Add SSH key'."
@@ -35,6 +28,29 @@ function setup_ssh_and_git {
     fi
 
     setup_github_known_hosts
+}
+
+function create_ssh_key {
+    log "INFO" "Creating a new SSH key..."
+    local ssh_email
+    
+    if [[ "$ASSUME_YES" == "true" ]]; then
+        log "ERROR" "Cannot create SSH key in non-interactive mode without an email. Please create it manually."
+        return 1
+    fi
+
+    read -p "Enter your email for the SSH key comment: " ssh_email
+    if [ -z "$ssh_email" ]; then
+        log "ERROR" "Email cannot be empty. Aborting key generation."
+        return 1
+    fi
+    
+    ssh-keygen -q -t ed25519 -C "$ssh_email" -N "" -f "$HOME/.ssh/id_ed25519"
+    
+    chmod 700 "$HOME/.ssh"
+    chmod 600 "$HOME/.ssh/id_ed25519"
+    chmod 644 "$HOME/.ssh/id_ed25519.pub"
+    log "SUCCESS" "SSH key created successfully."
 }
 
 function setup_github_known_hosts {
@@ -50,8 +66,6 @@ function setup_github_known_hosts {
     sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts
     log "INFO" "Testing SSH connection to GitHub..."
     timeout 10 ssh -T git@github.com
-    # La sortie de ssh -T est sur stderr, donc on redirige pour la capturer.
-    # Un test plus robuste vérifierait le code de retour.
     log "SUCCESS" "GitHub known hosts set up successfully."
     install_git
 }

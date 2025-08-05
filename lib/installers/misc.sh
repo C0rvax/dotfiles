@@ -2,21 +2,41 @@
 
 # INSTALL FIREFOX WITH FLATPAK
 function install_firefox {
-    log "INFO" "Installing Firefox with Flatpak..."
+    if [[ "$DISTRO" != "ubuntu" && "$DISTRO" != "debian" ]]; then
+        log "WARNING" "Firefox installation from Mozilla repo is only for Debian/Ubuntu. Skipping."
+        return
+    fi
+    log "INFO" "Setting up Mozilla APT repository to install the official Firefox version..."
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would perform all steps to install Firefox from Mozilla's APT repository."
+        return
+    fi
+
     wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc  > /dev/null
-	gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc | awk '/pub/{getline; gsub(/^ +| +$/,""); if($0 == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3") print "\nLʼempreinte de la clé correspond ("$0").\n"; else print "\nÉchec de la vérification : lʼempreinte ("$0") ne correspond pas à celle attendue.\n"}'
+	
+    local key_fingerprint
+    key_fingerprint=$(gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc 2>/dev/null | awk '/pub/{getline; gsub(/^ +| +$/,""); print $0}')
+    
+    if [[ "$key_fingerprint" == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3" ]]; then
+        log "SUCCESS" "Key fingerprint verified successfully."
+    else
+        log "ERROR" "Fingerprint verification FAILED. Expected '...DC6315A3', but got '$key_fingerprint'. Aborting."
+        return 1
+    fi
+
     echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
     echo '
     Package: *
     Pin: origin packages.mozilla.org
     Pin-Priority: 1000
-    ' | sudo tee /etc/apt/preferences.d/mozilla
+    ' | sudo tee /etc/apt/preferences.d/mozilla > /dev/null
     sudo apt update >> "$LOG_FILE" 2>&1
     sudo apt install firefox firefox-l10n-fr -y >> "$LOG_FILE" 2>&1
     # install_package "flatpak"
 	# flatpak remote-add --if-not-exists flathub "$URL_FLATHUB_REPO"
 	# flatpak install "$URL_FLATHUB_FIREFOX" -y
-    log "SUCCESS" "Firefox installed successfully via Flatpak."
+    log "SUCCESS" "Firefox installed successfully from the official Mozilla repository."
 }
 
 # SET BINARIES
