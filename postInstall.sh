@@ -249,7 +249,7 @@ total=${#INSTALL_QUEUE[@]}
 current=0
 
 for category_info in "${CATEGORIES_ORDER[@]}"; do
-    local category_name="${category_info%%:*}"
+    category_name="${category_info%%:*}"
     
     # Pour chaque catégorie, on parcourt la file d'attente pour trouver les items correspondants
     for id in "${INSTALL_QUEUE[@]}"; do
