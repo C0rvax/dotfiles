@@ -5,13 +5,13 @@ function install_nvim {
     local nvim_config_source="$dotfiles_dir/home/.config/nvim"
     local nvim_config_target="$HOME/.config/nvim"
 
-    local nvim_path="$home_dir/AppImage/nvim.appimage"
+    local nvim_path="$HOME/AppImage/nvim.appimage"
     if check_file "$nvim_path"; then
         log "INFO" "NeoVim is already installed!"
     else
         log "INFO" "Installing NeoVim..."
 
-        local appimage_dir="$home_dir/AppImage"
+        local appimage_dir="$HOME/AppImage"
         if ! check_directory "$appimage_dir"; then
             mkdir -p "$appimage_dir" || {
                 log "ERROR" "Could not create directory $appimage_dir"
@@ -36,7 +36,7 @@ function install_nvim {
             return 1
         }
 
-        cd "$home_dir" || return 1
+        cd "$HOME/AppImage" || return 1
         echo -e "${RESET}"
     fi
 

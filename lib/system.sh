@@ -62,13 +62,50 @@ function prompt_for_sudo {
 }
 
 # Lance une boucle en arrière-plan pour maintenir la session sudo active.
+# Variable globale pour stocker le PID de la boucle sudo
+SUDO_PID=
+
+# Lance une boucle en arrière-plan pour maintenir la session sudo active.
 function start_sudo_keep_alive {
+    # Si la boucle est déjà lancée, ne rien faire
+    if [ -n "$SUDO_PID" ]; then
+        return
+    fi
+
     log "INFO" "Starting sudo keep-alive loop."
-    while true; do
-        sudo -n true
-        sleep 60
-        kill -0 "$$" || exit
-    done 2>/dev/null &
+    
+    # Exécuter une première fois pour s'assurer que le ticket est valide.
+    # Si le mot de passe est mauvais ici, le script s'arrêtera.
+    sudo -v
+    if [ $? -ne 0 ]; then
+        log "ERROR" "Failed to obtain initial sudo credentials."
+        exit 1
+    fi
+
+    ( while true; do
+        # -n (non-interactive) -v (validate/update ticket)
+        # Met à jour le ticket sans demander de mot de passe.
+        # S'il a expiré, la commande échoue silencieusement.
+        sudo -n -v
+        sleep 45
+    done ) &
+
+    SUDO_PID=$!
+
+    # Utiliser trap pour tuer la boucle quand le script se termine
+    # EXIT: fin normale
+    # SIGINT: Ctrl+C
+    # SIGTERM: commande kill
+    trap "stop_sudo_keep_alive" EXIT SIGINT SIGTERM
+}
+
+# Fonction pour arrêter proprement la boucle
+function stop_sudo_keep_alive {
+    if [ -n "$SUDO_PID" ] && ps -p "$SUDO_PID" > /dev/null; then
+        log "INFO" "Stopping sudo keep-alive loop (PID: $SUDO_PID)..."
+        kill "$SUDO_PID"
+        SUDO_PID=
+    fi
 }
 
 function check_file {
