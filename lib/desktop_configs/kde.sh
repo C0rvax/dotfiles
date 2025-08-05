@@ -18,7 +18,6 @@ function setup_kde {
 		kwriteconfig5 --file kdeglobals --group General --key TerminalService "${TERMINAL_APP}.desktop"
 
 		# Vérifier et ajouter le groupe [Icons] si nécéssaire
-		# grep -q '^\[Icons\]' ~/.config/kdeglobals || echo -e "\n[Icons]" >>~/.config/kdeglobals
 		kwriteconfig5 --file kdeglobals --group Icons --key Theme "$BUUF_ICONS_NAME"
 
 		# Config de KFileDialiog
@@ -30,7 +29,6 @@ function setup_kde {
 		# Raccourci terminal
 		# kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"
 		kwriteconfig5 --file kglobalshortcutsrc --group "${TERMINAL_APP}.desktop" --key "_launch" "$TERMINAL_SHORTCUT,none,${TERMINAL_APP^}"
-		#sed -i 's|konsole|${TERMINAL_APP}|g' ~/.config/kglobalshortcutsrc
 
 		# Configurer un simple clic pour ouvrir les fichiers
 		kwriteconfig5 --file kdeglobals --group KDE --key SingleClick false

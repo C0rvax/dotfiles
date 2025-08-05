@@ -29,6 +29,8 @@ function setup_ssh_and_git {
     fi
 
     setup_github_known_hosts
+    setup_git
+    log "SUCCESS" "SSH and Git configurations completed successfully."
 }
 
 function create_ssh_key {
@@ -59,10 +61,9 @@ function setup_github_known_hosts {
     ssh-keyscan -t rsa,ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
     sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts
     log "SUCCESS" "GitHub known hosts set up successfully."
-    install_git
 }
 
-function install_git {
+function setup_git {
 	log "INFO" "Configuring Git global settings..."
     if [[ "$ASSUME_YES" != "true" ]]; then
         ask_question "Do You want to set git user and email ? [y/n]" rep
