@@ -28,8 +28,8 @@ function display_logo {
 }
 
 function print_table_line {
-	printf "+%.0s" $(seq 1 $((TABLE_WIDTH - 1)))
-	printf "+\n"
+	printf "+%.0s" $(seq 1 $((TABLE_WIDTH)))
+	printf "\n"
 }
 
 get_display_width() {
@@ -65,7 +65,7 @@ function print_grid {
 	shift
 	local items_with_colors=("$@")
 
-	local col_content_width=$(((TABLE_WIDTH) / num_cols - num_cols)) # -2 for spaces
+	local col_content_width=$(((TABLE_WIDTH) / num_cols - 3)) 
 
 	for i in $(seq 0 $((num_cols * 2)) $((${#items_with_colors[@]} - 1))); do
 		local line_to_print="|"
@@ -119,7 +119,7 @@ function print_packages_content {
 			local category_title
 			printf -v category_title ">> %s" "$(echo "$item" | sed -e 's/# --- //' -e 's/ ---//')"
 			local padded_title
-			printf -v padded_title " %-*s" $(($TABLE_WIDTH - 2)) "$category_title"
+			printf -v padded_title " %-*s" $(($TABLE_WIDTH - 3)) "$category_title"
 			echo -e "|${YELLOW}${padded_title}${RESET}|"
 
 			is_first_category=false
@@ -209,62 +209,59 @@ function run_audit {
 	print_table_line
 }
 
-
-
 function print_summary_row {
-    local label_text="$1"
-    local value_text="$2"
-    local label_color="${3:-$RESET}"
-    local value_color="${4:-$RESET}"
+	local label_text="$1"
+	local value_text="$2"
+	local label_color="${3:-$RESET}"
+	local value_color="${4:-$RESET}"
 
-    local formatted_label="${label_color}${label_text}${RESET}"
-    local formatted_value="${value_color}${value_text}${RESET}"
+	local formatted_label="${label_color}${label_text}${RESET}"
+	local formatted_value="${value_color}${value_text}${RESET}"
 
-    local total_visible_len=$(( 2 + ${#label_text} + 2 + ${#value_text} ))
+	local total_visible_len=$((2 + ${#label_text} + 1 + ${#value_text} + 2))
 
-    local padding_space=$(( TABLE_WIDTH - total_visible_len ))
-    if (( padding_space < 0 )); then padding_space=0; fi
+	local padding_space=$((TABLE_WIDTH - total_visible_len))
+	if ((padding_space < 0)); then padding_space=0; fi
 
-    printf "| %b %b%*s |\n" \
-        "$formatted_label" \
-        "$formatted_value" \
-        "$padding_space" \
-        ""
+	printf "| %b %b%*s |\n" \
+		"$formatted_label" \
+		"$formatted_value" \
+		"$padding_space" \
+		""
 }
 
-
 function show_installation_summary() {
-    local packages=("$@")
-    local estimated_time=$(( ${#packages[@]} * 2 )) # 2 minutes par package en moyenne
+	local packages=("$@")
+	local estimated_time=$((${#packages[@]} * 1)) # 1 minute par package en moyenne
 
-    print_table_header "INSTALLATION SUMMARY"
-    print_summary_row "Total packages to install:" "${#packages[@]}" "$RESET" "$GREENHI"
-    print_summary_row "Estimated time:" "~${estimated_time} minutes" "$RESET" "$YELLOWHI"
-    print_summary_row "Internet connection:" "Required" "$RESET" "$REDHI"
-    print_summary_row "Backup will be created:" "Yes" "$RESET" "$GREENHI" # Si tu veux l'ajouter
+	print_table_header "INSTALLATION SUMMARY"
+	print_summary_row "Total packages to install:" "${#packages[@]}" "$RESET" "$GREENHI"
+	print_summary_row "Estimated time:" "~${estimated_time} minutes" "$RESET" "$YELLOWHI"
+	print_summary_row "Internet connection:" "Required" "$RESET" "$REDHI"
 
-    print_table_line
-    echo -e "${RESET}"
-    
-    read -p "Continue with installation? [y/N]: " confirm
-    [[ "$confirm" =~ ^[yY]$ ]]
+	print_table_line
+	echo -e "${RESET}"
+
+	read -p "Continue with installation? [y/N]: " confirm
+	[[ "$confirm" =~ ^[yY]$ ]]
 }
 
 function show_progress() {
-    local current="$1"
-    local total="$2"
-    local package="$3"
-    local operation="${4:-Installing}"
-    
-    local percent=$((current * 100 / total))
-    local filled=$((percent / 2))
-    local empty=$((50 - filled))
-    
-    printf "\r\033[K"  # Efface la ligne
-    printf "["
-    # printf "%*s" "$filled" '' | tr ' ' '█'
-    # printf "%*s" "$empty" '' | tr ' ' '░'
+	local current="$1"
+	local total="$2"
+	local package="$3"
+	local operation="${4:-Installing}"
+
+	local percent=$((current * 100 / total))
+	local filled=$((percent / 2))
+	local empty=$((50 - filled))
+
+	printf "\r\033[K" # Efface la ligne
+	printf "["
+	# printf "%*s" "$filled" '' | tr ' ' '█'
+	# printf "%*s" "$empty" '' | tr ' ' '░'
 	printf "%*s" "$filled" '' | tr ' ' '#'
-    printf "%*s" "$empty" '' | tr ' ' '-'
-    printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
+	printf "%*s" "$empty" '' | tr ' ' '-'
+	printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
 }
+
