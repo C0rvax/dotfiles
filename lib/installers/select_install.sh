@@ -146,9 +146,7 @@ function select_installables_interactive {
         fi
     fi
 
-    # La fonction "retourne" la liste des IDs en l'affichant sur stdout.
-    # Le script principal la capturera.
-    printf "%s\n" "${ids_to_consider[@]}"
+    SELECTED_IDS=("${ids_to_consider[@]}")
 }
 
 function select_installables_tui {
@@ -197,5 +195,5 @@ function select_installables_tui {
         fi
     done
     
-    printf "%s\n" "${ids_to_consider[@]}"
+    SELECTED_IDS=("${ids_to_consider[@]}")
 }

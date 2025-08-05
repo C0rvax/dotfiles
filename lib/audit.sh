@@ -234,24 +234,6 @@ function print_system_info_row {
 #     fi
 # }
 
-# function show_progress() {
-# 	local current="$1"
-# 	local total="$2"
-# 	local package="$3"
-# 	local operation="${4:-Installing}"
-
-# 	local percent=$((current * 100 / total))
-# 	local filled=$((percent / 2))
-# 	local empty=$((50 - filled))
-
-# 	printf "\r\033[K" # Efface la ligne
-# 	printf "["
-# 	# printf "%*s" "$filled" '' | tr ' ' '█'
-# 	# printf "%*s" "$empty" '' | tr ' ' '░'
-# 	printf "%*s" "$filled" '' | tr ' ' '#'
-# 	printf "%*s" "$empty" '' | tr ' ' '-'
-# 	printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
-# }
 #!/bin/bash
 
 

@@ -51,22 +51,20 @@ run_audit_display     # Affiche l'état du système (rouge/vert)
 log "INFO" "Starting the installation process with the following settings:"
 
 # --- Étape 2: Sélection par l'utilisateur ---
-declare -a SELECTED_IDS
+declare -a SELECTED_IDS=()
 
 case "$SELECT_MODE" in
     tui)
-        selected_out=$(select_installables_tui)
+        select_installables_tui
         ;;
     interactive)
-        selected_out=$(select_installables_interactive)
+        select_installables_interactive
         ;;
     *)
         log "ERROR" "Invalid selection mode: '$SELECT_MODE'. Use 'tui' or 'interactive'."
         exit 1
         ;;
 esac
-
-mapfile -t SELECTED_IDS <<< "$selected_out"
 
 if [ ${#SELECTED_IDS[@]} -eq 0 ]; then
     log "INFO" "No items selected for installation. Exiting."
