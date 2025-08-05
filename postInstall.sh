@@ -37,6 +37,7 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 # --- Étape 1: Affichage initial et Audit ---
 
 ensure_sudo_global_timestamp
+#prompt_for_sudo
 start_sudo_keep_alive
 clear
 display_logo

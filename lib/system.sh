@@ -183,34 +183,32 @@ function safe_git_clone {
 
 function ensure_sudo_global_timestamp {
     local config_file="/etc/sudoers.d/10-global-timestamp"
-    local config_content="Defaults timestamp_type=global"
+    local config_content="Defaults timestamp_type=global\nDefaults !authenticate"
 
     # Si le fichier de configuration existe déjà, on n'a rien à faire.
     if [ -f "$config_file" ]; then
-        return 0
+        # On vérifie si le contenu est à jour, au cas où on voudrait changer les règles
+        if grep -q "timestamp_type=global" "$config_file" && grep -q "!authenticate" "$config_file"; then
+            return 0
+        fi
+        log "INFO" "Updating sudo configuration for the script..."
+    else
+        log "INFO" "Configuring sudo for a seamless script experience."
+        log "WARNING" "This will prevent sudo from asking for your password repeatedly."
     fi
-
-    log "INFO" "Configuring sudo to use a global timestamp for this session."
-    log "WARNING" "This will prevent sudo from asking for your password repeatedly."
     
     if [[ "$DRY_RUN" == "true" ]]; then
         log "INFO" "[DRY-RUN] Would create '$config_file' with content: '$config_content'"
         return 0
     fi
 
-    # Créer le fichier avec le bon contenu en utilisant une "here document" avec sudo tee
-    # C'est la manière la plus sûre de créer un fichier appartenant à root.
-    if ! (echo "$config_content" | sudo tee "$config_file" > /dev/null); then
+    if ! (printf "$config_content" | sudo tee "$config_file" > /dev/null); then
         log "ERROR" "Failed to create sudo configuration file at '$config_file'."
-        log "INFO" "The script might ask for your password multiple times."
         return 1
     fi
     
-    # Sudo exige des permissions très strictes sur ses fichiers de configuration.
     if ! sudo chmod 0440 "$config_file"; then
         log "ERROR" "Failed to set correct permissions on '$config_file'."
-        log "INFO" "The script might ask for your password multiple times."
-        # On tente de supprimer le fichier mal configuré pour ne pas laisser un système instable.
         sudo rm -f "$config_file"
         return 1
     fi
