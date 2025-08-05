@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 VERBOSE=false
@@ -34,11 +33,6 @@ source lib/audit.sh
 source lib/ui.sh
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
-
-
-# ==============================================================================
-# NOUVEAU FLUX D'INSTALLATION
-# ==============================================================================
 
 # --- Étape 1: Affichage initial et Audit ---
 display_logo
