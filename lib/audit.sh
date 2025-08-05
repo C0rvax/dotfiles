@@ -350,8 +350,9 @@ function show_installation_summary() {
         done
 
         if [ ${#items_in_this_category_for_grid[@]} -gt 0 ]; then
-            print_left_element ">> $(echo "$category_title" | sed 's/--- //g')" "$YELLOW"
-            print_grid 3 "${items_in_this_category_for_grid[@]}" # 3 colonnes pour plus de lisibilité
+            print_left_element ">> $(echo "$category_title")" "$YELLOW"
+            # print_grid 3 "${items_in_this_category_for_grid[@]}" # 3 colonnes pour la grille
+			print_grid 4 "${items_in_this_category_for_grid[@]}" # 4 colonnes pour la grille
         fi
     done
     print_table_line
@@ -360,7 +361,6 @@ function show_installation_summary() {
         ask_question "Do you want to continue? [y/N]: " confirm
         [[ "$confirm" =~ ^[yY]$ ]]
     else
-        # En mode -y, on continue automatiquement
         return 0
     fi
 }
