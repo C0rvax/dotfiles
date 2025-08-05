@@ -35,14 +35,7 @@ function setup_ssh_and_git {
 
 function create_ssh_key {
     log "INFO" "Creating a new SSH key..."
-    
-    if [[ "$ASSUME_YES" == "true" ]]; then
-        log "ERROR" "Cannot create SSH key in non-interactive mode without an email. Please create it manually."
-        return 1
-    fi
-
     ssh-keygen -q -t ed25519 -C "$SSH_EMAIL" -N "" -f "$HOME/.ssh/$SSH_KEY_FILENAME"
-
     chmod 700 "$HOME/.ssh"
     chmod 600 "$HOME/.ssh/$SSH_KEY_FILENAME"
     chmod 644 "$HOME/.ssh/$SSH_KEY_FILENAME.pub"

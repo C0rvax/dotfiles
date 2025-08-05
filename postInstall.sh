@@ -141,13 +141,12 @@ setup_vlc
 p_update
 p_clean
 
-
-log "SUCCESS" "Post-installation script finished! Please reboot your system for all changes to take effect."
-# A AJOUTER
-# icon fix
+stop_sudo_keep_alive
+log "SUCCESS" "Post-install script finished! Please reboot your system for all changes to take effect."
+exit 0
+# À AJOUTER
 # driver nvidia sudo apt install nvidia-driver-550
 # raccourcis
 # tableau de bord
 # pipx install compiledb
 # ledger live
-# ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa
