@@ -6,7 +6,7 @@ function install_node {
     log "INFO" "📦 Installing Node.js via NVM..."
 
     # Downloading and installing NVM
-    if ! curl -fsSL "$URL_NVM_INSTALL" | bash; then
+    if ! curl -fsSL "$URL_NVM_INSTALL" | bash > ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to install NVM"
         return 1
     fi
@@ -21,12 +21,12 @@ function install_node {
     fi
 
     # Install Node.js
-    if ! nvm install node; then
+    if ! nvm install node > ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to install Node.js"
         return 1
     fi
 
-    if ! nvm use node; then
+    if ! nvm use node > ${LOG_FILE} 2>&1; then
         log "ERROR" "Could not use the installed Node.js version"
         return 1
     fi

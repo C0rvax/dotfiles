@@ -19,10 +19,10 @@ function log() {
     
     case "$level" in
         ERROR)   print_left_element "❌ $message" "$REDHI" ;;
-        SUCCESS) print_left_element "✅  $message" "$GREENHI" ;;
-        INFO)    print_left_element "ℹ️  $message" "$BLUEHI" ;;
-        WARNING) print_left_element "⚠️  $message" "$YELLOWHI" ;;
-        DL)      print_left_element "📥 $message" "$CYANHI" ;;
+        SUCCESS) print_left_element "✅ $message" "$GREENHI" ;;
+        INFO)    print_left_element "ℹ️ $message" "$BLUEHI" ;;
+        WARNING) print_left_element "⚠️ $message" "$YELLOWHI" ;;
+        DL)      print_left_element "📥 $message" "$CYAN" ;;
         CLONE)   print_left_element "📦 $message" "$CYAN" ;;
     esac
 }

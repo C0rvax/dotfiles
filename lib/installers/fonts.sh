@@ -23,7 +23,7 @@ function install_fonts {
         log "INFO" "Copying fonts to system directory..."
         sudo mkdir -p "$sys_fonts_dir"
         sudo cp "$fonts_dir"/*.ttf "$sys_fonts_dir/" > ${LOG_FILE} 2>&1
-        sudo fc-cache -fv "$sys_fonts_dir"
+        sudo fc-cache -fv "$sys_fonts_dir" > ${LOG_FILE} 2>&1
     fi
 
     log "INFO" "**** Installing Buuf Nestort Icons ****"
@@ -34,7 +34,7 @@ function install_fonts {
     fi
     sudo ln -sfn "$icons_dir/$BUUF_ICONS_NAME" "$icon_dest_dir"
     if [ -f "$icon_dest_dir/index.theme" ]; then
-        sudo gtk-update-icon-cache -f -t "$icon_dest_dir"
+        sudo gtk-update-icon-cache -f -t "$icon_dest_dir" >> ${LOG_FILE} 2>&1
     else
         log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
     fi

@@ -44,8 +44,8 @@ get_display_width() {
     local str="$1"
     local clean_str=$(printf '%s' "$str" | sed 's/\x1b\[[0-9;]*m//g')
     local base_length=$(printf '%s' "$clean_str" | wc -m)
-    local info_count=$(printf '%s' "$clean_str" | grep -o -E '[ℹ️✅⚠️📦📥⏭️]' | wc -l 2>/dev/null || echo 0)
-    local error_count=$(printf '%s' "$clean_str" | grep -o -E '[❌❓]' | wc -l 2>/dev/null || echo 0)	
+    local info_count=$(printf '%s' "$clean_str" | grep -o -E '[⏭️]' | wc -l 2>/dev/null || echo 0)
+    local error_count=$(printf '%s' "$clean_str" | grep -o -E '[ℹ️✅⚠️📦📥❌❓]' | wc -l 2>/dev/null || echo 0)	
 	if (( info_count > 0 )); then
 		echo $((base_length - error_count - info_count + 1))
 	elif (( error_count > 0 )); then

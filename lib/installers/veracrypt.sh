@@ -4,11 +4,14 @@ function install_veracrypt {
 	echo ""
 	check_package "veracrypt"
 	if [ "$?" -eq "0" ]; then
-		echo -e "${GREENHI} #### Package veracrypt is installed! ####${RESET}"
+		log "INFO" "Veracrypt is already installed."
+		print_table_line
 	else
-		echo -e "${BLUEHI} **** Installing veracrypt ****${YELLOW}"
-		sudo add-apt-repository "$PPA_VERACRYPT" -y
-		sudo apt-get update -y
-		sudo apt-get install veracrypt -y
+		log "INFO" "Installing Veracrypt..."
+		sudo add-apt-repository "$PPA_VERACRYPT" -y >> "$LOG_FILE" 2>&1
+		sudo apt-get update -y >> "$LOG_FILE" 2>&1
+		sudo apt-get install veracrypt -y >> "$LOG_FILE" 2>&1
+		log "SUCCESS" "Veracrypt installed successfully."
+		print_table_line
 	fi
 }
