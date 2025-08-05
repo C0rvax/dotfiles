@@ -3,11 +3,21 @@
 function install_node {
     local home_dir="$HOME"
 
-    log "INFO" "📦 Installing Node.js via NVM..."
+    log "CLONE" "Installing Node.js via NVM..."
 
-    # Downloading and installing NVM
-    if ! curl -fsSL "$URL_NVM_INSTALL" | bash > ${LOG_FILE} 2>&1; then
-        log "ERROR" "Failed to install NVM"
+    local nvm_install_script
+    nvm_install_script=$(mktemp)
+    trap 'rm -f "$nvm_install_script"' RETURN
+
+    # Downloading NVM install script
+    if ! safe_download "$URL_NVM_INSTALL" "$nvm_install_script" "NVM install script"; then
+        return 1 # safe_download gère le log d'erreur
+    fi
+
+    # Executing the downloaded script
+    log "INFO" "Executing NVM installer..."
+    if ! bash "$nvm_install_script" >> "$LOG_FILE" 2>&1; then
+        log "ERROR" "NVM installation script failed."
         return 1
     fi
 

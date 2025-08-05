@@ -1,22 +1,5 @@
 #!/bin/bash
 
-# function install_zsh {
-#     if check_directory "$HOME/.oh-my-zsh"; then
-#         log "INFO" "Oh My Zsh is already installed."
-#     else
-#         log "INFO" "Installing Oh My Zsh"
-#         sh -c "$(curl -fsSL ${URL_OH_MY_ZSH})" "" --unattended --keep-zshrc
-# 		if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(which zsh)" ]]; then
-#             log "INFO" "Setting Zsh as the default shell..."
-#             chsh -s "$(which zsh)"
-#             if [[ $? -ne 0 ]]; then
-#                 log "ERROR" "Failed to set Zsh as default shell. Please do it manually with 'chsh -s \$(which zsh)'"
-#             fi
-#         fi
-#     fi
-# }
-
-
 function install_zsh {
     local dotfiles_dir
     dotfiles_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd) # Chemin vers la racine du dépôt
@@ -73,4 +56,6 @@ function install_zconfig {
     ln -sfn "$HOME/.zsh/plugins/zsh-syntax-highlighting" "$omz_custom_dir/plugins/zsh-syntax-highlighting"
     
     log "SUCCESS" "Zsh custom configuration linked successfully."
+    print_table_line
+    return 0
 }

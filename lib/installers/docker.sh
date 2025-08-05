@@ -9,9 +9,13 @@ function install_docker {
 		sudo apt-get update >> ${LOG_FILE} 2>&1
 		sudo apt-get install -y ca-certificates curl >> ${LOG_FILE} 2>&1
 		sudo install -m 0755 -d /etc/apt/keyrings >> ${LOG_FILE} 2>&1
-		# Utilise la variable
-		sudo curl -fsSL "$URL_DOCKER_GPG" -o /etc/apt/keyrings/docker.asc >> ${LOG_FILE} 2>&1
-		sudo chmod a+r /etc/apt/keyrings/docker.asc >> ${LOG_FILE} 2>&1
+		local temp_key=$(mktemp)
+		trap 'rm -f "$temp_key"' RETURN
+		if ! safe_download "$URL_DOCKER_GPG" "$temp_key" "Docker GPG key"; then
+			log "ERROR" "Failed to download Docker GPG key."
+			return 1
+		fi
+		sudo install -o root -g root -m 644 "$temp_key" /etc/apt/keyrings/docker.asc >> "$LOG_FILE" 2>&1
 
 		echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
             $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" |
