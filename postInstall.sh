@@ -70,12 +70,12 @@ for pkg in "${SELECTED_PKGS[@]}"; do
 	fi
 done
 
-# if [[ "$ASSUME_YES" != "true" ]]; then
-#     if ! show_installation_summary "${INSTALL_LIST[@]}"; then
-#         log "WARNING" "Installation aborted by user at summary."
-#         exit 0
-#     fi
-# fi
+if [[ "$ASSUME_YES" != "true" ]]; then
+    if ! show_installation_summary "${INSTALL_LIST[@]}"; then
+        log "WARNING" "Installation aborted by user at summary."
+        exit 0
+    fi
+fi
 
 log "INFO" "Starting package installation..."
 p_update

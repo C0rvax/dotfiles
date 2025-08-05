@@ -1,4 +1,4 @@
-TABLE_WIDTH=96
+TABLE_WIDTH=97
 
 # Display logo
 function display_logo {
@@ -28,14 +28,29 @@ function display_logo {
 }
 
 function print_table_line {
-	printf "+%.0s" $(seq 1 $TABLE_WIDTH)
+	printf "+%.0s" $(seq 1 $((TABLE_WIDTH - 1)))
 	printf "+\n"
+}
+
+get_display_width() {
+	local str="$1"
+	awk -v s="$str" '
+	BEGIN {
+		n = split(s, a, "")
+		for (i = 1; i <= n; i++) {
+			printf "%s", a[i]
+		}
+	} ' | wc -m
 }
 
 function print_table_header {
 	local title=$1
-	local padding=$(((TABLE_WIDTH - ${#title} - 2) / 2))
-	local remainder=$(((TABLE_WIDTH - ${#title} - 2) % 2 - 1))
+
+	local visible_len=$(get_display_width "$title")
+
+	local padding=$(((TABLE_WIDTH - visible_len - 4) / 2))
+	local remainder=$(((TABLE_WIDTH - visible_len - 4) % 2))
+
 	print_table_line
 	printf "|"
 	printf " %.0s" $(seq 1 $padding)
@@ -50,7 +65,7 @@ function print_grid {
 	shift
 	local items_with_colors=("$@")
 
-	local col_content_width=$(((TABLE_WIDTH - 1) / num_cols - 2)) # -2 for spaces
+	local col_content_width=$(((TABLE_WIDTH) / num_cols - num_cols)) # -2 for spaces
 
 	for i in $(seq 0 $((num_cols * 2)) $((${#items_with_colors[@]} - 1))); do
 		local line_to_print="|"
@@ -194,35 +209,40 @@ function run_audit {
 	print_table_line
 }
 
+
+
+function print_summary_row {
+    local label_text="$1"
+    local value_text="$2"
+    local label_color="${3:-$RESET}"
+    local value_color="${4:-$RESET}"
+
+    local formatted_label="${label_color}${label_text}${RESET}"
+    local formatted_value="${value_color}${value_text}${RESET}"
+
+    local total_visible_len=$(( 2 + ${#label_text} + 2 + ${#value_text} ))
+
+    local padding_space=$(( TABLE_WIDTH - total_visible_len ))
+    if (( padding_space < 0 )); then padding_space=0; fi
+
+    printf "| %b %b%*s |\n" \
+        "$formatted_label" \
+        "$formatted_value" \
+        "$padding_space" \
+        ""
+}
+
+
 function show_installation_summary() {
     local packages=("$@")
-    local estimated_time=$((${#packages[@]} * 2))  # 2 minutes par package en moyenne
-    
-    echo -e "${BLUEHI}"
-    print_table_line
-    printf "|"
-    printf " %.0s" $(seq 1 30)
-    echo -e " 📋 INSTALLATION SUMMARY "
-    printf " %.0s" $(seq 1 29)
-    printf "|\n"
-    print_table_line
-    
-    echo -e "|${RESET} Total packages to install: ${GREENHI}${#packages[@]}${RESET}"
-    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 35 - ${#packages[@]})))
-    echo "|"
-    
-    echo -e "|${RESET} Estimated time: ${YELLOWHI}~${estimated_time} minutes${RESET}"
-    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 25 - ${#estimated_time})))
-    echo "|"
-    
-    echo -e "|${RESET} Internet connection: ${REDHI}Required${RESET}"
-    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 30)))
-    echo "|"
-    
-    echo -e "|${RESET} Backup will be created: ${GREENHI}Yes${RESET}"
-    printf " %.0s" $(seq 1 $((TABLE_WIDTH - 32)))
-    echo "|"
-    
+    local estimated_time=$(( ${#packages[@]} * 2 )) # 2 minutes par package en moyenne
+
+    print_table_header "INSTALLATION SUMMARY"
+    print_summary_row "Total packages to install:" "${#packages[@]}" "$RESET" "$GREENHI"
+    print_summary_row "Estimated time:" "~${estimated_time} minutes" "$RESET" "$YELLOWHI"
+    print_summary_row "Internet connection:" "Required" "$RESET" "$REDHI"
+    print_summary_row "Backup will be created:" "Yes" "$RESET" "$GREENHI" # Si tu veux l'ajouter
+
     print_table_line
     echo -e "${RESET}"
     
