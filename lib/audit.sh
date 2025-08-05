@@ -308,9 +308,6 @@ function print_audit_content {
 
 
 function run_audit_display {
-    detect_distro
-    detect_desktop
-
     print_table_header "SYSTEM AUDIT"
     print_system_info_row
     print_audit_content # Appel de la nouvelle fonction d'affichage

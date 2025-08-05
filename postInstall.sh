@@ -199,6 +199,8 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 # --- Étape 1: Affichage initial et Audit ---
 display_logo
 prompt_for_sudo
+detect_distro
+detect_desktop
 run_pre_install_audit # Vérifie TOUT et remplit la map INSTALL_STATUS
 run_audit_display     # Affiche l'état du système (rouge/vert)
 
@@ -226,16 +228,10 @@ fi
 
 # --- Étape 3: Résumé et Confirmation ---
 if ! show_installation_summary "${SELECTED_IDS[@]}"; then
-    # La fonction retourne 1 si tout est déjà installé, 0 pour continuer,
-    # ou un autre code d'erreur si l'utilisateur annule.
-    if [ $? -eq 1 ]; then # Cas "Rien à faire"
-      exit 0
-    else # Cas "Annulé par l'utilisateur"
-      log "WARNING" "Installation aborted by user at summary."
-      exit 0
-    fi
+    log "WARNING" "Installation aborted by user at summary."
+    print_table_line
+    exit 0
 fi
-
 
 # --- Étape 4: Installation ---
 print_table_header "INSTALLATION IN PROGRESS"
@@ -252,22 +248,29 @@ done
 total=${#INSTALL_QUEUE[@]}
 current=0
 
-for id in "${INSTALL_QUEUE[@]}"; do
-    ((current++))
-    log "INFO" "Processing ($current/$total): ${INSTALLABLES_DESC[$id]}"
+for category_info in "${CATEGORIES_ORDER[@]}"; do
+    local category_name="${category_info%%:*}"
     
-    # Récupérer et exécuter la commande d'installation
-    install_cmd="${INSTALLABLES_INSTALL[$id]}"
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "[DRY-RUN] Would execute: $install_cmd"
-    else
-        if ! eval "$install_cmd"; then
-            log "ERROR" "Failed to install '${INSTALLABLES_DESC[$id]}'. Check log for details."
-        else
-            log "SUCCESS" "'${INSTALLABLES_DESC[$id]}' installed successfully."
+    # Pour chaque catégorie, on parcourt la file d'attente pour trouver les items correspondants
+    for id in "${INSTALL_QUEUE[@]}"; do
+        if [[ "${INSTALLABLES_CATEGORY[$id]}" == "$category_name" ]]; then
+            ((current++))
+            log "INFO" "Processing ($current/$total): ${INSTALLABLES_DESC[$id]}"
+            
+            # Récupérer et exécuter la commande d'installation
+            install_cmd="${INSTALLABLES_INSTALL[$id]}"
+            if [[ "$DRY_RUN" == "true" ]]; then
+                log "INFO" "[DRY-RUN] Would execute: $install_cmd"
+            else
+                if ! eval "$install_cmd"; then
+                    log "ERROR" "Failed to install '${INSTALLABLES_DESC[$id]}'. Check log for details."
+                else
+                    log "SUCCESS" "'${INSTALLABLES_DESC[$id]}' installed successfully."
+                fi
+            fi
+            print_table_line
         fi
-    fi
-    print_table_line
+    done
 done
 
 log "SUCCESS" "Main installation phase complete."

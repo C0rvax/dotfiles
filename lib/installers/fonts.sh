@@ -34,7 +34,7 @@ function install_fonts {
     fi
     sudo ln -sfn "$icons_dir/$BUUF_ICONS_NAME" "$icon_dest_dir"
     if [ -f "$icon_dest_dir/index.theme" ]; then
-        sudo gtk-update-icon-cache -f -t "$icon_dest_dir" >> ${LOG_FILE} 2>&1
+        sudo gtk-update-icon-cache -f -t "$icon_dest_dir" > ${LOG_FILE} 2>&1
     else
         log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
     fi
