@@ -182,7 +182,6 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# --- Sourcing (inchangé) ---
 source config/settings.conf
 source config/packages.conf
 source lib/system.sh
