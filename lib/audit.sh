@@ -1,30 +1,38 @@
-TABLE_WIDTH=97
+#!/bin/bash
 
-# Display logo
 function display_logo {
-	echo -e "${GREENHI}"
-	echo "   ██████╗ ██████╗ ██████╗ ██╗   ██╗ █████╗ ██╗  ██╗"
-	echo "  ██╔════╝██╔═████╗██╔══██╗██║   ██║██╔══██╗╚██╗██╔╝"
-	echo "  ██║     ██║██╔██║██████╔╝██║   ██║███████║ ╚███╔╝"
-	echo "  ██║     ████╔╝██║██╔══██╗╚██╗ ██╔╝██╔══██║ ██╔██╗"
-	echo "  ╚██████╗╚██████╔╝██║  ██║ ╚████╔╝ ██║  ██║██╔╝ ██╗"
-	echo "   ╚═════╝ ╚═════╝ ╚═╝  ╚═╝  ╚═══╝  ╚═╝  ╚═╝╚═╝  ╚═╝"
-	echo -e "${BLUEHI}"
+	local max_width=0
+	local temp_logo_lines=()
 
-	echo "         ██████╗  ██████╗ ███████╗████████╗"
-	echo "         ██╔══██╗██╔═══██╗██╔════╝╚══██╔══╝"
-	echo "         ██████╔╝██║   ██║███████╗   ██║   "
-	echo "         ██╔═══╝ ██║   ██║╚════██║   ██║   "
-	echo "         ██║     ╚██████╔╝███████║   ██║   "
-	echo "         ╚═╝      ╚═════╝ ╚══════╝   ╚═╝   "
-	echo ""
-	echo "██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗     "
-	echo "██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║     "
-	echo "██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║     "
-	echo "██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║     "
-	echo "██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗"
-	echo "╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝"
-	echo -e "${RESET}"
+	while IFS= read -r line; do
+		temp_logo_lines+=("$line")
+		if [[ ${#line} -gt max_width ]]; then
+			max_width=${#line}
+		fi
+	done <<< "${LOGO[0]}"
+
+	local left_padding=$(((TABLE_WIDTH - max_width - 2) / 2))
+	[[ $left_padding -lt 1 ]] && left_padding=1
+
+	print_table_line
+
+	for line in "${temp_logo_lines[@]}"; do
+		if [[ -z "$line" ]]; then # Si la ligne est vide, on affiche une ligne vide
+			printf "|%*s|\n" $((TABLE_WIDTH - 2)) ""
+			continue
+		fi
+
+		local right_padding=$((TABLE_WIDTH - left_padding - ${#line} - 2))
+		[[ $right_padding -lt 0 ]] && right_padding=0
+
+		printf "|"
+		printf "%*s" $left_padding ""
+		echo -e -n "$line"
+		printf "%*s" $right_padding ""
+		printf "|\n"
+	done
+
+	print_table_line
 }
 
 function print_table_line {
@@ -65,7 +73,7 @@ function print_grid {
 	shift
 	local items_with_colors=("$@")
 
-	local col_content_width=$(((TABLE_WIDTH) / num_cols - 3)) 
+	local col_content_width=$(((TABLE_WIDTH) / num_cols - 3))
 
 	for i in $(seq 0 $((num_cols * 2)) $((${#items_with_colors[@]} - 1))); do
 		local line_to_print="|"
@@ -86,21 +94,39 @@ function print_grid {
 }
 
 function print_packages_content {
-	declare -A seen_items
-	local master_list=()
-	for item in \
-		"${PKGS_CORE_UTILS[@]}" \
-		"${PKGS_UTILS[@]}" \
-		"${PKGS_DEV[@]}" \
-		"${PKGS_SHELL[@]}" \
-		"${PKGS_NVIM[@]}" \
-		"${PKGS_APPS[@]}" \
-		"${PKGS_OFFICE[@]}" \
-		"${PKGS_EMBEDDED[@]}"; do
-		if [[ -z "${seen_items[$item]}" ]]; then
-			master_list+=("$item")
-			seen_items["$item"]=1
+	declare -A categories
+	declare -a ordered_categories
+	declare -A seen_categories
+	local all_packages_source=(
+		"${PKGS_CORE_UTILS[@]}"
+		"${PKGS_UTILS[@]}"
+		"${PKGS_DEV[@]}"
+		"${PKGS_SHELL[@]}"
+		"${PKGS_NVIM[@]}"
+		"${PKGS_APPS[@]}"
+		"${PKGS_OFFICE[@]}"
+		"${PKGS_EMBEDDED[@]}"
+	)
+
+	local current_category=""
+	for item in "${all_packages_source[@]}"; do
+		if [[ $item == '#'* ]]; then
+			current_category="$item"
+			if [[ -z "${seen_categories[$current_category]}" ]]; then
+				ordered_categories+=("$current_category")
+				seen_categories["$current_category"]=1
+			fi
+		elif [[ -n "$current_category" ]]; then
+			categories["$current_category"]+="$item "
 		fi
+	done
+
+	local master_list=()
+	for category in "${ordered_categories[@]}"; do
+		master_list+=("$category")
+		local packages_str=${categories["$category"]}
+		local packages_array=( $(printf "%s\n" $packages_str | sort -u) )
+		master_list+=("${packages_array[@]}")
 	done
 
 	local current_packages_to_print=()
@@ -264,4 +290,3 @@ function show_progress() {
 	printf "%*s" "$empty" '' | tr ' ' '-'
 	printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
 }
-

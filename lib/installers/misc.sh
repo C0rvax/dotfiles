@@ -13,12 +13,13 @@ function install_firefox {
         return
     fi
 
-    wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc  > /dev/null
+    wget -q "$URL_SIGN_KEY_FIREFOX" -O- | sudo tee "$FIREFOX_KEYRING" > /dev/null
+    #wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc  > /dev/null
 	
     local key_fingerprint
-    key_fingerprint=$(gpg -n -q --import --import-options import-show /etc/apt/keyrings/packages.mozilla.org.asc 2>/dev/null | awk '/pub/{getline; gsub(/^ +| +$/,""); print $0}')
-    
-    if [[ "$key_fingerprint" == "35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3" ]]; then
+    key_fingerprint=$(gpg -n -q --import --import-options import-show "$FIREFOX_KEYRING" 2>/dev/null | awk '/pub/{getline; gsub(/^ +| +$/,""); print $0}')
+
+    if [[ "$key_fingerprint" == "$FIREFOX_GPG_FINGERPRINT" ]]; then
         log "SUCCESS" "Key fingerprint verified successfully."
     else
         log "ERROR" "Fingerprint verification FAILED. Expected '...DC6315A3', but got '$key_fingerprint'. Aborting."

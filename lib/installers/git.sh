@@ -45,11 +45,11 @@ function create_ssh_key {
         return 1
     fi
     
-    ssh-keygen -q -t ed25519 -C "$ssh_email" -N "" -f "$HOME/.ssh/id_ed25519"
+    ssh-keygen -q -t ed25519 -C "$ssh_email" -N "" -f "$HOME/.ssh/$SSH_KEY_FILENAME"
     
     chmod 700 "$HOME/.ssh"
-    chmod 600 "$HOME/.ssh/id_ed25519"
-    chmod 644 "$HOME/.ssh/id_ed25519.pub"
+    chmod 600 "$HOME/.ssh/$SSH_KEY_FILENAME"
+    chmod 644 "$HOME/.ssh/$SSH_KEY_FILENAME.pub"
     log "SUCCESS" "SSH key created successfully."
 }
 

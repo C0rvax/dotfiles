@@ -3,12 +3,12 @@
 function setup_kde {
 	if [[ "$DESKTOP" == "kde" ]]; then
 		# Modifier la police du système
-		kwriteconfig5 --file kdeglobals --group General --key fixed "$FONT_SYSTEM_NAME,9,-1,5,50,0,0,0,0,0,Regular"
-		kwriteconfig5 --file kdeglobals --group General --key font "$FONT_SYSTEM_NAME,10,-1,5,50,0,0,0,0,0,Regular"
-		kwriteconfig5 --file kdeglobals --group General --key menuFont "$FONT_SYSTEM_NAME,10,-1,5,50,0,0,0,0,0,Regular"
-		kwriteconfig5 --file kdeglobals --group General --key smallestReadableFont "$FONT_SYSTEM_NAME,8,-1,5,50,0,0,0,0,0,Regular"
-		kwriteconfig5 --file kdeglobals --group General --key toolBarFont "$FONT_SYSTEM_NAME,10,-1,5,50,0,0,0,0,0,Regular"
-		kwriteconfig5 --file kdeglobals --group WM --key activeFont "$FONT_SYSTEM_NAME,10,-1,5,50,0,0,0,0,0"
+		kwriteconfig5 --file kdeglobals --group General --key fixed "$FONT_SYSTEM_NAME,$FONT_SIZE_MONO,-1,5,50,0,0,0,0,0,Regular"
+		kwriteconfig5 --file kdeglobals --group General --key font "$FONT_SYSTEM_NAME,$FONT_SIZE_NORMAL,-1,5,50,0,0,0,0,0,Regular"
+		kwriteconfig5 --file kdeglobals --group General --key menuFont "$FONT_SYSTEM_NAME,$FONT_SIZE_NORMAL,-1,5,50,0,0,0,0,0,Regular"
+		kwriteconfig5 --file kdeglobals --group General --key smallestReadableFont "$FONT_SYSTEM_NAME,$FONT_SIZE_SMALL,-1,5,50,0,0,0,0,0,Regular"
+		kwriteconfig5 --file kdeglobals --group General --key toolBarFont "$FONT_SYSTEM_NAME,$FONT_SIZE_NORMAL,-1,5,50,0,0,0,0,0,Regular"
+		kwriteconfig5 --file kdeglobals --group WM --key activeFont "$FONT_SYSTEM_NAME,$FONT_SIZE_NORMAL,-1,5,50,0,0,0,0,0"
 
 		# Activer le thème Breeze sombre
 		lookandfeeltool -a "$KDE_THEME_DARK"
@@ -29,8 +29,8 @@ function setup_kde {
 
 		# Raccourci terminal
 		# kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"
-		kwriteconfig5 --file kglobalshortcutsrc --group "${TERMINAL_APP}.desktop" --key "_launch" "Ctrl+Alt+T,none,${TERMINAL_APP^}"
-		sed -i 's|konsole|${TERMINAL_APP}|g' ~/.config/kglobalshortcutsrc
+		kwriteconfig5 --file kglobalshortcutsrc --group "${TERMINAL_APP}.desktop" --key "_launch" "$TERMINAL_SHORTCUT,none,${TERMINAL_APP^}"
+		#sed -i 's|konsole|${TERMINAL_APP}|g' ~/.config/kglobalshortcutsrc
 
 		# Configurer un simple clic pour ouvrir les fichiers
 		kwriteconfig5 --file kdeglobals --group KDE --key SingleClick false

@@ -33,42 +33,101 @@ display_logo
 check_sudo
 run_audit
 
-echo ""
-install_type_choice=""
-if [[ "$ASSUME_YES" == "true" ]]; then
-    install_type_choice="1"
-    log "INFO" "Non-interactive mode: Defaulting to a 'Full' installation."
-else
-	log "INFO" "Select installation type:"
-    echo "1) Full (everything)"
-    echo "2) Light (minimal)"
-    read -p "Enter your choice [1-2]: " install_type_choice
-fi
+# echo ""
+# install_type_choice=""
+# if [[ "$ASSUME_YES" == "true" ]]; then
+#     install_type_choice="1"
+#     log "INFO" "Non-interactive mode: Defaulting to a 'Full' installation."
+# else
+# 	log "INFO" "Select installation type:"
+#     echo "1) Full (everything)"
+#     echo "2) Light (minimal)"
+#     read -p "Enter your choice [1-2]: " install_type_choice
+# fi
 
-case $install_type_choice in
-    1) SELECTED_PKGS=("${FULL_PKGS[@]}");;
-    2) SELECTED_PKGS=("${LIGHT_PKGS[@]}");;
-    *) log "ERROR" "Invalid choice. Exiting."; exit 1;;
-esac
+# case $install_type_choice in
+#     1) SELECTED_PKGS=("${FULL_PKGS[@]}");;
+#     2) SELECTED_PKGS=("${LIGHT_PKGS[@]}");;
+#     *) log "ERROR" "Invalid choice. Exiting."; exit 1;;
+# esac
 
-read -p "Do you want to include EMBEDDED packages? [y/n]: " include_embedded
-if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" || "$include_embedded" == "o" || "$include_embedded" == "O" ]]; then
-	SELECTED_PKGS+=("${PKGS_EMBEDDED[@]}")
-fi
+# read -p "Do you want to include EMBEDDED packages? [y/n]: " include_embedded
+# if [[ "$include_embedded" == "y" || "$include_embedded" == "Y" || "$include_embedded" == "o" || "$include_embedded" == "O" ]]; then
+# 	SELECTED_PKGS+=("${PKGS_EMBEDDED[@]}")
+# fi
 
-if [[ "$install_type_choice" == "1" ]]; then
-	read -p "Do you want to include LibreOffice? [y/n]: " include_libreoffice
-	if [[ "$include_libreoffice" == "y" || "$include_libreoffice" == "Y" ]]; then
-		SELECTED_PKGS+=("${PKGS_OFFICE[@]}")
-	fi
-fi
+# if [[ "$install_type_choice" == "1" ]]; then
+# 	read -p "Do you want to include LibreOffice? [y/n]: " include_libreoffice
+# 	if [[ "$include_libreoffice" == "y" || "$include_libreoffice" == "Y" ]]; then
+# 		SELECTED_PKGS+=("${PKGS_OFFICE[@]}")
+# 	fi
+# fi
+
+# INSTALL_LIST=()
+# for pkg in "${SELECTED_PKGS[@]}"; do
+# 	if [[ ! $pkg == "#"* ]]; then
+# 		INSTALL_LIST+=("$pkg")
+# 	fi
+# done
 
 INSTALL_LIST=()
-for pkg in "${SELECTED_PKGS[@]}"; do
-	if [[ ! $pkg == "#"* ]]; then
-		INSTALL_LIST+=("$pkg")
-	fi
+log "INFO" "Lancement du sélecteur de paquets interactif..."
+
+# Préparer la liste des descriptions pour le programme C
+declare -a category_descriptions
+for category_info in "${PACKAGE_CATEGORIES[@]}"; do
+    # Extrait juste la description (partie après le ':')
+    # On utilise #*: pour s'assurer de prendre tout ce qui suit le premier ':'
+    category_descriptions+=("${category_info#*:}")
 done
+
+# Vérifier si le sélecteur est compilé, sinon, tenter de le compiler
+if [ ! -x ./selector ]; then
+    log "WARNING" "Le programme 'selector' n'est pas compilé. Tentative de compilation..."
+    # On ajoute des vérifications pour les dépendances
+    if ! command -v gcc &> /dev/null; then
+        log "ERROR" "Le compilateur 'gcc' n'est pas trouvé. Impossible de compiler 'selector'."
+        log "INFO" "Veuillez installer 'gcc' et les outils de build (ex: 'build-essential' sur Debian)."
+        exit 1
+    fi
+    if ! gcc selector.c -o selector -lncurses; then
+        log "ERROR" "Échec de la compilation de 'selector'. Abandon."
+        log "INFO" "Assurez-vous que les bibliothèques de développement ncurses sont installées (ex: 'libncurses-dev')."
+        exit 1
+    else
+        log "SUCCESS" "Compilation de 'selector' réussie."
+    fi
+fi
+
+# Appeler le programme C et capturer sa sortie
+mapfile -t SELECTED_DESCRIPTIONS < <(./selector "${category_descriptions[@]}")
+
+# Si le tableau est vide, cela signifie que l'utilisateur n'a rien sélectionné ou a quitté.
+if [ ${#SELECTED_DESCRIPTIONS[@]} -eq 0 ]; then
+    log "WARNING" "Aucun paquet sélectionné ou opération annulée. Fin du script."
+    exit 0
+fi
+
+# Construire la liste finale des paquets à installer
+for selected_desc in "${SELECTED_DESCRIPTIONS[@]}"; do
+    for category_info in "${PACKAGE_CATEGORIES[@]}"; do
+        if [[ "$category_info" == *:"$selected_desc" ]]; then
+            category_array_name="${category_info%%:*}"
+            packages_to_add=("${!category_array_name}")
+            for pkg in "${packages_to_add[@]}"; do
+                if [[ ! $pkg == "#"* ]]; then
+                    INSTALL_LIST+=("$pkg")
+                fi
+            done
+            break 
+        fi
+    done
+done
+
+# On enlève les doublons
+INSTALL_LIST=($(printf "%s\n" "${INSTALL_LIST[@]}" | sort -u))
+
+log "SUCCESS" "Sélection terminée. Paquets à installer: ${#INSTALL_LIST[@]}"
 
 if [[ "$ASSUME_YES" != "true" ]]; then
     if ! show_installation_summary "${INSTALL_LIST[@]}"; then
