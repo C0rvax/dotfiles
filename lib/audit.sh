@@ -24,13 +24,8 @@ function run_pre_install_audit {
     	log "INFO" "Running pre-installation audit..."
 	fi
     local total_checks=${#INSTALLABLES_DESC[@]}
-    # local current_check=0
 
-    # Itérer sur tous les IDs d'installables définis
     for id in "${!INSTALLABLES_DESC[@]}"; do
-        # ((current_check++))
-        # show_progress "$current_check" "$total_checks" "$id" "Checking"
-
         if eval "${INSTALLABLES_CHECK[$id]}"; then
             INSTALL_STATUS[$id]="installed"
         else

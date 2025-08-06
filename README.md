@@ -3,7 +3,7 @@
 Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automatiser et standardiser la configuration d'un nouvel environnement de développement sur une machine Linux fraîchement installée. L'objectif est simple : passer d'un système d'exploitation de base à un environnement de travail complet, personnalisé et reproductible en quelques commandes.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/C0rvax/dotfiles/main/screenshot.png" alt="Aperçu du script en action"/>
+<img src="https://raw.githubusercontent.com/C0rvax/dotfiles/main/dotfiles.png" alt="Aperçu du script en action"/>
 </p>
 
 *(Ajoute `screenshot.png`)*
