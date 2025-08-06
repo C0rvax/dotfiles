@@ -7,7 +7,7 @@ function select_installables_interactive {
         selected_level="base" # Par défaut en non-interactif
         log "INFO" "Non-interactive mode: Defaulting to a 'base' installation."
     else
-        print_center_element "INSTALLATION TYPE" "$BLUEHI"
+        print_title_element "INSTALLATION TYPE" "$BLUEHI"
         print_table_line
         print_left_element "1) Base (Minimal: core utils, dev tools, shell, nvim config)" "$BLUEHI"
         print_left_element "2) Full (Recommended: 'Base' + graphical apps, Docker, etc.)" "$BLUEHI"

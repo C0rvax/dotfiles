@@ -54,8 +54,8 @@ function print_audit_content {
         # Ne pas afficher les catégories vides
         if [ ${#ids_in_category[@]} -eq 0 ]; then continue; fi
 
-        print_table_line
-        print_center_element ">> $(echo "$category_title")" "$YELLOW"
+        # print_table_line
+        print_center_element " $(echo "$category_title") " "$YELLOW"
 
         local packages_to_print=()
         for id in "${ids_in_category[@]}"; do
@@ -72,8 +72,7 @@ function print_audit_content {
 
 
 function run_audit_display {
-    # print_table_header "SYSTEM AUDIT"
-	print_center_element "SYSTEM" "$BLUEHI"
+	print_title_element "SYSTEM" "$BLUEHI"
 	print_table_line
     print_system_info_row
     print_audit_content
@@ -98,8 +97,7 @@ function show_installation_summary() {
 
     print_table_header "INSTALLATION SUMMARY"
     print_left_element "Total items to install: ${#items_to_install[@]}" "$BLUEHI"
-    print_left_element "Internet connection:      Required" "$REDHI"
-    print_table_line
+    print_left_element "Internet connection:      Required" "$BLUEHI"
 
     # Affichage groupé par catégorie
     for category_info in "${CATEGORIES_ORDER[@]}"; do
@@ -114,7 +112,7 @@ function show_installation_summary() {
         done
 
         if [ ${#items_in_this_category_for_grid[@]} -gt 0 ]; then
-            print_center_element ">> $(echo "$category_title")" "$YELLOW"
+            print_center_element " $(echo "$category_title") " "$YELLOW"
             # print_grid 3 "${items_in_this_category_for_grid[@]}" # 3 colonnes pour la grille
 			print_grid 4 "${items_in_this_category_for_grid[@]}" # 4 colonnes pour la grille
         fi
