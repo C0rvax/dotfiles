@@ -22,12 +22,12 @@ function print_system_info_row {
 function run_pre_install_audit {
     log "INFO" "Running pre-installation audit..."
     local total_checks=${#INSTALLABLES_DESC[@]}
-    local current_check=0
+    # local current_check=0
 
     # Itérer sur tous les IDs d'installables définis
     for id in "${!INSTALLABLES_DESC[@]}"; do
-        ((current_check++))
-        show_progress "$current_check" "$total_checks" "$id" "Checking"
+        # ((current_check++))
+        # show_progress "$current_check" "$total_checks" "$id" "Checking"
 
         if eval "${INSTALLABLES_CHECK[$id]}"; then
             INSTALL_STATUS[$id]="installed"
@@ -35,8 +35,9 @@ function run_pre_install_audit {
             INSTALL_STATUS[$id]="missing"
         fi
     done
-    echo # Saut de ligne après la barre de progression
-    log "SUCCESS" "Audit complete."
+	if [[ "$VERBOSE" == "true" ]]; then
+		log "SUCCESS" "Audit complete."
+	fi   
 }
 
 function print_audit_content {

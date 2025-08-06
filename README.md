@@ -1,4 +1,4 @@
-# Mes Scripts de Post-Installation Linux
+# Dotfiles Linux
 
 Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automatiser et standardiser la configuration d'un nouvel environnement de développement sur une machine Linux fraîchement installée. L'objectif est simple : passer d'un système d'exploitation de base à un environnement de travail complet, personnalisé et reproductible en quelques commandes.
 
@@ -70,7 +70,7 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 # Lancer le script en mode interactif standard (recommandé pour la première fois)
 ./postInstall.sh
 
-# Lancer l'interface TUI pour une sélection fine par catégorie
+# Lancer l'interface TUI pour une sélection fine par catégorie (en travaux)
 ./postInstall.sh --select tui
 
 # Simuler une installation complète sans rien modifier, en affichant toutes les étapes
@@ -97,8 +97,6 @@ Options:
 ---
 
 ## 📂 Structure du Dépôt
-
-Le projet est organisé de manière logique pour séparer la configuration, le code et les ressources
 
 ```text
 dotfiles/
@@ -131,4 +129,4 @@ dotfiles/
 
 ## Licence
 
-Ce projet est distribué sous la licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet n'est pas distribué sous la licence MIT. Voir le fichier `LICENSE` pour plus de détails.
