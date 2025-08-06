@@ -12,7 +12,7 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 <img src="https://raw.githubusercontent.com/C0rvax/dotfiles/main/screenshot.png" alt="Aperçu du script en action"/>
 </p>
 
-*(N'oubliez pas de mettre à jour la capture d'écran `screenshot.png` pour refléter la nouvelle interface !)*
+*(Ajoute `screenshot.png`)*
 
 ---
 
@@ -37,7 +37,7 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 ### Prérequis
 
 -   Une installation fraîche d'une distribution Linux compatible.
--   `git` et `gcc` doivent être installés pour cloner le dépôt et compiler le sélecteur TUI :
+-   `git`, `gcc`, et `libncurses-dev` (ou équivalent) doivent être installés pour cloner le dépôt et compiler le sélecteur TUI :
     -   Sur Debian/Ubuntu : `sudo apt update && sudo apt install git gcc libncurses-dev`
     -   Sur Arch Linux : `sudo pacman -S git gcc ncurses`
     -   Sur Fedora : `sudo dnf install git gcc ncurses-devel`
@@ -64,35 +64,47 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
     chmod +x postInstall.sh
     ```
 
-5.  **Exécutez le script** (sans `sudo` !) :
-    ```bash
-    ./postInstall.sh
-    ```
-    Pour une expérience plus ciblée, vous pouvez lancer directement l'interface TUI :
-    ```bash
-    ./postInstall.sh --select tui
-    ```
+5.  **Exécutez le script** (sans `sudo` !) en utilisant l'une des options ci-dessous.
 
-Le script vous demandera votre mot de passe lorsque des privilèges `sudo` seront nécessaires. Suivez ensuite les instructions affichées dans le terminal.
+---
+
+## 🛠️ Usage et Options
+
+### Exemples courants
+
+```bash
+# Lancer le script en mode interactif standard (recommandé pour la première fois)
+./postInstall.sh
+
+# Lancer l'interface TUI pour une sélection fine par catégorie
+./postInstall.sh --select tui
+
+# Simuler une installation complète sans rien modifier, en affichant toutes les étapes
+./postInstall.sh --dry-run --verbose
+
+# Lancer une installation de base entièrement automatisée (pour un script de provisioning)
+./postInstall.sh --yes
+```
+
+### Aide et détail des options
+
+Vous pouvez obtenir la liste complète des options à tout moment en exécutant : `./postInstall.sh --help`.
+
+```text
+Usage: postInstall.sh [options]
+Options:
+  -v, --verbose       Enable verbose output
+  -d, --dry-run       Simulate installation without making changes
+  -y, --yes           Assume 'yes' answer to prompts
+  -h, --help          Show this help message
+  -s, --select        Select installation mode (interactive or tui)
+```
 
 ---
 
 ## 📂 Structure du Dépôt
 
-Le projet est organisé de manière logique pour séparer la configuration, le code et les ressources :
-
--   `postInstall.sh` : Le point d'entrée principal qui orchestre l'ensemble du processus.
--   `config/`:
-    -   `settings.conf`: Contient les variables globales (URLs, noms de thèmes, chemins, etc.).
-    -   `packages.conf`: Le cœur de la configuration. Définit toutes les applications, leurs descriptions, les commandes pour vérifier leur présence et les installer, ainsi que leur catégorie.
--   `lib/`:
-    -   `system.sh`, `package_manager.sh`, `audit.sh`, `ui.sh`: Fonctions de base pour la gestion du système, des paquets, de l'audit et de l'interface utilisateur.
-    -   `installers/`: Scripts modulaires pour chaque installation complexe (Docker, Node.js, Neovim, etc.).
-    -   `desktop_configs/`: Scripts pour appliquer les configurations spécifiques à chaque environnement de bureau.
--   `home/`: Contient les véritables "dotfiles" (ex: `.zshrc`, `.config/nvim/`) qui seront liés symboliquement dans votre répertoire personnel. Les sous-modules y sont également nichés.
--   `vendor/`: Contient les sous-modules qui sont des dépendances "fournisseur", comme le framework `oh-my-zsh`.
--   `selector.c`: Le code source en C pour l'interface de sélection TUI.
--   `.gitmodules`: Fichier qui déclare les sous-modules Git utilisés dans le projet.
+Le projet est organisé de manière logique pour séparer la configuration, le code et les ressources
 
 ```text
 dotfiles/
@@ -122,29 +134,6 @@ dotfiles/
 └── selector.c           # Code source en C pour l'interface de sélection TUI.
 ```
 ---
-
-## 🛠️ Personnalisation
-
-Ce framework est un excellent point de départ pour créer votre propre système d'automatisation. Pour l'adapter à vos besoins :
-
--   **Modifiez les paquets** : Ajoutez, modifiez ou supprimez des entrées dans `config/packages.conf` pour qu'il corresponde à votre pile logicielle.
--   **Ajustez les paramètres** : Changez les URLs, les noms de thèmes ou les chemins dans `config/settings.conf`.
--   **Ajoutez un installeur** : Créez un nouveau fichier `lib/installers/mon_app.sh` avec une fonction `install_mon_app` et ajoutez-le à `config/packages.conf`.
--   **Changez les dotfiles** : Modifiez les fichiers dans le dossier `home/` pour qu'ils correspondent à vos configurations personnelles.
-
----
-
-## 📜 Options de Ligne de Commande
-
-Le script supporte plusieurs options pour personnaliser son exécution :
-
--   `--help`: Affiche l'aide et les options disponibles.
--   `--dry-run`: Mode de simulation. Affiche tout ce qu'il *ferait* sans rien modifier. Idéal pour vérifier les actions avant de les lancer.
--   `--verbose`: Affiche des informations détaillées sur chaque étape.
--   `--yes`: Répond automatiquement "oui" à toutes les questions, pour une exécution non-interactive.
--   `--select <mode>`: Choisit le mode de sélection.
-    -   `interactive` (défaut) : Questions simples "Base" ou "Complète".
-    -   `tui` : Lance l'interface ncurses pour une sélection par catégorie.
 
 ## Licence
 
