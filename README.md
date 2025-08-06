@@ -6,8 +6,6 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 <img src="https://raw.githubusercontent.com/C0rvax/dotfiles/main/dotfiles.png" alt="Aperçu du script en action"/>
 </p>
 
-*(Ajoute `screenshot.png`)*
-
 ---
 
 ## 🚀 Fonctionnalités Principales
