@@ -1,9 +1,3 @@
-Absolument ! Votre projet a énormément évolué. Il est passé d'un ensemble de quelques scripts à une véritable petite infrastructure modulaire et configurable. Le `README.md` actuel ne lui rend plus du tout justice.
-
-Voici une proposition de `README.md` entièrement mise à jour qui reflète la nouvelle structure, les fonctionnalités avancées (comme le TUI en C), et qui intègre correctement la notion cruciale des sous-modules Git.
-
----
-
 # Mes Scripts de Post-Installation Linux
 
 Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automatiser et standardiser la configuration d'un nouvel environnement de développement sur une machine Linux fraîchement installée. L'objectif est simple : passer d'un système d'exploitation de base à un environnement de travail complet, personnalisé et reproductible en quelques commandes.
