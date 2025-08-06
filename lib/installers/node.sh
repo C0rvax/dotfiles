@@ -16,7 +16,7 @@ function install_node {
 
     # Executing the downloaded script
     log "INFO" "Executing NVM installer..."
-    if ! bash "$nvm_install_script" >> "$LOG_FILE" 2>&1; then
+    if ! bash "$nvm_install_script" > "$LOG_FILE" 2>&1; then
         log "ERROR" "NVM installation script failed."
         return 1
     fi

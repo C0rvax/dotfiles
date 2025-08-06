@@ -34,15 +34,17 @@ source lib/ui.sh
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
 
-trap "cleanup_sudo_config" EXIT SIGINT SIGTERM
 # --- Étape 1: Affichage initial et Audit ---
-
+trap "cleanup_sudo_config" EXIT SIGINT SIGTERM
 ensure_sudo_global_timestamp
-start_sudo_keep_alive
+prompt_for_sudo
+#start_sudo_keep_alive
 clear
+
 display_logo
 detect_distro
 detect_desktop
+
 run_pre_install_audit
 run_audit_display
 
@@ -147,7 +149,6 @@ exit 0
 
 # # À AJOUTER
 # # driver nvidia sudo apt install nvidia-driver-550
-# # raccourcis
 # # tableau de bord
 # # pipx install compiledb
 # # ledger live

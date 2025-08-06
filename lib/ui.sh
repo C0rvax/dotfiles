@@ -100,7 +100,6 @@ function ask_question {
         fi
     done
     
-    # Un saut de ligne final pour que le prompt suivant soit propre
     echo ""
     result_var="$response"
 }

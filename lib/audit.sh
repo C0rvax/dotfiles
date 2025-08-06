@@ -78,7 +78,6 @@ function show_installation_summary() {
     local selected_ids=("$@")
     local items_to_install=()
 
-    # Filtrer pour ne garder que les items manquants
     for id in "${selected_ids[@]}"; do
         if [[ "${INSTALL_STATUS[$id]}" == "missing" ]]; then
             items_to_install+=("$id")

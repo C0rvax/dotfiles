@@ -54,9 +54,7 @@ function prompt_for_sudo {
         exit 1
     fi
     log "INFO" "Sudo privileges will be required. Please enter your password if prompted."
-    # Demande le mot de passe et met à jour le timestamp de sudo
     sudo -v 
-    # Vérifie si la commande précédente a réussi
     if [ $? -ne 0 ]; then
         log "ERROR" "Failed to obtain sudo privileges. Aborting."
         exit 1
@@ -76,8 +74,6 @@ function start_sudo_keep_alive {
 
     log "INFO" "Starting sudo keep-alive loop."
     
-    # Exécuter une première fois pour s'assurer que le ticket est valide.
-    # Si le mot de passe est mauvais ici, le script s'arrêtera.
     sudo -v
     if [ $? -ne 0 ]; then
         log "ERROR" "Failed to obtain initial sudo credentials."
@@ -97,7 +93,6 @@ function start_sudo_keep_alive {
     trap "stop_sudo_keep_alive" EXIT SIGINT SIGTERM
 }
 
-# Fonction pour arrêter proprement la boucle
 function stop_sudo_keep_alive {
     if [ -n "$SUDO_PID" ] && ps -p "$SUDO_PID" > /dev/null; then
         log "INFO" "Stopping sudo keep-alive loop (PID: $SUDO_PID)..."
@@ -122,7 +117,6 @@ function check_directory {
 	fi
 }
 
-# Function to download with error handling
 function safe_download {
     local url="$1"
     local output="$2"
@@ -136,7 +130,6 @@ function safe_download {
         return 1
     fi
 
-    # Check that the file exists and is not empty
     if [[ ! -s "$output" ]]; then
         log "ERROR" "The downloaded file is empty or does not exist"
         rm -f "$output"  # Clean up the empty file
@@ -147,7 +140,6 @@ function safe_download {
     return 0
 }
 
-# Function to clone with error handling
 function safe_git_clone {
     local repo_url="$1"
     local destination="$2"
@@ -177,7 +169,7 @@ function safe_git_clone {
 }
 
 function ensure_sudo_global_timestamp {
-    local config_file="/etc/sudoers.d/10-global-timestamp"
+    local config_file="$PATH_SUDOERS"
     local config_content="Defaults timestamp_type=global\nDefaults !authenticate\nDefaults timestamp_timeout=30"
 
     if [ -f "$config_file" ]; then
@@ -213,7 +205,7 @@ function ensure_sudo_global_timestamp {
 }
 
 function cleanup_sudo_config {
-    local config_file="/etc/sudoers.d/10-dotfiles-script-rules"
+    local config_file="$PATH_SUDOERS"
 
     if [ ! -f "$config_file" ]; then
         return 0
