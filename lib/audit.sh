@@ -20,7 +20,9 @@ function print_system_info_row {
 }
 
 function run_pre_install_audit {
-    log "INFO" "Running pre-installation audit..."
+	if [[ "$VERBOSE" == "true" ]]; then
+    	log "INFO" "Running pre-installation audit..."
+	fi
     local total_checks=${#INSTALLABLES_DESC[@]}
     # local current_check=0
 
@@ -70,7 +72,9 @@ function print_audit_content {
 
 
 function run_audit_display {
-    print_table_header "SYSTEM AUDIT"
+    # print_table_header "SYSTEM AUDIT"
+	print_center_element "SYSTEM" "$BLUEHI"
+	print_table_line
     print_system_info_row
     print_audit_content
     print_table_line

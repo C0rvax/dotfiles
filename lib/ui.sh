@@ -15,29 +15,44 @@ get_display_width() {
 	fi
 }
 
+function repeat_char {
+    local char="$1"
+    local num="$2"
+    if (( num > 0 )); then
+        printf "%${num}s" "" | tr ' ' "$char"
+    fi
+}
+
 function print_center_element {
 	local text="$1"
 	local color="$2"
+    local pad_char="${3:-'-'}"
+
 	local visible_len=$(get_display_width "$text")
 	local padding=$(((TABLE_WIDTH - visible_len - 2) / 2))
 	local remainder=$(((TABLE_WIDTH - visible_len - 2) % 2))
 
 	printf "|"
-	printf " %.0s" $(seq 1 $padding)
+	# printf "-%.0s" $(seq 1 $padding)
+    printf "%s" "$(repeat_char "$pad_char" "$padding")"
 	echo -e -n "${color}${text}${RESET}"
-	printf " %.0s" $(seq 1 $((padding + remainder)))
+	# printf "-%.0s" $(seq 1 $((padding + remainder)))
+    printf "%s" "$(repeat_char "$pad_char" "$((padding + remainder))")"
 	printf "|\n"
 }
 
 function print_left_element {
 	local text="$1"
 	local color="$2"
+    local pad_char="${3:-' '}"
+
 	local visible_len=$(get_display_width "$text")
 	local padding=$((TABLE_WIDTH - visible_len - 3))
 
 	printf "|"
 	echo -e -n " ${color}${text}${RESET}"
-	printf " %.0s" $(seq 1 $padding)
+	# printf " %.0s" $(seq 1 $padding)
+    printf "%s" "$(repeat_char "$pad_char" "$padding")"
 	printf "|\n"
 }
 
