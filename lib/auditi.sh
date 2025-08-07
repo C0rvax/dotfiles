@@ -4,31 +4,38 @@ function audit_packages() {
     local installed=0
     local missing=0
 
-    # On utilise mapfile pour charger tous les paquets en une fois, c'est plus propre
+    print_title_element "SYSTEM" "$BLUEHI"
+	print_table_line
+    print_system_info_row
+
     mapfile -t all_packages < <(get_all_packages)
     local total=${#all_packages[@]}
 
-    log "INFO" "all: ${all_packages[@]}"
-    log "INFO" "Lancement de l'audit de ${total} paquets..."
-    print_table_line
+    for cat in "${CATEGORIES_ORDER[@]}"; do
+        local category_name="${cat%%:*}"
+        local category_title="${cat#*:}"
+        
+        print_center_element " $(echo "$category_title") " "$YELLOW"
+        
+        mapfile -t packages_to_install < <(get_packages_by_category "$category_name")
 
-    for pkg_def in "${all_packages[@]}"; do
-        local id; id=$(get_package_info "$pkg_def" id)
-        local desc; desc=$(get_package_info "$pkg_def" desc)
-        local check_cmd; check_cmd=$(get_package_info "$pkg_def" check)
+        for pkg_def in "${packages_to_install[@]}"; do
+            local id; id=$(get_package_info "$pkg_def" id)
+            local desc; desc=$(get_package_info "$pkg_def" desc)
+            local check_cmd; check_cmd=$(get_package_info "$pkg_def" check)
 
-        # On exécute la vérification en masquant TOUTES les sorties
-        if eval "$check_cmd" &>/dev/null; then
-            ((installed++))
-            AUDIT_STATUS[$id]="installed"
-            print_left_element "✓ $desc" "$GREEN"
-        else
-            ((missing++))
-            AUDIT_STATUS[$id]="missing"
-            print_left_element "✗ $desc" "$RED"
-        fi
+            # On exécute la vérification en masquant TOUTES les sorties
+            if eval "$check_cmd" &>/dev/null; then
+                ((installed++))
+                AUDIT_STATUS[$id]="installed"
+                print_left_element "✓ $desc" "$GREEN"
+            else
+                ((missing++))
+                AUDIT_STATUS[$id]="missing"
+                print_left_element "✗ $desc" "$RED"
+            fi
+        done
     done
-
     print_table_line
     log "SUCCESS" "Audit terminé : $installed installés, $missing manquants."
     print_table_line
@@ -97,10 +104,9 @@ install_selected_packages() {
 # === WORKFLOW PRINCIPAL ===
 
 function run_package_installation() {
-    # 1. Audit initial (ne change pas)
     audit_packages
 
-    # 2. Sélection utilisateur (ne change pas)
+    # select à bouger avec option
     local install_type
     if [[ "$ASSUME_YES" == "true" ]]; then
         install_type="base"
@@ -115,7 +121,6 @@ function run_package_installation() {
 
     # 3. Collecte des paquets à installer (ne change pas)
     local packages_to_install=()
-    echo "Paquets à installer pour le type: $install_type"
     case "$install_type" in
     1)
         mapfile -t packages_to_install < <(get_packages_by_level "base")
@@ -147,10 +152,6 @@ function run_package_installation() {
     if [[ ${#packages_to_install[@]} -gt 0 ]]; then
         echo
         echo "Paquets sélectionnés: ${#packages_to_install[@]}"
-        echo "Liste des paquets: ${packages_to_install[@]}"
-
-        # On affiche la liste pour déboguer si besoin
-        # printf " - %s\n" "${packages_to_install[@]}"
 
         if [[ "$ASSUME_YES" != "true" ]]; then
             read -p "Continuer? [Y/n]: " confirm
