@@ -50,6 +50,7 @@ function show_installation_summary() {
     local items_to_install=()
 
     for item in "${selected_ids[@]}"; do
+        if [[ -z "$item" ]]; then continue; fi # Sécurité pour ignorer les lignes vides
         local id; id=$(get_package_info "$item" id)
         if [[ "${AUDIT_STATUS[$id]}" == "missing" ]]; then
             items_to_install+=("$item")
@@ -66,20 +67,25 @@ function show_installation_summary() {
     print_left_element "Internet connection:      Required" "$BLUEHI"
 
     # Affichage groupé par catégorie
-    for category_info in "${CATEGORIES[@]}"; do
-        local category_name="${cat%%:*}"
+    for cat in "${CATEGORIES[@]}"; do
+        local category_id="${cat%%:*}"
         local category_title="${cat#*:}"
 
-        print_center_element "$category_title" "$YELLOW"
-
-        mapfile -t packages_to_install < <(get_packages_by_category "$category_name")
-
-        local packages_to_print=()
-        for pkg_def in "${packages_to_install[@]}"; do
-            local desc; desc=$(get_package_info "$pkg_def" desc)
-            packages_to_print+=("$desc" "$GREENHI")
+        local items_in_this_category_for_grid=()
+        
+        for pkg_def in "${items_to_install[@]}"; do
+            # ...on vérifie s'il appartient à la catégorie actuelle.
+            if [[ "$(get_package_info "$pkg_def" category)" == "$category_id" ]]; then
+                # Si oui, on l'ajoute à la liste pour l'affichage en grille
+                items_in_this_category_for_grid+=("$(get_package_info "$pkg_def" desc)" "$GREEN")
+            fi
         done
-        print_grid 4 "${packages_to_print[@]}"
+
+        # On n'affiche la catégorie que si elle contient au moins un paquet à installer.
+        if [ ${#items_in_this_category_for_grid[@]} -gt 0 ]; then
+            print_center_element " $(echo "$category_title") " "$YELLOW"
+            print_grid 4 "${items_in_this_category_for_grid[@]}"
+        fi
     done
     print_table_line
     if [[ "$ASSUME_YES" != "true" ]]; then

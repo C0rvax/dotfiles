@@ -117,7 +117,7 @@ function ask_question {
         fi
     done
     
-    echo ""
+    echo "" >&2
     result_var="$response"
 }
 
