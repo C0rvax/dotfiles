@@ -12,6 +12,9 @@ function install_nvim {
 
     if [ -f "$nvim_path" ]; then
         log "INFO" "NeoVim AppImage is already installed."
+    elif [[ "$DRY_RUN" == "true" ]]; then
+        log "WARNING" "Simulation: Installation de NeoVim AppImage"
+        return 0
     else
         log "INFO" "Installing NeoVim AppImage..."
 

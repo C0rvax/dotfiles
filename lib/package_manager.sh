@@ -4,7 +4,7 @@ pkg_install() {
     local package="$1"
     
     if [[ "$DRY_RUN" == "true" ]]; then
-        echo "[SIMULATION] Installation de $package"
+        log "WARNING" "Simulation: Installation de $package"
         return 0
     fi
     
