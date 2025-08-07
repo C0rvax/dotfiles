@@ -52,7 +52,7 @@ function show_installation_summary() {
     for item in "${selected_ids[@]}"; do
         local id=$(get_package_info "$item" id)
         if [[ "${INSTALL_STATUS[$id]}" == "missing" ]]; then
-            items_to_install+=("$id")
+            items_to_install+=("$item")
         fi
     done
 
