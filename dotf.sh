@@ -37,7 +37,10 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 declare -gA AUDIT_STATUS
 
-display_logo
+if [[ "$SELECT_MODE" != "tui" ]]; then
+    display_logo
+fi
+
 detect_distro
 detect_desktop
 

@@ -59,27 +59,6 @@ function select_optional_packages() {
     printf '%s\n' "${optional_packages_to_add[@]}"
 }
 
-# function get_all_packages_for_tui() {
-#     # Créer une map pour une recherche facile du titre de la catégorie
-#     declare -A CAT_TITLE_MAP
-#     for cat_def in "${CATEGORIES[@]}"; do
-#         local name="${cat_def%%:*}"
-#         local title="${cat_def#*:}"
-#         CAT_TITLE_MAP["$name"]="$title"
-#     done
-
-#     while read -r pkg_def; do
-#         [[ -n "$pkg_def" ]] || continue
-        
-#         local category_name=$(get_package_info "$pkg_def" category)
-#         local level=$(get_package_info "$pkg_def" level)
-#         local desc=$(get_package_info "$pkg_def" desc)
-#         local category_title=${CAT_TITLE_MAP[$category_name]:-$category_name} # Utilise le nom si pas de titre
-        
-#         echo "$category_name:$category_title:$level:$desc"
-#     done < <(get_all_packages)
-# }
-
 function get_all_packages_for_tui() {
     declare -A CAT_TITLE_MAP
     for cat_def in "${CATEGORIES[@]}"; do
@@ -96,15 +75,14 @@ function get_all_packages_for_tui() {
         local level=$(get_package_info "$pkg_def" level)
         local desc=$(get_package_info "$pkg_def" desc)
         local category_title=${CAT_TITLE_MAP[$category_name]:-$category_name}
-        # On récupère le statut depuis la map globale remplie par l'audit silencieux
+        # Ajout de status pour l'audit
         local status=${AUDIT_STATUS[$id]:-missing} 
         
-        # NOUVEAU FORMAT : name:title:level:desc:status
+        # Ajout de status pour l'audit
         echo "$category_name:$category_title:$level:$desc:$status"
     done < <(get_all_packages)
 }
 
-# MODIFIÉ : Envoie le logo, un délimiteur, puis les données
 function select_installables_tui {
     log "INFO" "Launching advanced TUI package selector..."
 
@@ -116,18 +94,13 @@ function select_installables_tui {
         fi
     fi
 
-    # L'appel au sélecteur est maintenant un bloc de commandes
     local selected_output
     selected_output=$( {
-        # 1. Envoyer le logo
         echo "${DOT_LOGO[0]}"
-        # 2. Envoyer le délimiteur
         echo "---DATA---"
-        # 3. Envoyer les données des paquets
         get_all_packages_for_tui
     } | ./selector )
     
-    # Le reste de la fonction est inchangé, elle récupère les descriptions
     if [[ -z "$selected_output" ]]; then
         log "WARNING" "No packages selected or operation cancelled."
         return 0

@@ -196,12 +196,10 @@
 #include <locale.h>
 #include <wchar.h> 
 
-// --- STRUCTURES DE DONNÉES MODIFIÉES ---
 typedef enum { LEVEL_BASE, LEVEL_FULL, LEVEL_OPTIONAL, LEVEL_UNKNOWN } PackageLevel;
 typedef struct { char *description; PackageLevel level; bool selected; bool is_installed; } PackageItem; // Ajout de is_installed
 typedef struct { char *name; char *title; int *package_indices; int package_count; } CategoryItem;
 
-// Déclarations
 void parse_input(PackageItem **packages, int *pkg_count, CategoryItem **cats, int *cat_count);
 void draw_ui(WINDOW *win, WINDOW *help_win, CategoryItem *cats, int cat_count, PackageItem *pkgs, int highlighted_cat_idx);
 void free_memory(PackageItem *pkgs, int pkg_count, CategoryItem *cats, int cat_count);
@@ -216,7 +214,6 @@ int main(void) {
 
     parse_input(&all_packages, &package_count, &all_categories, &category_count);
     
-    // Le reste de main est inchangé...
     SCREEN *main_screen = NULL;
     FILE *tty_in = NULL, *tty_out = NULL;
     if (!isatty(STDIN_FILENO)) {
@@ -230,7 +227,7 @@ int main(void) {
     init_pair(1, COLOR_WHITE, COLOR_BLUE); init_pair(2, COLOR_CYAN, COLOR_BLACK);
     init_pair(3, COLOR_GREEN, COLOR_BLACK); init_pair(4, COLOR_CYAN, COLOR_BLACK);
     init_pair(5, COLOR_WHITE, COLOR_BLACK); init_pair(6, COLOR_BLACK, COLOR_WHITE);
-    init_pair(7, COLOR_BLACK, COLOR_WHITE); // Couleur pour les paquets installés (gris foncé simulé)
+    init_pair(7, COLOR_BLACK, COLOR_WHITE);
     
     int screen_h, screen_w; getmaxyx(stdscr, screen_h, screen_w);
     WINDOW *main_win = newwin(screen_h - 1, screen_w, 0, 0);
@@ -250,12 +247,10 @@ int main(void) {
                 CategoryItem*cat=&all_categories[highlighted_cat]; bool should_select_all=false;
                 for(int i=0;i<cat->package_count;i++){
                     PackageItem*pkg=&all_packages[cat->package_indices[i]];
-                    // On ne peut activer la sélection que s'il y a au moins un paquet non installé
                     if(pkg->level!=LEVEL_BASE && !pkg->is_installed && !pkg->selected){should_select_all=true;break;}
                 }
                 for(int i=0;i<cat->package_count;i++){
                     PackageItem*pkg=&all_packages[cat->package_indices[i]];
-                    // On ne modifie que les paquets modifiables ET non installés
                     if(pkg->level!=LEVEL_BASE && !pkg->is_installed) pkg->selected=should_select_all;
                 }
                 break;
@@ -269,7 +264,6 @@ end_loop:
     if (main_screen) { delscreen(main_screen); if(tty_in) fclose(tty_in); if(tty_out) fclose(tty_out); }
     if (ch == 10) {
         for (int i = 0; i < package_count; i++) {
-            // On ne renvoie que les paquets sélectionnés ET non installés
             if (all_packages[i].selected && !all_packages[i].is_installed) {
                 printf("%s\n", all_packages[i].description);
             }
@@ -280,7 +274,6 @@ end_loop:
 }
 
 void draw_ui(WINDOW *win, WINDOW *help_win, CategoryItem *categories, int cat_count, PackageItem *packages, int highlighted_cat_idx) {
-    // ... (début de la fonction inchangé) ...
     werase(win); box(win, 0, 0);
     int max_w, max_h; getmaxyx(win, max_h, max_w);
     const int NUM_COLUMNS = 3; const int col_width = (max_w-4)/NUM_COLUMNS; int current_y = 1;
@@ -303,11 +296,10 @@ void draw_ui(WINDOW *win, WINDOW *help_win, CategoryItem *categories, int cat_co
             PackageItem *pkg = &packages[cat->package_indices[j]];
             wchar_t display_str[256]; const wchar_t *prefix; int color_pair; attr_t extra_attrs = A_NORMAL;
 
-            // --- NOUVELLE LOGIQUE DE COULEUR ET D'ICÔNE ---
             if (pkg->is_installed) {
                 prefix = L"✓";
                 color_pair = 7; // Paquet installé (gris)
-                extra_attrs = A_DIM; // On le rend plus sombre
+                extra_attrs = A_DIM; // plus sombre
             } else if (pkg->level == LEVEL_BASE) {
                 prefix = L"✓";
                 color_pair = 4; // Bloqué
@@ -339,7 +331,6 @@ void draw_ui(WINDOW *win, WINDOW *help_win, CategoryItem *categories, int cat_co
 
 void parse_input(PackageItem **packages, int *pkg_count, CategoryItem **cats, int *cat_count) {
     char line[512];
-    // On ne parse pas le logo ici, on garde la version simple
     while (fgets(line, sizeof(line), stdin)) {
         line[strcspn(line, "\n")] = 0;
         char *name=strtok(line,":"), *title=strtok(NULL,":"), *level=strtok(NULL,":"), *desc=strtok(NULL,":"), *status=strtok(NULL,"");
@@ -353,7 +344,6 @@ void parse_input(PackageItem **packages, int *pkg_count, CategoryItem **cats, in
         
         pkg->is_installed = (strcmp(status, "installed") == 0);
 
-        // Les paquets de base et ceux déjà installés sont "sélectionnés" visuellement mais pas pour l'output
         if(strcmp(level,"base")==0){pkg->level=LEVEL_BASE;pkg->selected=true;}
         else{if(strcmp(level,"full")==0)pkg->level=LEVEL_FULL;else if(strcmp(level,"optional")==0)pkg->level=LEVEL_OPTIONAL;else pkg->level=LEVEL_UNKNOWN;pkg->selected=false;}
         
@@ -365,7 +355,6 @@ void parse_input(PackageItem **packages, int *pkg_count, CategoryItem **cats, in
     }
 }
 
-// Les fonctions find_or_create_category et free_memory restent les mêmes
 int find_or_create_category(const char* name, const char* title, CategoryItem **categories, int *count) {
     for (int i=0; i<*count; i++) if (strcmp((*categories)[i].name, name) == 0) return i;
     int new_index = (*count)++;

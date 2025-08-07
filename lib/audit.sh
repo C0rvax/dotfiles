@@ -1,50 +1,5 @@
 #!/bin/bash
 
-# function audit_packages() {
-#     local installed=0
-#     local missing=0
-
-#     print_title_element "SYSTEM" "$BLUEHI"
-# 	print_table_line
-#     print_system_info_row
-
-#     mapfile -t all_packages < <(get_all_packages)
-#     local total=${#all_packages[@]}
-
-#     for cat in "${CATEGORIES[@]}"; do
-#         local category_name="${cat%%:*}"
-#         local category_title="${cat#*:}"
-
-#         print_center_element "$category_title" "$YELLOW"
-
-#         mapfile -t packages_to_install < <(get_packages_by_category "$category_name")
-
-#         local packages_to_print=()
-#         for pkg_def in "${packages_to_install[@]}"; do
-#             local id; id=$(get_package_info "$pkg_def" id)
-#             local desc; desc=$(get_package_info "$pkg_def" desc)
-#             local check_cmd; check_cmd=$(get_package_info "$pkg_def" check)
-
-#             if eval "$check_cmd" &>/dev/null; then
-#                 ((installed++))
-#                 AUDIT_STATUS[$id]="installed"
-#                 packages_to_print+=("$desc" "$GREENHI")
-#                 #print_left_element "✓ $desc" "$GREEN"
-#             else
-#                 ((missing++))
-#                 AUDIT_STATUS[$id]="missing"
-#                 # packages_to_print+=("✗ $desc" "$REDHI")
-#                 packages_to_print+=("$desc" "$REDHI")
-
-#             fi
-#         done
-#         print_grid 4 "${packages_to_print[@]}"
-#     done
-#     print_table_line
-#     log "SUCCESS" "Audit finished : $installed installed, $missing missing."
-#     print_table_line
-# }
-
 function audit_packages() {
     local silent_mode=false
     if [[ "$1" == "silent" ]]; then
@@ -121,7 +76,6 @@ function show_installation_summary() {
         local items_in_this_category_for_grid=()
         
         for pkg_def in "${items_to_install[@]}"; do
-            # ...on vérifie s'il appartient à la catégorie actuelle.
             if [[ "$(get_package_info "$pkg_def" category)" == "$category_id" ]]; then
                 items_in_this_category_for_grid+=("$(get_package_info "$pkg_def" desc)" "$GREEN")
             fi
