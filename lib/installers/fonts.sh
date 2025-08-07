@@ -38,6 +38,4 @@ function install_fonts {
     else
         log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
     fi
-    log "SUCCESS" "Fonts and icons installed successfully."
-    print_table_line
 }

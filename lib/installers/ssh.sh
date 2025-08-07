@@ -15,7 +15,6 @@ function setup_ssh_and_git {
         if [[ $? -ne 0 ]]; then return 1; fi
     fi
 
-    print_table_line
     log "INFO" "Your public SSH key is:"
     local key=$(cat "$HOME/.ssh/id_ed25519.pub")
     log "WARNING" "$key"

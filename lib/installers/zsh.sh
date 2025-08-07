@@ -55,7 +55,5 @@ function install_zconfig {
     ln -sfn "$HOME/.zsh/plugins/zsh-autosuggestions" "$omz_custom_dir/plugins/zsh-autosuggestions"
     ln -sfn "$HOME/.zsh/plugins/zsh-syntax-highlighting" "$omz_custom_dir/plugins/zsh-syntax-highlighting"
     
-    log "SUCCESS" "Zsh custom configuration linked successfully."
-    print_table_line
     return 0
 }

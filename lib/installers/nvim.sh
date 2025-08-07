@@ -47,13 +47,9 @@ function install_nvim {
         fi
     fi
 
-    if ln -sfn "$nvim_config_source" "$nvim_config_target"; then
-        log "SUCCESS" "Neovim configuration linked."
-    else
+    if ! ln -sfn "$nvim_config_source" "$nvim_config_target"; then
         log "ERROR" "Failed to link Neovim configuration."
-        print_table_line
         return 1
     fi
-    print_table_line
     return 0
 }

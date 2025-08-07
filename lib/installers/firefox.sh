@@ -64,16 +64,11 @@ Pin-Priority: 1000
     fi
     if ! sudo apt-get update >> "$LOG_FILE" 2>&1; then
         log "ERROR" "apt-get update failed after adding Mozilla repo. Check '$LOG_FILE' for details."
-        print_table_line
         return 1
     fi
 
     if ! sudo apt-get install firefox firefox-l10n-fr -y >> "$LOG_FILE" 2>&1; then
         log "ERROR" "Failed to install Firefox packages from Mozilla repo. Check '$LOG_FILE' for details."
-        print_table_line
         return 1
     fi
-
-    log "SUCCESS" "Firefox installed successfully from the official Mozilla repository."
-    print_table_line
 }
