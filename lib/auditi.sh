@@ -1,30 +1,36 @@
 #!/bin/bash
 
-audit_packages() {
-    local total=0
+function run_audit() {
     local installed=0
     local missing=0
-    
-    echo "Vérification de votre système..."
-    
-    get_all_packages | while read -r pkg_def; do
-        local id=$(get_package_info "$pkg_def" id)
-        local desc=$(get_package_info "$pkg_def" desc)
-        local check_cmd=$(get_package_info "$pkg_def" check)
-        
-        ((total++))
-        
-        if eval "$check_cmd" 2>/dev/null; then
+
+    # On utilise mapfile pour charger tous les paquets en une fois, c'est plus propre
+    mapfile -t all_packages < <(get_all_packages)
+    local total=${#all_packages[@]}
+
+    log "INFO" "Lancement de l'audit de ${total} paquets..."
+    print_table_line
+
+    for pkg_def in "${all_packages[@]}"; do
+        local id; id=$(get_package_info "$pkg_def" id)
+        local desc; desc=$(get_package_info "$pkg_def" desc)
+        local check_cmd; check_cmd=$(get_package_info "$pkg_def" check)
+
+        # On exécute la vérification en masquant TOUTES les sorties
+        if eval "$check_cmd" &>/dev/null; then
             ((installed++))
-            echo "✓ $desc"
+            AUDIT_STATUS[$id]="installed"
+            print_left_element "✓ $desc" "$GREEN"
         else
             ((missing++))
-            echo "✗ $desc"
+            AUDIT_STATUS[$id]="missing"
+            print_left_element "✗ $desc" "$RED"
         fi
     done
-    
-    echo
-    echo "Résumé: $installed installés, $missing manquants"
+
+    print_table_line
+    log "SUCCESS" "Audit terminé : $installed installés, $missing manquants."
+    print_table_line
 }
 
 # === SÉLECTION INTERACTIVE ===

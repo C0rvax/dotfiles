@@ -15,6 +15,8 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 # --- DÉROULEMENT DU SCRIPT ---
 
+declare -gA AUDIT_STATUS
+
 echo "  - Variable \$SHELL : $SHELL"
 echo "  - Interpréteur actuel (via ps) : $(ps -p $$ -o comm=)"
 echo "  - Version de Bash :"
