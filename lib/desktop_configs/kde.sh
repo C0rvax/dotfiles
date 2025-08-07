@@ -31,10 +31,21 @@ function setup_kde {
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "View Style" "DetailTree"
 
 		# hidden files
-		kwriteconfig5 --file dolphinrc --group "ViewProperties/Global" --key "hiddenFilesShown" true
+		pkill -f dolphin 2>/dev/null || true
+		# Configuration principale pour les fichiers cachés
 		kwriteconfig5 --file dolphinrc --group "General" --key "ShowHiddenFiles" true
+
+		# Configuration pour les propriétés de vue globales
+		kwriteconfig5 --file dolphinrc --group "ViewProperties" --key "hiddenFilesShown" true
+
+		# Configuration alternative pour les versions récentes
+		kwriteconfig5 --file dolphinrc --group "PreviewSettings" --key "hiddenFilesShown" true
+
+		# Configuration pour ne pas se souvenir des propriétés de vue individuelles
 		kwriteconfig5 --file dolphinrc --group "General" --key "RememberViewProperties" false
 
+		# Configuration globale des fichiers cachés (pour KDE en général)
+		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Show hidden files" true
 
 		# Raccourci terminal
 		# kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"
@@ -47,7 +58,13 @@ function setup_kde {
 		kwriteconfig5 --file kiorc --group Confirmations --key ConfirmEmptyTrash false
 		kwriteconfig5 --file kiorc --group Confirmations --key ConfirmTrash false
 
+		# Forcer la synchronisation des configurations
+		sync
+
 		# Appliquer les changements
 		qdbus org.kde.KWin /KWin reconfigure
+
+		qdbus org.kde.kded5 /kded unloadModule filenamesearchmodule 2>/dev/null || true
+		qdbus org.kde.kded5 /kded loadModule filenamesearchmodule 2>/dev/null || true
 	fi
 }
