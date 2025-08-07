@@ -202,12 +202,13 @@ audit_packages() {
 
 		((total++))
 
-		if eval "$check_cmd" 2>/dev/null; then
+		if eval "$check_cmd" >/dev/null; then
 			((installed++))
 			echo "✓ $desc"
 		else
 			((missing++))
 			echo "✗ $desc"
+			echo "$missing"
 		fi
 	done
 
