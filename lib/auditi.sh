@@ -127,12 +127,9 @@ function run_package_installation() {
 
     # 3. Collecte des paquets à installer (ne change pas)
     local packages_to_install=()
-    echo "Paquets à installer pour le type: '$install_type'\n"
+    echo "Paquets à installer pour le type: '$install_type'"
     case "$install_type" in
     base)
-        local pak=("$(get_packages_by_level "base")")
-        echo "Paquets de base sélectionnés : ${pak[@]}"
-        #mapfile -t pakages_to_install << ${pak[@]}
         mapfile -t packages_to_install < <(get_packages_by_level "base")
         ;;
     full)
