@@ -59,52 +59,109 @@ function select_optional_packages() {
     printf '%s\n' "${optional_packages_to_add[@]}"
 }
 
-function select_installables_tui {
-    log "INFO" "Launching TUI package selector..."
+# function select_installables_tui {
+#     log "INFO" "Launching TUI package selector..."
 
-    # Créer un tableau associatif pour mapper le titre affiché au nom de catégorie
-    local category_titles=()
-    declare -A TITLE_TO_CAT_NAME_MAP
-    for cat in "${CATEGORIES[@]}"; do
-        local category_name="${cat%%:*}"
-        local category_title="${cat#*:}"
+#     local category_titles=()
+#     declare -A TITLE_TO_CAT_NAME_MAP
+#     for cat in "${CATEGORIES[@]}"; do
+#         local category_name="${cat%%:*}"
+#         local category_title="${cat#*:}"
         
-        category_titles+=("$category_title")
-        TITLE_TO_CAT_NAME_MAP["$category_title"]="$category_name"
-    done
+#         category_titles+=("$category_title")
+#         TITLE_TO_CAT_NAME_MAP["$category_title"]="$category_name"
+#     done
     
+#     # Compilation du sélecteur (si nécessaire)
+#     if [ ! -x ./selector ]; then
+#         log "WARNING" "'selector' not compiled. Attempting compilation..."
+#         if ! command -v gcc &> /dev/null || ! gcc selector.c -o selector -lncurses; then
+#             log "ERROR" "Failed to compile 'selector'. Aborting."
+#             exit 1
+#         fi
+#     fi
+
+#     # Lancer le sélecteur C et capturer les titres sélectionnés
+#     local selected_output
+#     selected_output=$(./selector "${category_titles[@]}")
+    
+#     # Si l'utilisateur annule (sortie vide), on ne renvoie rien.
+#     if [[ -z "$selected_output" ]]; then
+#         log "WARNING" "No categories selected or operation cancelled."
+#         return 0
+#     fi
+    
+#     # Convertir la chaîne de sortie en tableau de titres
+#     local selected_titles=()
+#     mapfile -t selected_titles <<< "$selected_output"
+
+#     # Boucler sur les titres sélectionnés
+#     for title in "${selected_titles[@]}"; do
+#         # Retrouver le nom de la catégorie (ex: "dev") à partir du titre (ex: "Development")
+#         local cat_name=${TITLE_TO_CAT_NAME_MAP["$title"]}
+        
+#         if [[ -n "$cat_name" ]]; then
+#             # Utiliser votre fonction existante pour récupérer toutes les définitions de paquets
+#             # de cette catégorie et les IMPRIMER sur la sortie standard.
+#             get_packages_by_category "$cat_name"
+#         fi
+#     done
+# }
+
+function get_all_packages_for_tui() {
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        local category=$(get_package_info "$pkg_def" category)
+        local level=$(get_package_info "$pkg_def" level)
+        local desc=$(get_package_info "$pkg_def" desc)
+        
+        # On envoie les données formatées, que le C lira sur son entrée standard
+        echo "$category:$level:$desc"
+    done < <(get_all_packages)
+}
+
+
+function select_installables_tui {
+    log "INFO" "Launching advanced TUI package selector..."
+
     # Compilation du sélecteur (si nécessaire)
     if [ ! -x ./selector ]; then
         log "WARNING" "'selector' not compiled. Attempting compilation..."
-        if ! command -v gcc &> /dev/null || ! gcc selector.c -o selector -lncurses; then
+        # On ajoute -ltinfo pour certaines distributions modernes si ncurses est séparé
+        if ! command -v gcc &> /dev/null || ! gcc selector.c -o selector -lncurses -ltinfo; then
             log "ERROR" "Failed to compile 'selector'. Aborting."
             exit 1
         fi
     fi
 
-    # Lancer le sélecteur C et capturer les titres sélectionnés
+    # Lancer le sélecteur C.
+    # On lui envoie toutes les informations sur les paquets via son entrée standard (stdin).
+    # On récupère les descriptions sélectionnées sur sa sortie standard (stdout).
     local selected_output
-    selected_output=$(./selector "${category_titles[@]}")
+    selected_output=$(get_all_packages_for_tui | ./selector)
     
-    # Si l'utilisateur annule (sortie vide), on ne renvoie rien.
+    # Si l'utilisateur annule ou qu'il y a une erreur, la sortie sera vide.
     if [[ -z "$selected_output" ]]; then
-        log "WARNING" "No categories selected or operation cancelled."
+        log "WARNING" "No packages selected or operation cancelled."
         return 0
     fi
     
-    # Convertir la chaîne de sortie en tableau de titres
-    local selected_titles=()
-    mapfile -t selected_titles <<< "$selected_output"
-
-    # Boucler sur les titres sélectionnés
-    for title in "${selected_titles[@]}"; do
-        # Retrouver le nom de la catégorie (ex: "dev") à partir du titre (ex: "Development")
-        local cat_name=${TITLE_TO_CAT_NAME_MAP["$title"]}
-        
-        if [[ -n "$cat_name" ]]; then
-            # Utiliser votre fonction existante pour récupérer toutes les définitions de paquets
-            # de cette catégorie et les IMPRIMER sur la sortie standard.
-            get_packages_by_category "$cat_name"
-        fi
+    # La sortie du C est une liste de descriptions. Nous devons maintenant retrouver
+    # la définition complète de chaque paquet correspondant à ces descriptions.
+    local all_packages_defs
+    mapfile -t all_packages_defs < <(get_all_packages)
+    
+    local selected_descriptions
+    mapfile -t selected_descriptions <<< "$selected_output"
+    
+    for desc in "${selected_descriptions[@]}"; do
+        for pkg_def in "${all_packages_defs[@]}"; do
+            if [[ "$(get_package_info "$pkg_def" desc)" == "$desc" ]]; then
+                # On a trouvé la définition complète, on l'imprime pour que mapfile la récupère
+                echo "$pkg_def"
+                break # On passe à la description suivante
+            fi
+        done
     done
 }
