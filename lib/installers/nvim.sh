@@ -8,6 +8,7 @@ function install_nvim {
     local nvim_config_target="$HOME/.config/nvim"
     local appimage_dir="$HOME/AppImage"
     local nvim_path="$appimage_dir/nvim.appimage"
+    local clang_path="$dotfiles_dir/home/clang-format"
 
     if check_file "$nvim_path"; then
         log "INFO" "NeoVim AppImage is already installed."
@@ -38,6 +39,13 @@ function install_nvim {
     fi
 
     mkdir -p "$(dirname "$nvim_config_target")"
+
+    if [ -s "$clang_path" ]; then
+        if ! ln -sfn "$clang_path" "$HOME/.clang-format"; then
+            log "ERROR" "Failed to link clang-format."
+            return 1
+        fi
+    fi
 
     if ln -sfn "$nvim_config_source" "$nvim_config_target"; then
         log "SUCCESS" "Neovim configuration linked."
