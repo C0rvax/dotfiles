@@ -22,7 +22,6 @@ bash --version | head -n 1
 echo
 
 prompt_for_sudo
-clear
 display_logo
 detect_distro
 detect_desktop

@@ -45,20 +45,27 @@ get_all_packages() {
     printf '%s\n' "${SYSTEM_PACKAGES[@]}" "${SPECIAL_INSTALLS[@]}" "${OPTIONAL_PACKAGES[@]}"
 }
 
-get_packages_by_level() {
-    local level="$1"
-    get_all_packages | while read -r pkg; do
-        if [[ "$(get_package_info "$pkg" level)" == "$level" ]]; then
-            echo "$pkg"
+function get_packages_by_level() {
+    local level_filter="$1"
+    # On applique la correction du subshell ici aussi !
+    while read -r pkg_def; do
+        # On ignore les lignes vides qui pourraient se glisser
+        [[ -n "$pkg_def" ]] || continue
+        
+        if [[ "$(get_package_info "$pkg_def" level)" == "$level_filter" ]]; then
+            echo "$pkg_def"
         fi
-    done
+    done < <(get_all_packages)
 }
 
-get_packages_by_category() {
-    local category="$1"
-    get_all_packages | while read -r pkg; do
-        if [[ "$(get_package_info "$pkg" category)" == "$category" ]]; then
-            echo "$pkg"
+function get_packages_by_category() {
+    local category_filter="$1"
+    # Et ici aussi !
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        if [[ "$(get_package_info "$pkg_def" category)" == "$category_filter" ]]; then
+            echo "$pkg_def"
         fi
-    done
+    done < <(get_all_packages)
 }
