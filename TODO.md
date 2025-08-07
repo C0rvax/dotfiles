@@ -4,7 +4,7 @@
 - [ ] driver nvidia sudo apt install nvidia-driver-550
 - [ ] pipx install compiledb ?
 - [ ] ledger live ?
-- [ ] Link .clang-format -> home
+- [x] Link .clang-format -> home
 
 ---
 
@@ -19,9 +19,9 @@
 
 ## ⚠️ BUGS
 
-- [ ] Fix node
+- [x] Fix node
 - [ ] Fichiers cachés kde
-- [ ] Gestion sudo
+- [x] Gestion sudo
 - [ ] Icons ?
 
 ---
