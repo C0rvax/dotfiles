@@ -124,7 +124,7 @@ function safe_download {
 
     log "DL" "Downloading $description..."
 
-    if ! wget -O "$output" "$url" > ${LOG_FILE} 2>&1; then
+    if ! wget -O "$output" "$url" >> ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to download $description"
         log "INFO" "   URL: $url"
         return 1
@@ -158,7 +158,7 @@ function safe_git_clone {
         fi
     fi
 
-    if ! git clone "$repo_url" "$destination" > ${LOG_FILE} 2>&1; then
+    if ! git clone "$repo_url" "$destination" >> ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to clone $description"
         log "INFO" "   Repo: $repo_url"
         return 1

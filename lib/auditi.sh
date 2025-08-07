@@ -34,24 +34,6 @@ function audit_packages() {
     print_table_line
 }
 
-# === SÉLECTION INTERACTIVE ===
-
-select_installation_type() {
-    echo "Choisissez votre type d'installation:"
-    echo "1) Base (outils essentiels)"
-    echo "2) Complète (base + applications)"
-    echo "3) Personnalisée"
-    
-    read -p "Votre choix [1-3]: " choice </dev/tty
-    
-    case "$choice" in
-        1) echo "base" ;;
-        2) echo "full" ;;
-        3) echo "custom" ;;
-        *) echo "base" ;;  # Par défaut
-    esac
-}
-
 function select_optional_packages() {
     local optional_packages_to_add=()
     local temp_packages=()
@@ -165,7 +147,7 @@ function run_package_installation() {
     if [[ ${#packages_to_install[@]} -gt 0 ]]; then
         echo
         echo "Paquets sélectionnés: ${#packages_to_install[@]}"
-        echo "Liste des paquets: ${packages_to_install[*]}"
+        echo "Liste des paquets: ${packages_to_install[@]}"
 
         # On affiche la liste pour déboguer si besoin
         # printf " - %s\n" "${packages_to_install[@]}"
