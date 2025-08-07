@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function run_audit() {
+function audit_packages() {
     local installed=0
     local missing=0
 
