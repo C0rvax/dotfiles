@@ -162,6 +162,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h> // Ajout pour le type bool
 
 // --- STRUCTURES DE DONNÉES ---
 
@@ -203,7 +204,7 @@ int main(void) {
     PackageItem *all_packages = NULL;
     CategoryItem *all_categories = NULL;
     int package_count = 0;
-    int category_count = 0;
+    int category_count = 0; // La variable est bien déclarée ici
     
     parse_input(&all_packages, &package_count, &all_categories, &category_count);
 
@@ -229,7 +230,7 @@ int main(void) {
 
     int cat_win_w = screen_w / 4;
     int pkg_win_w = screen_w - cat_win_w;
-    int win_h = screen_h - 3; // Laisse 1 ligne pour le titre, 2 pour l'aide
+    int win_h = screen_h - 2; // Laisse 1 ligne pour le titre, 1 pour l'aide
 
     mvprintw(0, (screen_w - 28) / 2, "Dotfiles - Package Selector");
     refresh();
@@ -253,73 +254,68 @@ int main(void) {
         switch (ch) {
             case KEY_UP:
                 if (active_pane == PANE_CATEGORIES) {
-                    cat_highlight = (cat_highlight == 0) ? cat_count - 1 : cat_highlight - 1;
+                    // CORRECTION 1 : Utilisation de category_count
+                    cat_highlight = (cat_highlight == 0) ? category_count - 1 : cat_highlight - 1;
                     pkg_highlight = 0; // Reset sur changement de catégorie
                     pkg_scroll_offset = 0;
                 } else if (packages_in_cat > 0) {
                     pkg_highlight--;
                     if (pkg_highlight < 0) pkg_highlight = packages_in_cat - 1;
-                    // Gérer le scrolling
                     if (pkg_highlight < pkg_scroll_offset) {
                         pkg_scroll_offset = pkg_highlight;
-                    }
-                    if (pkg_highlight >= pkg_scroll_offset + (win_h - 2)) {
-                        pkg_scroll_offset = pkg_highlight - (win_h - 2) + 1;
                     }
                 }
                 break;
             
             case KEY_DOWN:
                 if (active_pane == PANE_CATEGORIES) {
-                    cat_highlight = (cat_highlight == cat_count - 1) ? 0 : cat_highlight + 1;
-                    pkg_highlight = 0; // Reset
+                    // CORRECTION 1 : Utilisation de category_count
+                    cat_highlight = (cat_highlight == category_count - 1) ? 0 : cat_highlight + 1;
+                    pkg_highlight = 0;
                     pkg_scroll_offset = 0;
                 } else if (packages_in_cat > 0) {
                     pkg_highlight++;
                     if (pkg_highlight >= packages_in_cat) pkg_highlight = 0;
-                    // Gérer le scrolling
                     if (pkg_highlight >= pkg_scroll_offset + (win_h - 2)) {
                         pkg_scroll_offset++;
                     }
-                     if (pkg_highlight < pkg_scroll_offset) {
+                    if (pkg_highlight < pkg_scroll_offset) {
                         pkg_scroll_offset = pkg_highlight;
                     }
                 }
                 break;
 
-            case '\t': // Touche Tab pour changer de panneau
+            case '\t':
             case KEY_RIGHT:
             case KEY_LEFT:
                 active_pane = (active_pane == PANE_CATEGORIES) ? PANE_PACKAGES : PANE_CATEGORIES;
                 break;
             
-            case ' ': // Barre espace
+            case ' ':
                 if (active_pane == PANE_PACKAGES && packages_in_cat > 0) {
-                    // Coche/décoche un paquet individuel
                     int pkg_idx = current_category->package_indices[pkg_highlight];
-                    if (all_packages[pkg_idx].level != LEVEL_BASE) { // On ne peut pas décocher un paquet de base
+                    if (all_packages[pkg_idx].level != LEVEL_BASE) {
                         all_packages[pkg_idx].selected = !all_packages[pkg_idx].selected;
                     }
                 } else if (active_pane == PANE_CATEGORIES) {
-                    // Coche/décoche tous les paquets (non-base) de la catégorie
-                    bool all_selected = true;
+                    bool all_are_selected = true;
                     for (int i = 0; i < packages_in_cat; i++) {
                         int pkg_idx = current_category->package_indices[i];
                         if (all_packages[pkg_idx].level != LEVEL_BASE && !all_packages[pkg_idx].selected) {
-                            all_selected = false;
+                            all_are_selected = false;
                             break;
                         }
                     }
                     for (int i = 0; i < packages_in_cat; i++) {
                         int pkg_idx = current_category->package_indices[i];
                         if (all_packages[pkg_idx].level != LEVEL_BASE) {
-                             all_packages[pkg_idx].selected = !all_selected;
+                             all_packages[pkg_idx].selected = !all_are_selected;
                         }
                     }
                 }
                 break;
 
-            case 10: // Touche Entrée
+            case 10:
                 goto end_loop;
         }
 
@@ -329,8 +325,7 @@ int main(void) {
 end_loop:
     endwin();
 
-    // --- IMPRESSION DES RÉSULTATS ---
-    if (ch == 10) { // Si on a quitté avec Entrée
+    if (ch == 10) {
         for (int i = 0; i < package_count; i++) {
             if (all_packages[i].selected) {
                 printf("%s\n", all_packages[i].description);
@@ -338,19 +333,14 @@ end_loop:
         }
     }
     
-    // --- NETTOYAGE ---
     free_memory(all_packages, package_count, all_categories, category_count);
     return 0;
 }
-
-
-// --- DÉFINITIONS DE FONCTIONS ---
 
 void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *categories, int cat_count, PackageItem *packages, int active_pane, int cat_highlight, int pkg_highlight, int pkg_scroll_offset) {
     werase(cat_win);
     werase(pkg_win);
 
-    // Dessiner les boîtes et les titres
     wattron(cat_win, COLOR_PAIR(1) | A_BOLD);
     box(cat_win, 0, 0);
     mvwprintw(cat_win, 0, 2, " Categories ");
@@ -361,10 +351,9 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
     mvwprintw(pkg_win, 0, 2, " Packages ");
     wattroff(pkg_win, COLOR_PAIR(1) | A_BOLD);
 
-    // Mettre en évidence le panneau actif
     if (active_pane == PANE_CATEGORIES) {
         wattron(cat_win, COLOR_PAIR(3));
-        box(cat_win, 0, 0); // Redessiner la boîte avec la couleur active
+        box(cat_win, 0, 0);
         mvwprintw(cat_win, 0, 2, " Categories ");
         wattroff(cat_win, COLOR_PAIR(3));
     } else {
@@ -374,7 +363,6 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
         wattroff(pkg_win, COLOR_PAIR(3));
     }
 
-    // Dessiner la liste des catégories
     for (int i = 0; i < cat_count; i++) {
         if (i == cat_highlight) {
             wattron(cat_win, COLOR_PAIR(2));
@@ -385,7 +373,6 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
         }
     }
 
-    // Dessiner la liste des paquets pour la catégorie sélectionnée
     CategoryItem *current_cat = &categories[cat_highlight];
     int win_h, win_w;
     getmaxyx(pkg_win, win_h, win_w);
@@ -398,8 +385,6 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
 
         if (current_pkg_list_idx == pkg_highlight) {
             wattron(pkg_win, COLOR_PAIR(2));
-        } else {
-            wattron(pkg_win, COLOR_PAIR(6));
         }
         
         const char *prefix;
@@ -416,12 +401,13 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
             color_pair = 6;
         }
 
-        mvwprintw(pkg_win, i + 1, 2, ""); // Positionner le curseur
+        // CORRECTION 2 : Utilisation de wmove au lieu de mvwprintw avec chaîne vide
+        wmove(pkg_win, i + 1, 2); 
+        
         wattron(pkg_win, COLOR_PAIR(color_pair));
         wprintw(pkg_win, "%s", prefix);
         wattroff(pkg_win, COLOR_PAIR(color_pair));
 
-        // Réappliquer la surbrillance pour le reste de la ligne
         if (current_pkg_list_idx == pkg_highlight) {
              wattron(pkg_win, COLOR_PAIR(2));
         } else {
@@ -434,7 +420,6 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
         }
     }
 
-    // Dessiner la barre d'aide
     wbkgd(help_win, COLOR_PAIR(7));
     werase(help_win);
     mvwprintw(help_win, 0, 1, "↑/↓: Navigate | TAB: Switch Pane | SPACE: Toggle | ENTER: Confirm | Q: Quit");
@@ -444,7 +429,6 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
     wrefresh(help_win);
 }
 
-// Fonction pour trouver l'index d'une catégorie. Si elle n'existe pas, la crée.
 int find_or_create_category(const char* name, CategoryItem **categories, int *count) {
     for (int i = 0; i < *count; i++) {
         if (strcmp((*categories)[i].name, name) == 0) {
@@ -452,7 +436,6 @@ int find_or_create_category(const char* name, CategoryItem **categories, int *co
         }
     }
     
-    // Pas trouvée, on la crée
     int new_index = *count;
     (*count)++;
     *categories = realloc(*categories, (*count) * sizeof(CategoryItem));
@@ -466,31 +449,33 @@ int find_or_create_category(const char* name, CategoryItem **categories, int *co
 
 void parse_input(PackageItem **packages, int *package_count, CategoryItem **categories, int *category_count) {
     char line[MAX_LINE_LEN];
-    *packages = malloc(MAX_ITEMS * sizeof(PackageItem));
-    *categories = malloc(MAX_ITEMS * sizeof(CategoryItem));
+    // On ne pré-alloue plus, on va utiliser realloc pour être plus dynamique
+    // *packages = malloc(MAX_ITEMS * sizeof(PackageItem)); 
+    // *categories = malloc(MAX_ITEMS * sizeof(CategoryItem));
 
     while (fgets(line, sizeof(line), stdin)) {
-        line[strcspn(line, "\n")] = 0; // Enlever le newline
+        line[strcspn(line, "\n")] = 0;
 
-        char *cat_name = strtok(line, ":");
-        char *level_str = strtok(NULL, ":");
-        char *desc = strtok(NULL, "");
+        char *cat_name_token = strtok(line, ":");
+        char *level_str_token = strtok(NULL, ":");
+        char *desc_token = strtok(NULL, "");
 
-        if (!cat_name || !level_str || !desc) continue;
-
-        int pkg_idx = (*package_count)++;
+        if (!cat_name_token || !level_str_token || !desc_token) continue;
+        
+        (*package_count)++;
+        *packages = realloc(*packages, (*package_count) * sizeof(PackageItem));
+        int pkg_idx = (*package_count) - 1;
         PackageItem *pkg = &(*packages)[pkg_idx];
         
-        pkg->description = strdup(desc);
+        pkg->description = strdup(desc_token);
         
-        // Parser le niveau
-        if (strcmp(level_str, "base") == 0) {
+        if (strcmp(level_str_token, "base") == 0) {
             pkg->level = LEVEL_BASE;
-            pkg->selected = true; // Les paquets de base sont sélectionnés par défaut
-        } else if (strcmp(level_str, "full") == 0) {
+            pkg->selected = true;
+        } else if (strcmp(level_str_token, "full") == 0) {
             pkg->level = LEVEL_FULL;
             pkg->selected = false;
-        } else if (strcmp(level_str, "optional") == 0) {
+        } else if (strcmp(level_str_token, "optional") == 0) {
             pkg->level = LEVEL_OPTIONAL;
             pkg->selected = false;
         } else {
@@ -498,8 +483,7 @@ void parse_input(PackageItem **packages, int *package_count, CategoryItem **cate
             pkg->selected = false;
         }
 
-        // Gérer les catégories
-        int cat_idx = find_or_create_category(cat_name, categories, category_count);
+        int cat_idx = find_or_create_category(cat_name_token, categories, category_count);
         pkg->category_index = cat_idx;
 
         CategoryItem *cat = &(*categories)[cat_idx];
@@ -510,14 +494,17 @@ void parse_input(PackageItem **packages, int *package_count, CategoryItem **cate
 }
 
 void free_memory(PackageItem *packages, int package_count, CategoryItem *categories, int category_count) {
-    for (int i = 0; i < package_count; i++) {
-        free(packages[i].description);
+    if (packages) {
+        for (int i = 0; i < package_count; i++) {
+            free(packages[i].description);
+        }
+        free(packages);
     }
-    free(packages);
-
-    for (int i = 0; i < category_count; i++) {
-        free(categories[i].name);
-        free(categories[i].package_indices);
+    if (categories) {
+        for (int i = 0; i < category_count; i++) {
+            free(categories[i].name);
+            free(categories[i].package_indices);
+        }
+        free(categories);
     }
-    free(categories);
 }
