@@ -11,13 +11,11 @@ function audit_packages() {
     mapfile -t all_packages < <(get_all_packages)
     local total=${#all_packages[@]}
 
-    for cat in "${CATEGORIES_ORDER[@]}"; do
-        local category_name="${cat%%:*}"
-        local category_title="${cat#*:}"
-        
-        print_center_element " $(echo "$category_title") " "$YELLOW"
-        
-        mapfile -t packages_to_install < <(get_packages_by_category "$category_name")
+    for cat in "${!CATEGORIES[@]}"; do
+
+        print_center_element " ${CATEGORIES[$cat]} " "$YELLOW"
+
+        mapfile -t packages_to_install < <(get_packages_by_category "$cat")
 
         for pkg_def in "${packages_to_install[@]}"; do
             local id; id=$(get_package_info "$pkg_def" id)
