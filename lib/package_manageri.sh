@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # ==============================================================================
-# FONCTIONS DE MANIPULATION DES PAQUETS
+# FONCTIONS DE MANIPULATION DES PAQUETS (Version Robuste)
 # ==============================================================================
 
-# === FONCTIONS DE PARSING ===
+# === FONCTIONS DE PARSING (ne changent pas) ===
 get_package_info() {
 	local package_def="$1"
 	local field="$2"
@@ -19,75 +19,37 @@ get_package_info() {
 	esac
 }
 
-get_all_packages() {
-	printf '%s\n' "${SYSTEM_PACKAGES[@]}" "${SPECIAL_INSTALLS[@]}" "${OPTIONAL_PACKAGES[@]}"
+# === FONCTIONS DE COLLECTE (changent radicalement) ===
+
+# Fonction interne pour lire les paquets, évite la répétition
+_collect_packages_into_global_array() {
+    local -n target_array=$1 # On passe le NOM du tableau à remplir
+    local condition_type=$2   # "level" ou "category"
+    local condition_value=$3  # "base", "full", "office", etc.
+
+    # On vide le tableau cible avant de le remplir
+    target_array=()
+
+    # On parcourt TOUS les paquets définis
+    for pkg_def in "${SYSTEM_PACKAGES[@]}" "${SPECIAL_INSTALLS[@]}" "${OPTIONAL_PACKAGES[@]}"; do
+        local current_value
+        current_value=$(get_package_info "$pkg_def" "$condition_type")
+        
+        if [[ "$current_value" == "$condition_value" ]]; then
+            # On ajoute la définition de paquet au tableau cible
+            target_array+=("$pkg_def")
+        fi
+    done
 }
 
-get_packages_by_level() {
-    local level_filter="$1"
-    while IFS= read -r pkg_def; do
-        [[ -n "$pkg_def" ]] || continue
-        if [[ "$(get_package_info "$pkg_def" level)" == "$level_filter" ]]; then
-            echo "$pkg_def"
-        fi
-    done < <(get_all_packages)
+# NOTE: Ces fonctions ne retournent plus rien (pas de 'echo').
+# Elles modifient des variables globales.
+function get_packages_by_level() {
+    # Le résultat sera dans le tableau global PACKAGES_BY_LEVEL_RESULT
+    _collect_packages_into_global_array PACKAGES_BY_LEVEL_RESULT "level" "$1"
 }
 
-get_packages_by_category() {
-    local category_filter="$1"
-    while IFS= read -r pkg_def; do
-        [[ -n "$pkg_def" ]] || continue
-        if [[ "$(get_package_info "$pkg_def" category)" == "$category_filter" ]]; then
-            echo "$pkg_def"
-        fi
-    done < <(get_all_packages)
-}
-
-# === WORKFLOW D'INSTALLATION ===
-# Il est logique de le mettre ici car il dépend de toutes les fonctions ci-dessus.
-function run_package_installation() {
-    audit_packages
-    local install_type
-    if [[ "$ASSUME_YES" == "true" ]]; then
-        install_type="base"
-    else
-        install_type=$(select_installation_type)
-    fi
-    local packages_to_install=()
-    case "$install_type" in
-    base)
-        mapfile -t packages_to_install < <(get_packages_by_level "base")
-        ;;
-    full)
-        mapfile -t packages_to_install < <(get_packages_by_level "base")
-        mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
-        ;;
-    custom)
-        echo "Mode personnalisé pas encore implémenté."
-        # Ici on pourrait appeler le TUI `selector`
-        return
-        ;;
-    esac
-    if [[ "$install_type" != "base" && "$ASSUME_YES" != "true" ]]; then
-        local optional_packages
-        mapfile -t optional_packages < <(select_optional_packages)
-        if [[ ${#optional_packages[@]} -gt 0 ]]; then
-            packages_to_install+=("${optional_packages[@]}")
-        fi
-    fi
-    if [[ ${#packages_to_install[@]} -gt 0 ]]; then
-        print_table_line
-        log "INFO" "Paquets sélectionnés pour l'installation: ${#packages_to_install[@]}"
-        print_table_line
-        if [[ "$ASSUME_YES" != "true" ]]; then
-            read -p "Continuer? [Y/n]: " confirm
-            if [[ "$confirm" =~ ^[nN]$ ]]; then
-                log "WARNING" "Installation annulée."
-                return 1
-            fi
-        fi
-        install_selected_packages "${packages_to_install[@]}"
-    else
-        log "INFO" "Rien à installer."
-    fi
+function get_packages_by_category() {
+    # Le résultat sera dans le tableau global PACKAGES_BY_CATEGORY_RESULT
+    _collect_packages_into_global_array PACKAGES_BY_CATEGORY_RESULT "category" "$1"
 }

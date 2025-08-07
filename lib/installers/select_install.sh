@@ -122,26 +122,30 @@ select_installation_type() {
 	esac
 }
 
-select_optional_packages() {
-    local optional_packages_to_add=()
+
+# Cette fonction ne retourne plus de valeur.
+# Elle modifie directement le tableau global passé en argument.
+function select_optional_packages_into() {
+    local -n target_array=$1 # On récupère le nom du tableau à modifier
     local temp_packages=()
+
     echo >&2
     echo "Paquets optionnels disponibles:" >&2
+
     read -p "Inclure les outils de développement embarqué? [y/N]: " embedded
     if [[ "$embedded" =~ ^[yY]$ ]]; then
-        mapfile -t temp_packages < <(get_packages_by_category "embedded")
-        optional_packages_to_add+=("${temp_packages[@]}")
+        # On remplit un tableau global temporaire
+        get_packages_by_category "embedded"
+        # On ajoute le contenu de ce tableau global au tableau cible
+        target_array+=("${PACKAGES_BY_CATEGORY_RESULT[@]}")
     fi
+
     read -p "Inclure LibreOffice? [y/N]: " office
     if [[ "$office" =~ ^[yY]$ ]]; then
-        mapfile -t temp_packages < <(get_packages_by_category "office")
-        optional_packages_to_add+=("${temp_packages[@]}")
-    fi
-    if [[ ${#optional_packages_to_add[@]} -gt 0 ]]; then
-        printf '%s\n' "${optional_packages_to_add[@]}"
+        get_packages_by_category "office"
+        target_array+=("${PACKAGES_BY_CATEGORY_RESULT[@]}")
     fi
 }
-
 install_selected_packages() {
     local packages_to_process=("$@")
     local current=0
