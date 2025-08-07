@@ -275,8 +275,8 @@ function select_optional_packages() {
     local optional_packages_to_add=()
     local temp_packages=()
 
-    echo
-    echo "Paquets optionnels disponibles:"
+    echo >&2
+    echo "Paquets optionnels disponibles:" >&2
 
     # Développement embarqué
     read -p "Inclure les outils de développement embarqué? [y/N]: " embedded
