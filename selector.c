@@ -162,75 +162,79 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdbool.h> // Ajout pour le type bool
+#include <stdbool.h>
 
-// --- STRUCTURES DE DONNÉES ---
+// --- STRUCTURES DE DONNÉES (inchangées) ---
+typedef enum { LEVEL_BASE, LEVEL_FULL, LEVEL_OPTIONAL, LEVEL_UNKNOWN } PackageLevel;
+typedef struct { char *description; PackageLevel level; int category_index; bool selected; } PackageItem;
+typedef struct { char *name; int *package_indices; int package_count; } CategoryItem;
 
-typedef enum {
-    LEVEL_BASE,
-    LEVEL_FULL,
-    LEVEL_OPTIONAL,
-    LEVEL_UNKNOWN
-} PackageLevel;
-
-typedef struct {
-    char *description;
-    PackageLevel level;
-    int category_index; // Index de sa catégorie dans le tableau `categories`
-    bool selected;
-} PackageItem;
-
-typedef struct {
-    char *name;
-    int *package_indices; // Tableau d'indices vers les paquets de cette catégorie
-    int package_count;
-} CategoryItem;
-
-// --- DÉCLARATIONS DE FONCTIONS ---
-
+// --- DÉCLARATIONS DE FONCTIONS (inchangées) ---
 void parse_input(PackageItem **packages, int *package_count, CategoryItem **categories, int *category_count);
 void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *categories, int cat_count, PackageItem *packages, int active_pane, int cat_highlight, int pkg_highlight, int pkg_scroll_offset);
 void free_memory(PackageItem *packages, int package_count, CategoryItem *categories, int category_count);
 
-// --- CONSTANTES ---
-
+// --- CONSTANTES (inchangées) ---
 #define PANE_CATEGORIES 0
 #define PANE_PACKAGES   1
-#define MAX_ITEMS 512       // Nombre max de paquets/catégories
 #define MAX_LINE_LEN 256
 
 int main(void) {
-    // --- LECTURE ET PARSING DES DONNÉES DEPUIS STDIN ---
     PackageItem *all_packages = NULL;
     CategoryItem *all_categories = NULL;
     int package_count = 0;
-    int category_count = 0; // La variable est bien déclarée ici
+    int category_count = 0;
     
+    // On lit d'abord les données depuis le pipe stdin, AVANT d'initialiser ncurses
     parse_input(&all_packages, &package_count, &all_categories, &category_count);
 
-    // --- INITIALISATION NCURSES ---
-    initscr();
+    // --- DEBUT DE LA CORRECTION DU FREEZE ---
+    SCREEN *main_screen = NULL;
+    FILE *tty_in = NULL;
+    FILE *tty_out = NULL;
+
+    // Si l'entrée standard N'EST PAS un terminal (c'est donc un pipe),
+    // on initialise ncurses sur /dev/tty explicitement.
+    if (!isatty(STDIN_FILENO)) {
+        tty_in = fopen("/dev/tty", "r");
+        tty_out = fopen("/dev/tty", "w");
+        if (tty_in == NULL || tty_out == NULL) {
+            fprintf(stderr, "Impossible d'ouvrir /dev/tty\n");
+            // Nettoyage avant de quitter
+            if (tty_in) fclose(tty_in);
+            if (tty_out) fclose(tty_out);
+            free_memory(all_packages, package_count, all_categories, category_count);
+            return 1;
+        }
+        main_screen = newterm(NULL, tty_out, tty_in);
+        set_term(main_screen);
+    } else {
+        // Comportement normal si lancé directement (pas dans un pipe)
+        initscr();
+    }
+    // --- FIN DE LA CORRECTION DU FREEZE ---
+
+    // Le reste du code est quasi identique, il fonctionnera maintenant car ncurses
+    // communique avec le bon terminal.
     cbreak();
     noecho();
     curs_set(0);
     start_color();
     keypad(stdscr, TRUE);
 
-    init_pair(1, COLOR_CYAN, COLOR_BLACK);      // Titres de fenêtre
-    init_pair(2, COLOR_WHITE, COLOR_BLUE);      // Ligne sélectionnée
-    init_pair(3, COLOR_YELLOW, COLOR_BLACK);    // Pane actif
-    init_pair(4, COLOR_GREEN, COLOR_BLACK);     // Paquet sélectionné [x]
-    init_pair(5, COLOR_BLUE, COLOR_BLACK);      // Paquet de base [✓] (non modifiable)
-    init_pair(6, COLOR_WHITE, COLOR_BLACK);     // Texte normal
-    init_pair(7, COLOR_BLACK, COLOR_WHITE);     // Barre d'aide
+    init_pair(1, COLOR_CYAN, COLOR_BLACK);
+    init_pair(2, COLOR_WHITE, COLOR_BLUE);
+    init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(4, COLOR_GREEN, COLOR_BLACK);
+    init_pair(5, COLOR_BLUE, COLOR_BLACK);
+    init_pair(6, COLOR_WHITE, COLOR_BLACK);
+    init_pair(7, COLOR_BLACK, COLOR_WHITE);
 
-    // --- MISE EN PAGE DE L'INTERFACE ---
     int screen_h, screen_w;
     getmaxyx(stdscr, screen_h, screen_w);
-
     int cat_win_w = screen_w / 4;
     int pkg_win_w = screen_w - cat_win_w;
-    int win_h = screen_h - 2; // Laisse 1 ligne pour le titre, 1 pour l'aide
+    int win_h = screen_h - 2;
 
     mvprintw(0, (screen_w - 28) / 2, "Dotfiles - Package Selector");
     refresh();
@@ -239,14 +243,15 @@ int main(void) {
     WINDOW *pkg_win = newwin(win_h, pkg_win_w, 1, cat_win_w);
     WINDOW *help_win = newwin(1, screen_w, screen_h - 1, 0);
 
-    // --- VARIABLES D'ÉTAT DE L'UI ---
     int active_pane = PANE_CATEGORIES;
     int cat_highlight = 0;
     int pkg_highlight = 0;
     int pkg_scroll_offset = 0;
-    int ch;
+    int ch = 0;
 
-    // --- BOUCLE PRINCIPALE ---
+    // On fait un premier dessin de l'UI avant d'attendre l'entrée utilisateur
+    draw_ui(cat_win, pkg_win, help_win, all_categories, category_count, all_packages, active_pane, cat_highlight, pkg_highlight, pkg_scroll_offset);
+
     while ((ch = getch()) != 'q' && ch != 'Q') {
         CategoryItem *current_category = &all_categories[cat_highlight];
         int packages_in_cat = current_category->package_count;
@@ -254,9 +259,8 @@ int main(void) {
         switch (ch) {
             case KEY_UP:
                 if (active_pane == PANE_CATEGORIES) {
-                    // CORRECTION 1 : Utilisation de category_count
                     cat_highlight = (cat_highlight == 0) ? category_count - 1 : cat_highlight - 1;
-                    pkg_highlight = 0; // Reset sur changement de catégorie
+                    pkg_highlight = 0;
                     pkg_scroll_offset = 0;
                 } else if (packages_in_cat > 0) {
                     pkg_highlight--;
@@ -266,10 +270,8 @@ int main(void) {
                     }
                 }
                 break;
-            
             case KEY_DOWN:
                 if (active_pane == PANE_CATEGORIES) {
-                    // CORRECTION 1 : Utilisation de category_count
                     cat_highlight = (cat_highlight == category_count - 1) ? 0 : cat_highlight + 1;
                     pkg_highlight = 0;
                     pkg_scroll_offset = 0;
@@ -284,13 +286,11 @@ int main(void) {
                     }
                 }
                 break;
-
             case '\t':
             case KEY_RIGHT:
             case KEY_LEFT:
                 active_pane = (active_pane == PANE_CATEGORIES) ? PANE_PACKAGES : PANE_CATEGORIES;
                 break;
-            
             case ' ':
                 if (active_pane == PANE_PACKAGES && packages_in_cat > 0) {
                     int pkg_idx = current_category->package_indices[pkg_highlight];
@@ -314,17 +314,25 @@ int main(void) {
                     }
                 }
                 break;
-
             case 10:
                 goto end_loop;
         }
-
         draw_ui(cat_win, pkg_win, help_win, all_categories, category_count, all_packages, active_pane, cat_highlight, pkg_highlight, pkg_scroll_offset);
     }
 
 end_loop:
     endwin();
 
+    // --- DEBUT DE LA CORRECTION (Nettoyage) ---
+    // Si on a utilisé un terminal spécial, on le ferme proprement.
+    if (main_screen != NULL) {
+        delscreen(main_screen);
+        if (tty_in) fclose(tty_in);
+        if (tty_out) fclose(tty_out);
+    }
+    // --- FIN DE LA CORRECTION (Nettoyage) ---
+    
+    // La sortie se fait bien sur le stdout d'origine (le pipe vers Bash)
     if (ch == 10) {
         for (int i = 0; i < package_count; i++) {
             if (all_packages[i].selected) {
@@ -336,6 +344,11 @@ end_loop:
     free_memory(all_packages, package_count, all_categories, category_count);
     return 0;
 }
+
+// Les fonctions draw_ui, parse_input, find_or_create_category et free_memory
+// restent EXACTEMENT LES MÊMES que dans la version précédente.
+// Vous pouvez les copier-coller ici.
+// Pour être complet, je les remets ci-dessous.
 
 void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *categories, int cat_count, PackageItem *packages, int active_pane, int cat_highlight, int pkg_highlight, int pkg_scroll_offset) {
     werase(cat_win);
@@ -401,7 +414,6 @@ void draw_ui(WINDOW *cat_win, WINDOW *pkg_win, WINDOW *help_win, CategoryItem *c
             color_pair = 6;
         }
 
-        // CORRECTION 2 : Utilisation de wmove au lieu de mvwprintw avec chaîne vide
         wmove(pkg_win, i + 1, 2); 
         
         wattron(pkg_win, COLOR_PAIR(color_pair));
@@ -449,9 +461,6 @@ int find_or_create_category(const char* name, CategoryItem **categories, int *co
 
 void parse_input(PackageItem **packages, int *package_count, CategoryItem **categories, int *category_count) {
     char line[MAX_LINE_LEN];
-    // On ne pré-alloue plus, on va utiliser realloc pour être plus dynamique
-    // *packages = malloc(MAX_ITEMS * sizeof(PackageItem)); 
-    // *categories = malloc(MAX_ITEMS * sizeof(CategoryItem));
 
     while (fgets(line, sizeof(line), stdin)) {
         line[strcspn(line, "\n")] = 0;
