@@ -3,6 +3,10 @@
 function install_docker {
     case "$DISTRO" in
     "ubuntu"|"debian")
+		if [[ "$DRY_RUN" == "true" ]]; then
+			log "INFO" "[DRY-RUN] Would install Docker and docker-compose on $DISTRO."
+			return 0
+		fi
         log "INFO" "Installing Docker on $DISTRO..."
 		for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg > ${LOG_FILE} 2>&1; done
 

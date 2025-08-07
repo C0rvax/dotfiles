@@ -7,6 +7,11 @@ function install_zsh {
     local omz_source_path="$dotfiles_dir/vendor/oh-my-zsh"
     local omz_target_path="$HOME/.oh-my-zsh"
 
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would install Zsh and Oh My Zsh from local submodule."
+        log "INFO" "Zsh configuration files would be linked from '$dotfiles_dir/home/.zsh' to '$HOME/.zsh' and '$HOME/.zshrc'."
+        return 0
+    fi
     if [ ! -d "$omz_source_path" ] || [ -z "$(ls -A "$omz_source_path")" ]; then
         log "ERROR" "Oh My Zsh submodule is missing or empty at '$omz_source_path'."
         log "INFO" "Please run 'git submodule update --init --recursive' in your dotfiles directory."

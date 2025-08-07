@@ -10,11 +10,13 @@ function install_nvim {
     local nvim_path="$appimage_dir/nvim.appimage"
     local clang_path="$dotfiles_dir/home/clang-format"
 
-    if [ -f "$nvim_path" ]; then
-        log "INFO" "NeoVim AppImage is already installed."
-    elif [[ "$DRY_RUN" == "true" ]]; then
-        log "WARNING" "Simulation: Installation de NeoVim AppImage"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would install NeoVim AppImage."
+        log "INFO" "NeoVim configuration would be linked from '$nvim_config_source' to '$nvim_config_target'."
+        log "INFO" "Clang format would be linked from '$clang_path' to '$HOME/.clang-format'."
         return 0
+    elif [ -f "$nvim_path/nvim.appimage" ]; then
+        log "INFO" "NeoVim AppImage already exists at '$nvim_path'. Skipping download."
     else
         log "INFO" "Installing NeoVim AppImage..."
 

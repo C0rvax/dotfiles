@@ -3,8 +3,11 @@
 function install_node {
     local home_dir="$HOME"
 
-    log "CLONE" "Installing Node.js via NVM..."
-
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would install Node.js using NVM."
+        log "INFO" "NVM will be installed in '$home_dir/.nvm' and Node.js will be installed via NVM."
+        return 0
+    fi
     local nvm_install_script
     nvm_install_script=$(mktemp)
     trap 'rm -f "$nvm_install_script"' RETURN

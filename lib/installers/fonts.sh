@@ -1,6 +1,12 @@
 #!/bin/bash
 
 function install_fonts {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would install custom fonts and icons."
+        log "INFO" "MesloLGS NF fonts would be downloaded to '$HOME/Themes/Fonts'."
+        log "INFO" "Buuf Nestort icons would be cloned to '$HOME/Themes/Icons/$BUUF_ICONS_NAME'."
+        return 0
+    fi
     local themes_dir="$HOME/Themes"
     local fonts_dir="$themes_dir/Fonts"
     local icons_dir="$themes_dir/Icons"

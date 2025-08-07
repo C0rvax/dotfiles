@@ -2,6 +2,10 @@
 
 function setup_kde {
 	if [[ "$DESKTOP" == "kde" ]]; then
+		if [[ "$DRY_RUN" == "true" ]]; then
+			log "INFO" "[DRY-RUN] Would set up KDE desktop environment configurations."
+			return 0
+		fi
 		# Modifier la police du système
 		kwriteconfig5 --file kdeglobals --group General --key fixed "$FONT_SYSTEM_NAME,$FONT_SIZE_MONO,-1,5,50,0,0,0,0,0,Regular"
 		kwriteconfig5 --file kdeglobals --group General --key font "$FONT_SYSTEM_NAME,$FONT_SIZE_NORMAL,-1,5,50,0,0,0,0,0,Regular"

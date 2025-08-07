@@ -22,7 +22,6 @@ function setup_ssh_and_git {
 
     setup_github_known_hosts
     setup_git
-    log "SUCCESS" "SSH and Git configurations completed successfully."
 }
 
 function create_ssh_key {

@@ -9,7 +9,7 @@ function install_firefox {
 
     if [[ "$DRY_RUN" == "true" ]]; then
         log "INFO" "[DRY-RUN] Would perform all steps to install Firefox from Mozilla's APT repository."
-        return
+        return 0
     fi
 
     if [[ "$VERBOSE" == "true" ]]; then

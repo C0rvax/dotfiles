@@ -1,6 +1,10 @@
 #!/bin/bash
 
 function setup_github_known_hosts {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would set up GitHub known hosts."
+        return 0
+    fi
     log "INFO" "Setting up GitHub known hosts..."
     mkdir -p "$HOME/.ssh"
     touch "$HOME/.ssh/known_hosts"
@@ -15,6 +19,10 @@ function setup_github_known_hosts {
 }
 
 function setup_git {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would configure Git user."
+        return 0
+    fi
     git config --global user.name "$GIT_USER"
     git config --global user.email "$GIT_EMAIL"
 }

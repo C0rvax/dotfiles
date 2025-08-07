@@ -4,7 +4,7 @@ pkg_install() {
     local package="$1"
     
     if [[ "$DRY_RUN" == "true" ]]; then
-        log "WARNING" "Simulation: Installation de $package"
+        log "INFO" "[DRY RUN] Would have installed $package with $DISTRO package manager."
         return 0
     fi
     
