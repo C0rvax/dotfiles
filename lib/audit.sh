@@ -86,7 +86,7 @@ function show_installation_summary() {
 
     if [ ${#items_to_install[@]} -eq 0 ]; then
         log "SUCCESS" "Everything is already installed. Nothing to do."
-        return 1 # Code spécial pour dire "rien à faire"
+        return 1
     fi
 
     print_table_header "INSTALLATION SUMMARY"

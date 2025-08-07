@@ -148,7 +148,4 @@ print_table_line
 exit 0
 
 # # À AJOUTER
-# # driver nvidia sudo apt install nvidia-driver-550
-# # tableau de bord
-# # pipx install compiledb
-# # ledger live
+
