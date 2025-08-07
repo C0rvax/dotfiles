@@ -170,22 +170,26 @@ get_all_packages() {
 	printf '%s\n' "${SYSTEM_PACKAGES[@]}" "${SPECIAL_INSTALLS[@]}" "${OPTIONAL_PACKAGES[@]}"
 }
 
-get_packages_by_level() {
-	local level="$1"
-	get_all_packages | while read -r pkg; do
-		if [[ "$(get_package_info "$pkg" level)" == "$level" ]]; then
-			echo "$pkg"
-		fi
-	done
+function get_packages_by_level() {
+    local level_filter="$1"
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        if [[ "$(get_package_info "$pkg_def" level)" == "$level_filter" ]]; then
+            echo "$pkg_def"
+        fi
+    done < <(get_all_packages)
 }
 
-get_packages_by_category() {
-	local category="$1"
-	get_all_packages | while read -r pkg; do
-		if [[ "$(get_package_info "$pkg" category)" == "$category" ]]; then
-			echo "$pkg"
-		fi
-	done
+function get_packages_by_category() {
+    local category_filter="$1"
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        if [[ "$(get_package_info "$pkg_def" category)" == "$category_filter" ]]; then
+            echo "$pkg_def"
+        fi
+    done < <(get_all_packages)
 }
 
 # audit_packages() {
@@ -267,25 +271,31 @@ select_installation_type() {
 	esac
 }
 
-select_optional_packages() {
-	local selected=()
+function select_optional_packages() {
+    local optional_packages_to_add=()
+    local temp_packages=()
 
-	echo
-	echo "Paquets optionnels disponibles:"
+    echo
+    echo "Paquets optionnels disponibles:"
 
-	# Développement embarqué
-	read -p "Inclure les outils de développement embarqué? [y/N]: " embedded
-	if [[ "$embedded" =~ ^[yY]$ ]]; then
-		selected+=($(get_packages_by_category "embedded"))
-	fi
+    # Développement embarqué
+    read -p "Inclure les outils de développement embarqué? [y/N]: " embedded
+    if [[ "$embedded" =~ ^[yY]$ ]]; then
+        # On utilise mapfile pour lire proprement la sortie dans un tableau temporaire
+        mapfile -t temp_packages < <(get_packages_by_category "embedded")
+        # On ajoute ce tableau au tableau principal
+        optional_packages_to_add+=("${temp_packages[@]}")
+    fi
 
-	# Bureautique
-	read -p "Inclure LibreOffice? [y/N]: " office
-	if [[ "$office" =~ ^[yY]$ ]]; then
-		selected+=($(get_packages_by_category "office"))
-	fi
+    # Bureautique
+    read -p "Inclure LibreOffice? [y/N]: " office
+    if [[ "$office" =~ ^[yY]$ ]]; then
+        mapfile -t temp_packages < <(get_packages_by_category "office")
+        optional_packages_to_add+=("${temp_packages[@]}")
+    fi
 
-	printf '%s\n' "${selected[@]}"
+    # On affiche le résultat final pour que le script appelant puisse le capturer
+    printf '%s\n' "${optional_packages_to_add[@]}"
 }
 
 # === INSTALLATION PRINCIPALE ===
@@ -391,7 +401,9 @@ run_package_installation() {
 	if [[ "$install_type" != "base" && "$ASSUME_YES" != "true" ]]; then
 		local optional_packages
 		mapfile -t optional_packages < <(select_optional_packages)
-		packages_to_install+=("${optional_packages[@]}")
+		if [[ ${#optional_packages[@]} -gt 0 ]]; then
+            packages_to_install+=("${optional_packages[@]}")
+        fi
 	fi
 
 	# 5. Installation
