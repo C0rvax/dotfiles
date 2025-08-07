@@ -60,55 +60,27 @@ function select_optional_packages() {
 }
 
 # function get_all_packages_for_tui() {
+#     # Créer une map pour une recherche facile du titre de la catégorie
+#     declare -A CAT_TITLE_MAP
+#     for cat_def in "${CATEGORIES[@]}"; do
+#         local name="${cat_def%%:*}"
+#         local title="${cat_def#*:}"
+#         CAT_TITLE_MAP["$name"]="$title"
+#     done
+
 #     while read -r pkg_def; do
 #         [[ -n "$pkg_def" ]] || continue
         
-#         local category=$(get_package_info "$pkg_def" category)
+#         local category_name=$(get_package_info "$pkg_def" category)
 #         local level=$(get_package_info "$pkg_def" level)
 #         local desc=$(get_package_info "$pkg_def" desc)
+#         local category_title=${CAT_TITLE_MAP[$category_name]:-$category_name} # Utilise le nom si pas de titre
         
-#         echo "$category:$level:$desc"
+#         echo "$category_name:$category_title:$level:$desc"
 #     done < <(get_all_packages)
 # }
 
-
-# function select_installables_tui {
-#     log "INFO" "Launching advanced TUI package selector..."
-
-#     if [ ! -x ./selector ]; then
-#         log "WARNING" "'selector' not compiled. Attempting compilation..."
-#         if ! command -v gcc &> /dev/null || ! gcc selector.c -o selector -lncurses -ltinfo; then
-#             log "ERROR" "Failed to compile 'selector'. Aborting."
-#             exit 1
-#         fi
-#     fi
-
-#     local selected_output
-#     selected_output=$(get_all_packages_for_tui | ./selector)
-    
-#     if [[ -z "$selected_output" ]]; then
-#         log "WARNING" "No packages selected or operation cancelled."
-#         return 0
-#     fi
-    
-#     local all_packages_defs
-#     mapfile -t all_packages_defs < <(get_all_packages)
-    
-#     local selected_descriptions
-#     mapfile -t selected_descriptions <<< "$selected_output"
-    
-#     for desc in "${selected_descriptions[@]}"; do
-#         for pkg_def in "${all_packages_defs[@]}"; do
-#             if [[ "$(get_package_info "$pkg_def" desc)" == "$desc" ]]; then
-#                 echo "$pkg_def"
-#                 break
-#             fi
-#         done
-#     done
-# }
-
 function get_all_packages_for_tui() {
-    # Créer une map pour une recherche facile du titre de la catégorie
     declare -A CAT_TITLE_MAP
     for cat_def in "${CATEGORIES[@]}"; do
         local name="${cat_def%%:*}"
@@ -119,16 +91,18 @@ function get_all_packages_for_tui() {
     while read -r pkg_def; do
         [[ -n "$pkg_def" ]] || continue
         
+        local id=$(get_package_info "$pkg_def" id)
         local category_name=$(get_package_info "$pkg_def" category)
         local level=$(get_package_info "$pkg_def" level)
         local desc=$(get_package_info "$pkg_def" desc)
-        local category_title=${CAT_TITLE_MAP[$category_name]:-$category_name} # Utilise le nom si pas de titre
+        local category_title=${CAT_TITLE_MAP[$category_name]:-$category_name}
+        # On récupère le statut depuis la map globale remplie par l'audit silencieux
+        local status=${AUDIT_STATUS[$id]:-missing} 
         
-        # NOUVEAU FORMAT : name:title:level:desc
-        echo "$category_name:$category_title:$level:$desc"
+        # NOUVEAU FORMAT : name:title:level:desc:status
+        echo "$category_name:$category_title:$level:$desc:$status"
     done < <(get_all_packages)
 }
-
 
 # MODIFIÉ : Envoie le logo, un délimiteur, puis les données
 function select_installables_tui {

@@ -141,7 +141,13 @@ install_selected_packages() {
 }
 
 function run_package_installation() {
-    audit_packages
+    if [[ "$SELECT_MODE" == "tui" ]]; then
+        # Exécute l'audit sans rien afficher, juste pour remplir AUDIT_STATUS
+        audit_packages "silent"
+    else
+        # Comportement normal pour le mode interactif
+        audit_packages
+    fi  
 
     local packages_to_install=()
     case "$SELECT_MODE" in
