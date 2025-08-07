@@ -123,7 +123,12 @@ function run_package_installation() {
     if [[ "$ASSUME_YES" == "true" ]]; then
         install_type="base"
     else
-        install_type="$(select_installation_type)"
+        echo "Choisissez votre type d'installation:"
+        echo "1) Base (outils essentiels)"
+        echo "2) Complète (base + applications)"
+        echo "3) Personnalisée"
+        
+        read -p "Votre choix [1-3]: " install_type </dev/tty
     fi
 
     # 3. Collecte des paquets à installer (ne change pas)
@@ -160,6 +165,7 @@ function run_package_installation() {
     if [[ ${#packages_to_install[@]} -gt 0 ]]; then
         echo
         echo "Paquets sélectionnés: ${#packages_to_install[@]}"
+        echo "Liste des paquets: ${packages_to_install[*]}"
 
         # On affiche la liste pour déboguer si besoin
         # printf " - %s\n" "${packages_to_install[@]}"
