@@ -8,6 +8,7 @@ function audit_packages() {
     mapfile -t all_packages < <(get_all_packages)
     local total=${#all_packages[@]}
 
+    log "INFO" "all: ${all_packages[@]}"
     log "INFO" "Lancement de l'audit de ${total} paquets..."
     print_table_line
 
