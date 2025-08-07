@@ -26,9 +26,15 @@ function setup_kde {
 
 		# Config de KFileDialiog
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Sort directories first" true
-		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Show hidden files" true
+		# kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Show hidden files" true
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Sort hidden files last" true
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "View Style" "DetailTree"
+
+		# hidden files
+		kwriteconfig5 --file dolphinrc --group "ViewProperties/Global" --key "hiddenFilesShown" true
+		kwriteconfig5 --file dolphinrc --group "General" --key "ShowHiddenFiles" true
+		kwriteconfig5 --file dolphinrc --group "General" --key "RememberViewProperties" false
+
 
 		# Raccourci terminal
 		# kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"

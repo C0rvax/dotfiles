@@ -12,7 +12,8 @@ function select_base_packages() {
     else
         print_left_element "1) Base (Minimal: core utils, dev tools, shell, nvim config)" "$BLUEHI" >&2
         print_left_element "2) Full (Recommended: 'Base' + graphical apps, Docker, etc.)" "$BLUEHI" >&2
-        ask_question "Enter your choice [1-2]" install_type >&2
+        print_left_element "3) Custom (Not implemented yet, defaults to 'Full')" "$BLUEHI" >&2
+        ask_question "Enter your choice [1-3]" install_type >&2
     fi
 
     local base_packages_to_install=()
@@ -28,6 +29,11 @@ function select_base_packages() {
         echo "Mode personnalisé pas encore implémenté, passage en mode complet"
         mapfile -t base_packages_to_install < <(get_packages_by_level "base")
         mapfile -t -O "${#base_packages_to_install[@]}" base_packages_to_install < <(get_packages_by_level "full")
+        ;;
+    *)
+        log "ERROR" "Invalid selection: '$install_type'. Please choose 1, 2 or 3."
+        print_table_line
+        exit 1
         ;;
     esac
 
