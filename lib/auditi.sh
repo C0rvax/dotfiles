@@ -46,16 +46,7 @@ function audit_packages() {
 }
 
 function show_installation_summary() {
-    local selected_ids=("$@")
-    local items_to_install=()
-
-    for item in "${selected_ids[@]}"; do
-        if [[ -z "$item" ]]; then continue; fi # Sécurité pour ignorer les lignes vides
-        local id; id=$(get_package_info "$item" id)
-        if [[ "${AUDIT_STATUS[$id]}" == "missing" ]]; then
-            items_to_install+=("$item")
-        fi
-    done
+    local items_to_install=("$@")
 
     if [ ${#items_to_install[@]} -eq 0 ]; then
         log "SUCCESS" "Everything is already installed. Nothing to do."
@@ -66,7 +57,6 @@ function show_installation_summary() {
     print_left_element "Total items to install: ${#items_to_install[@]}" "$BLUEHI"
     print_left_element "Internet connection:      Required" "$BLUEHI"
 
-    # Affichage groupé par catégorie
     for cat in "${CATEGORIES[@]}"; do
         local category_id="${cat%%:*}"
         local category_title="${cat#*:}"
@@ -76,12 +66,10 @@ function show_installation_summary() {
         for pkg_def in "${items_to_install[@]}"; do
             # ...on vérifie s'il appartient à la catégorie actuelle.
             if [[ "$(get_package_info "$pkg_def" category)" == "$category_id" ]]; then
-                # Si oui, on l'ajoute à la liste pour l'affichage en grille
                 items_in_this_category_for_grid+=("$(get_package_info "$pkg_def" desc)" "$GREEN")
             fi
         done
 
-        # On n'affiche la catégorie que si elle contient au moins un paquet à installer.
         if [ ${#items_in_this_category_for_grid[@]} -gt 0 ]; then
             print_center_element " $(echo "$category_title") " "$YELLOW"
             print_grid 4 "${items_in_this_category_for_grid[@]}"
@@ -103,12 +91,6 @@ function select_base_packages() {
         install_type="1"
         log "INFO" "Non-interactive mode: Defaulting to a 'base' installation."
     else
-        # echo "Choisissez votre type d'installation:" >&2
-        # echo "1) Base (outils essentiels)" >&2
-        # echo "2) Complète (base + applications)" >&2
-        # echo "3) Personnalisée" >&2
-
-        # read -p "Votre choix [1-3]: " install_type </dev/tty
         print_title_element "INSTALLATION TYPE" "$BLUEHI" >&2
         print_table_line >&2
         print_left_element "1) Base (Minimal: core utils, dev tools, shell, nvim config)" "$BLUEHI" >&2
@@ -139,16 +121,13 @@ function select_optional_packages() {
     local optional_packages_to_add=()
     local temp_packages=()
 
-    echo >&2
-    echo "Paquets optionnels disponibles:" >&2
-
-    read -p "Inclure les outils de développement embarqué? [y/N]: " embedded </dev/tty
+    ask_question "Include EMBEDDED packages (avr-libc, etc.)? [y/N]" embedded >&2
     if [[ "$embedded" =~ ^[yY]$ ]]; then
         mapfile -t temp_packages < <(get_packages_by_category "embedded")
         optional_packages_to_add+=("${temp_packages[@]}")
     fi
 
-    read -p "Inclure LibreOffice? [y/N]: " office </dev/tty
+    ask_question "Inclure LibreOffice? [y/N]: " office >&2
     if [[ "$office" =~ ^[yY]$ ]]; then
         mapfile -t temp_packages < <(get_packages_by_category "office")
         optional_packages_to_add+=("${temp_packages[@]}")
@@ -175,13 +154,6 @@ install_selected_packages() {
         
         printf "[%d/%d] %s... " "$current" "$total" "$desc"
         
-        # Vérifier si déjà installé
-        if eval "$check_cmd" 2>/dev/null; then
-            echo "déjà installé"
-            continue
-        fi
-        
-        # Installer
         if eval "$install_cmd" 2>/dev/null; then
             echo "✓"
         else
@@ -216,28 +188,20 @@ function run_package_installation() {
             ;;
     esac
 
-    if ! show_installation_summary "${packages_to_install[@]}"; then
+    local uninstalled_packages=()
+    for item in "${selected_ids[@]}"; do
+        if [[ -z "$item" ]]; then continue; fi # Sécurité pour ignorer les lignes vides
+        local id; id=$(get_package_info "$item" id)
+        if [[ "${AUDIT_STATUS[$id]}" == "missing" ]]; then
+            uninstalled_packages+=("$item")
+        fi
+    done
+
+    if ! show_installation_summary "${uninstalled_packages[@]}"; then
         log "INFO" "No packages selected for installation. Exiting."
         print_table_line
         exit 0
     fi
     
-    # 5. Installation (ne change pas)
-    if [[ ${#packages_to_install[@]} -gt 0 ]]; then
-        echo
-        echo "Paquets sélectionnés: ${#packages_to_install[@]}"
-
-        if [[ "$ASSUME_YES" != "true" ]]; then
-            read -p "Continuer? [Y/n]: " confirm
-            # On considère "Entrée" (chaîne vide) comme une confirmation
-            if [[ "$confirm" =~ ^[nN]$ ]]; then
-                log "WARNING" "Installation annulée par l'utilisateur."
-                exit 1
-            fi
-        fi
-
-        install_selected_packages "${packages_to_install[@]}"
-    else
-        log "INFO" "Rien à faire, tout semble être à jour !"
-    fi
+    install_selected_packages "${uninstalled_packages[@]}"
 }
