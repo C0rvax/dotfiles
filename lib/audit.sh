@@ -20,9 +20,6 @@ function print_system_info_row {
 }
 
 function run_pre_install_audit {
-	if [[ "$VERBOSE" == "true" ]]; then
-    	log "INFO" "Running pre-installation audit..."
-	fi
     local total_checks=${#INSTALLABLES_DESC[@]}
 
     for id in "${!INSTALLABLES_DESC[@]}"; do
@@ -31,10 +28,7 @@ function run_pre_install_audit {
         else
             INSTALL_STATUS[$id]="missing"
         fi
-    done
-	if [[ "$VERBOSE" == "true" ]]; then
-		log "SUCCESS" "Audit complete."
-	fi   
+    done 
 }
 
 function print_audit_content {
