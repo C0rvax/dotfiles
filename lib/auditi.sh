@@ -135,14 +135,14 @@ function run_package_installation() {
     local packages_to_install=()
     echo "Paquets à installer pour le type: $install_type"
     case "$install_type" in
-    base)
+    1)
         mapfile -t packages_to_install < <(get_packages_by_level "base")
         ;;
-    full)
+    2)
         mapfile -t packages_to_install < <(get_packages_by_level "base")
         mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
         ;;
-    custom)
+    3)
         echo "Mode personnalisé pas encore implémenté, passage en mode complet"
         mapfile -t packages_to_install < <(get_packages_by_level "base")
         mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
