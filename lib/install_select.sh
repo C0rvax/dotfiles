@@ -65,7 +65,7 @@ function select_installables_tui {
     # Le TUI sélectionne par catégorie. On lui passe les titres.
     local category_titles=()
     declare -gA TITLE_TO_CAT_NAME_MAP # Pour retrouver le nom de la variable après sélection
-    for category_info in "${CATEGORIES_ORDER[@]}"; do
+    for category_info in "${CATEGORIES[@]}"; do
         local cat_name="${category_info%%:*}"
         local cat_title="${category_info#*:}"
         local clean_title=$(echo "$cat_title" | sed -e 's/--- //' -e 's/ ---//' -e 's/ (Optionnel)//')

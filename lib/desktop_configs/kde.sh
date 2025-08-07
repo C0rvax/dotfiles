@@ -26,7 +26,6 @@ function setup_kde {
 
 		# Config de KFileDialiog
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Sort directories first" true
-		# kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Show hidden files" true
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Sort hidden files last" true
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "View Style" "DetailTree"
 
@@ -48,7 +47,6 @@ function setup_kde {
 		kwriteconfig5 --file kdeglobals --group "KFileDialog Settings" --key "Show hidden files" true
 
 		# Raccourci terminal
-		# kwriteconfig5 --file kglobalshortcutsrc --group "kde-konsole.desktop" --key "NewTerminal" "terminator,none,Open Terminal"
 		kwriteconfig5 --file kglobalshortcutsrc --group "${TERMINAL_APP}.desktop" --key "_launch" "$TERMINAL_SHORTCUT,none,${TERMINAL_APP^}"
 
 		# Configurer un simple clic pour ouvrir les fichiers
@@ -58,13 +56,8 @@ function setup_kde {
 		kwriteconfig5 --file kiorc --group Confirmations --key ConfirmEmptyTrash false
 		kwriteconfig5 --file kiorc --group Confirmations --key ConfirmTrash false
 
-		# Forcer la synchronisation des configurations
-		sync
-
 		# Appliquer les changements
 		qdbus org.kde.KWin /KWin reconfigure
 
-		qdbus org.kde.kded5 /kded unloadModule filenamesearchmodule 2>/dev/null || true
-		qdbus org.kde.kded5 /kded loadModule filenamesearchmodule 2>/dev/null || true
 	fi
 }
