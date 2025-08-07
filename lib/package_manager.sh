@@ -332,7 +332,14 @@ function select_optional_packages() {
 # }
 
 function install_selected_packages() {
+    # La variable locale est 'packages_to_process'
     local packages_to_process=("$@")
+
+    # ==================== POINT DE CONTRÔLE N°3 ====================
+    log "DEBUG" "La fonction install_selected_packages a reçu le tableau suivant :"
+    declare -p packages_to_process
+    # =================================================================
+
     local current=0
     local total=${#packages_to_process[@]}
 
@@ -340,12 +347,23 @@ function install_selected_packages() {
     print_table_line
 
     for pkg_def in "${packages_to_process[@]}"; do
+        # ==================== POINT DE CONTRÔLE N°4 ====================
+        # On inspecte chaque élément AVANT de l'utiliser.
+        # Les flèches permettent de voir si la chaîne est vide.
+        log "DEBUG" "Traitement de la ligne pkg_def : -->${pkg_def}<--"
+        # =================================================================
+
         ((current++))
         local id; id=$(get_package_info "$pkg_def" id)
         local desc; desc=$(get_package_info "$pkg_def" desc)
         local install_cmd; install_cmd=$(get_package_info "$pkg_def" install)
 
-        # On ne VÉRIFIE PLUS, on CONSULTE le résultat de l'audit !
+        # On ajoute un contrôle de sécurité ici
+        if [[ -z "$id" ]]; then
+            log "ERROR" "L'ID du paquet est vide pour la ligne '${pkg_def}'. On saute cette entrée."
+            continue
+        fi
+
         if [[ "${AUDIT_STATUS[$id]}" == "installed" ]]; then
             log "SUCCESS" "($current/$total) Déjà installé : $desc"
             continue
@@ -355,7 +373,6 @@ function install_selected_packages() {
         
         if eval "$install_cmd"; then
             log "SUCCESS" "($current/$total) OK : $desc installé avec succès."
-            # On met à jour le statut au cas où une étape ultérieure en aurait besoin
             AUDIT_STATUS[$id]="installed"
         else
             log "ERROR" "($current/$total) ÉCHEC : L'installation de $desc a échoué."
@@ -366,59 +383,128 @@ function install_selected_packages() {
 
 # === WORKFLOW PRINCIPAL ===
 
-run_package_installation() {
-	# 1. Audit initial
-	audit_packages
+# run_package_installation() {
+# 	# 1. Audit initial
+# 	audit_packages
 
-	# 2. Sélection utilisateur
-	local install_type
-	if [[ "$ASSUME_YES" == "true" ]]; then
-		install_type="base"
-	else
-		install_type=$(select_installation_type)
-	fi
+# 	# 2. Sélection utilisateur
+# 	local install_type
+# 	if [[ "$ASSUME_YES" == "true" ]]; then
+# 		install_type="base"
+# 	else
+# 		install_type=$(select_installation_type)
+# 	fi
 
-	# 3. Collecte des paquets à installer
-	local packages_to_install=()
+# 	# 3. Collecte des paquets à installer
+# 	local packages_to_install=()
 
-	case "$install_type" in
-	base)
-		mapfile -t packages_to_install < <(get_packages_by_level "base")
-		;;
-	full)
-		mapfile -t packages_to_install < <(get_packages_by_level "base")
-		mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
-		;;
-	custom)
-		# Interface TUI ou sélection avancée à implémenter
-		echo "Mode personnalisé pas encore implémenté, passage en mode complet"
-		mapfile -t packages_to_install < <(get_packages_by_level "base")
-		mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
-		;;
-	esac
+# 	case "$install_type" in
+# 	base)
+# 		mapfile -t packages_to_install < <(get_packages_by_level "base")
+# 		;;
+# 	full)
+# 		mapfile -t packages_to_install < <(get_packages_by_level "base")
+# 		mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
+# 		;;
+# 	custom)
+# 		# Interface TUI ou sélection avancée à implémenter
+# 		echo "Mode personnalisé pas encore implémenté, passage en mode complet"
+# 		mapfile -t packages_to_install < <(get_packages_by_level "base")
+# 		mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
+# 		;;
+# 	esac
 
-	# 4. Ajouter les paquets optionnels si demandés
-	if [[ "$install_type" != "base" && "$ASSUME_YES" != "true" ]]; then
-		local optional_packages
-		mapfile -t optional_packages < <(select_optional_packages)
-		if [[ ${#optional_packages[@]} -gt 0 ]]; then
+# 	# 4. Ajouter les paquets optionnels si demandés
+# 	if [[ "$install_type" != "base" && "$ASSUME_YES" != "true" ]]; then
+# 		local optional_packages
+# 		mapfile -t optional_packages < <(select_optional_packages)
+# 		if [[ ${#optional_packages[@]} -gt 0 ]]; then
+#             packages_to_install+=("${optional_packages[@]}")
+#         fi
+# 	fi
+
+# 	# 5. Installation
+# 	if [[ ${#packages_to_install[@]} -gt 0 ]]; then
+# 		echo
+# 		echo "Paquets sélectionnés: ${#packages_to_install[@]}"
+
+# 		if [[ "$ASSUME_YES" != "true" ]]; then
+# 			read -p "Continuer? [Y/n]: " confirm
+# 			[[ "$confirm" =~ ^[nN]$ ]] && return 1
+# 		fi
+
+# 		install_selected_packages "${packages_to_install[@]}"
+# 	else
+# 		echo "Aucun paquet à installer."
+# 	fi
+# }
+
+function run_package_installation() {
+    # 1. Audit initial
+    audit_packages
+
+    # 2. Sélection utilisateur
+    local install_type
+    if [[ "$ASSUME_YES" == "true" ]]; then
+        install_type="base"
+    else
+        install_type=$(select_installation_type)
+    fi
+
+    # 3. Collecte des paquets à installer
+    local packages_to_install=()
+    case "$install_type" in
+    base)
+        mapfile -t packages_to_install < <(get_packages_by_level "base")
+        ;;
+    full)
+        mapfile -t packages_to_install < <(get_packages_by_level "base")
+        mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
+        ;;
+    custom)
+        echo "Mode personnalisé pas encore implémenté, passage en mode complet"
+        mapfile -t packages_to_install < <(get_packages_by_level "base")
+        mapfile -t -O "${#packages_to_install[@]}" packages_to_install < <(get_packages_by_level "full")
+        ;;
+    esac
+
+    # ==================== POINT DE CONTRÔLE N°1 ====================
+    # On vérifie ce que contient le tableau JUSTE après sa création.
+    log "DEBUG" "Contenu du tableau 'packages_to_install' après la sélection de base/full :"
+    # 'declare -p' est le meilleur moyen de visualiser un tableau en toute sécurité.
+    declare -p packages_to_install
+    # =================================================================
+
+    # 4. Ajouter les paquets optionnels
+    if [[ "$install_type" != "base" && "$ASSUME_YES" != "true" ]]; then
+        local optional_packages
+        mapfile -t optional_packages < <(select_optional_packages)
+        if [[ ${#optional_packages[@]} -gt 0 ]]; then
             packages_to_install+=("${optional_packages[@]}")
         fi
-	fi
 
-	# 5. Installation
-	if [[ ${#packages_to_install[@]} -gt 0 ]]; then
-		echo
-		echo "Paquets sélectionnés: ${#packages_to_install[@]}"
+        # ==================== POINT DE CONTRÔLE N°2 ====================
+        log "DEBUG" "Contenu du tableau 'packages_to_install' après ajout des optionnels :"
+        declare -p packages_to_install
+        # =================================================================
+    fi
 
-		if [[ "$ASSUME_YES" != "true" ]]; then
-			read -p "Continuer? [Y/n]: " confirm
-			[[ "$confirm" =~ ^[nN]$ ]] && return 1
-		fi
+    # 5. Installation
+    if [[ ${#packages_to_install[@]} -gt 0 ]]; then
+        echo
+        echo "Paquets sélectionnés: ${#packages_to_install[@]}"
 
-		install_selected_packages "${packages_to_install[@]}"
-	else
-		echo "Aucun paquet à installer."
-	fi
+        if [[ "$ASSUME_YES" != "true" ]]; then
+            read -p "Continuer? [Y/n]: " confirm
+            if [[ "$confirm" =~ ^[nN]$ ]]; then
+                log "WARNING" "Installation annulée."
+                return 1
+            fi
+        fi
+
+        # On passe le tableau à la fonction d'installation
+        install_selected_packages "${packages_to_install[@]}"
+    else
+        log "INFO" "Rien à installer."
+    fi
 }
-
