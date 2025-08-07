@@ -15,6 +15,12 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 # --- DÉROULEMENT DU SCRIPT ---
 
+echo "  - Variable \$SHELL : $SHELL"
+echo "  - Interpréteur actuel (via ps) : $(ps -p $$ -o comm=)"
+echo "  - Version de Bash :"
+bash --version | head -n 1
+echo
+
 prompt_for_sudo
 clear
 display_logo
