@@ -17,6 +17,7 @@ function audit_packages() {
 
         mapfile -t packages_to_install < <(get_packages_by_category "$cat")
 
+        local packages_to_print=()
         for pkg_def in "${packages_to_install[@]}"; do
             local id; id=$(get_package_info "$pkg_def" id)
             local desc; desc=$(get_package_info "$pkg_def" desc)
@@ -26,13 +27,15 @@ function audit_packages() {
             if eval "$check_cmd" &>/dev/null; then
                 ((installed++))
                 AUDIT_STATUS[$id]="installed"
-                print_left_element "✓ $desc" "$GREEN"
+                packages_to_print+=("✓ $desc" "$GREENHI")
+                #print_left_element "✓ $desc" "$GREEN"
             else
                 ((missing++))
                 AUDIT_STATUS[$id]="missing"
-                print_left_element "✗ $desc" "$RED"
+                packages_to_print+=("✗ $desc" "$REDHI")
             fi
         done
+        print_grid 4 "${packages_to_print[@]}"
     done
     print_table_line
     log "SUCCESS" "Audit terminé : $installed installés, $missing manquants."
