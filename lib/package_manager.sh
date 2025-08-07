@@ -1,88 +1,70 @@
 #!/bin/bash
 
-function get_package {
-	local package_name="$1"
-
-	if [[ -z "$package_name" ]]; then
-		echo "[$(date '+%Y-%m-%d %H:%M:%S')] [FATAL] get_package called with no package name" >>"$LOG_FILE"
-		return 1
-	fi
-
-	case "$DISTRO" in
-	"arch")
-		sudo pacman -S --noconfirm "$package_name" >>"$LOG_FILE" 2>&1
-		;;
-	"ubuntu" | "debian")
-		sudo apt-get install -y "$package_name" >>"$LOG_FILE" 2>&1
-		;;
-	"fedora")
-		sudo dnf install -y "$package_name" >>"$LOG_FILE" 2>&1
-		;;
-	"opensuse")
-		sudo zypper install -y "$package_name" >>"$LOG_FILE" 2>&1
-		;;
-	*)
-		echo "[$(date '+%Y-%m-%d %H:%M:%S')] [FATAL] get_package called with no package name" >>"$LOG_FILE"
-		return 1
-		;;
-	esac
-
-	return $?
+pkg_install() {
+    local package="$1"
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "[SIMULATION] Installation de $package"
+        return 0
+    fi
+    
+    case "$DISTRO" in
+        ubuntu|debian)
+            sudo apt-get install -y "$package" &>/dev/null
+            ;;
+        arch)
+            sudo pacman -S --noconfirm "$package" &>/dev/null
+            ;;
+        fedora)
+            sudo dnf install -y "$package" &>/dev/null
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
-function check_package {
-	case "$DISTRO" in
-	arch)
-		pacman -Q "$1" >/dev/null 2>&1
-		;;
-	ubuntu | debian)
-		dpkg -s "$1" >/dev/null 2>&1
-		;;
-	fedora)
-		rpm -q "$1" >/dev/null 2>&1
-		;;
-	opensuse)
-		zypper se --installed-only "$1" >/dev/null 2>&1
-		;;
-	*)
-		return 1
-		;;
-	esac
+get_package_info() {
+    local package_def="$1"
+    local field="$2"
+    
+    IFS=':' read -ra parts <<< "$package_def"
+    case "$field" in
+        id) echo "${parts[0]}" ;;
+        desc) echo "${parts[1]}" ;;
+        level) echo "${parts[2]}" ;;
+        category) echo "${parts[3]}" ;;
+        check) echo "${parts[4]}" ;;
+        install) echo "${parts[5]}" ;;
+    esac
 }
 
-function install_package() {
-	local package="$1"
-
-	if [[ "$DRY_RUN" == "true" ]]; then
-		log "INFO" "[DRY-RUN] Would install package: $package"
-		if [[ "$VERBOSE" == "true" ]]; then
-			echo "[DRY-RUN] Package: $package"
-		fi
-		return 0
-	fi
-
-	check_package "$package"
-	if [ "$?" -eq "0" ]; then
-		if [[ "$VERBOSE" == "true" ]]; then
-			log "SUCCESS" "Package $package is already installed"
-		fi
-		return 0
-	fi
-	if [[ "$VERBOSE" == "true" ]]; then
-		log "INFO" "📦 Installing package: $package"
-	fi
-
-	if get_package "$package"; then
-		if [[ "$VERBOSE" == "true" ]]; then
-			log "SUCCESS" "Package $package installed successfully"
-		fi
-	else
-		log "ERROR" "Failed to install package $package"
-		return 1
-	fi
+get_all_packages() {
+    printf '%s\n' "${SYSTEM_PACKAGES[@]}" "${SPECIAL_INSTALLS[@]}" "${OPTIONAL_PACKAGES[@]}"
 }
 
-# Update
+function get_packages_by_level() {
+    local level_filter="$1"
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        if [[ "$(get_package_info "$pkg_def" level)" == "$level_filter" ]]; then
+            echo "$pkg_def"
+        fi
+    done < <(get_all_packages)
+}
+
+function get_packages_by_category() {
+    local category_filter="$1"
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        if [[ "$(get_package_info "$pkg_def" category)" == "$category_filter" ]]; then
+            echo "$pkg_def"
+        fi
+    done < <(get_all_packages)
+}
+
 function p_update {
 	log "INFO" "Updating package lists for $DISTRO..."
 	case "$DISTRO" in
@@ -105,7 +87,6 @@ function p_update {
 	esac
 }
 
-# Clean
 function p_clean {
 	log "INFO" "Cleaning up unused packages for $DISTRO..."
 	case "$DISTRO" in
@@ -124,4 +105,72 @@ function p_clean {
 		sudo zypper clean --all >>"$LOG_FILE" 2>&1
 		;;
 	esac
+}
+
+install_selected_packages() {
+    local packages=("$@")
+    local current=0
+    local total=${#packages[@]}
+    
+    sudo -v || { log "ERROR" "Sudo authentication failed. Exiting."; exit 1; }
+    clear
+    print_table_header "INSTALLATION IN PROGRESS"
+    
+    for pkg_def in "${packages[@]}"; do
+        ((current++))
+        local desc=$(get_package_info "$pkg_def" desc)
+        local install_cmd=$(get_package_info "$pkg_def" install)
+        
+        log "INFO" "Processing ($current/$total): ${desc}"
+        
+        if eval "$install_cmd" 2>/dev/null; then
+            log "SUCCESS" "'${desc}' installed successfully."
+        else
+            log "ERROR" "Failed to install '${desc}'. Check log for details."
+        fi
+        print_table_line
+    done
+}
+
+function run_package_installation() {
+    audit_packages
+
+    local packages_to_install=()
+    case "$SELECT_MODE" in
+        tui)
+            mapfile -t packages_to_install < <(select_installables_tui)
+            ;;
+        interactive)
+            mapfile -t packages_to_install < <(select_base_packages)
+            local optional_packages
+            if [[ "$ASSUME_YES" != "true" ]]; then
+                mapfile -t optional_packages < <(select_optional_packages)
+                if [[ ${#optional_packages[@]} -gt 0 ]]; then
+                    packages_to_install+=("${optional_packages[@]}")
+                fi
+            fi
+            ;;
+        *)
+            log "ERROR" "Invalid selection mode: '$SELECT_MODE'. Use 'tui' or 'interactive'."
+            exit 1
+            ;;
+    esac
+
+    local uninstalled_packages=()
+    for item in "${packages_to_install[@]}"; do
+        if [[ -z "$item" ]]; then continue; fi
+        local id; id=$(get_package_info "$item" id)
+        if [[ "${AUDIT_STATUS[$id]}" == "missing" ]]; then
+            uninstalled_packages+=("$item")
+        fi
+    done
+
+    if ! show_installation_summary "${uninstalled_packages[@]}"; then
+        log "INFO" "No packages selected for installation. Exiting."
+        print_table_line
+        exit 0
+    fi
+
+    install_selected_packages "${uninstalled_packages[@]}"
+    log "SUCCESS" "Installation completed successfully."
 }

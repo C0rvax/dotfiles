@@ -1,82 +1,52 @@
 #!/bin/bash
 
-declare -gA INSTALL_STATUS
+function audit_packages() {
+    local installed=0
+    local missing=0
 
-function print_system_info_row {
-	local all_dots="............................................................"
-	local items_to_print=()
+    print_title_element "SYSTEM" "$BLUEHI"
+	print_table_line
+    print_system_info_row
 
-	local distro_desc="Distribution"
-	local distro_pad_len=$((42 - ${#distro_desc} - ${#DISTRO}))
-	local distro_pad=${all_dots:0:$distro_pad_len}
-	items_to_print+=("${distro_desc} ${distro_pad} ${DISTRO}" "$BLUE")
+    mapfile -t all_packages < <(get_all_packages)
+    local total=${#all_packages[@]}
 
-	local desktop_desc="Desktop Env"
-	local desktop_pad_len=$((42 - ${#desktop_desc} - ${#DESKTOP}))
-	local desktop_pad=${all_dots:0:$desktop_pad_len}
-	items_to_print+=("${desktop_desc} ${desktop_pad} ${DESKTOP}" "$BLUE")
+    for cat in "${CATEGORIES[@]}"; do
+        local category_name="${cat%%:*}"
+        local category_title="${cat#*:}"
 
-	print_grid 2 "${items_to_print[@]}"
-}
+        print_center_element "$category_title" "$YELLOW"
 
-function run_pre_install_audit {
-    local total_checks=${#INSTALLABLES_DESC[@]}
-
-    for id in "${!INSTALLABLES_DESC[@]}"; do
-        if eval "${INSTALLABLES_CHECK[$id]}"; then
-            INSTALL_STATUS[$id]="installed"
-        else
-            INSTALL_STATUS[$id]="missing"
-        fi
-    done 
-}
-
-function print_audit_content {
-    for category_info in "${CATEGORIES_ORDER[@]}"; do
-        local category_name="${category_info%%:*}"
-        local category_title="${category_info#*:}"
-        
-        # Récupérer la liste des IDs de cette catégorie (en utilisant l'indirection de variable)
-        local ids_in_category_ref="${category_name}[@]"
-        local ids_in_category=("${!ids_in_category_ref}")
-
-        # Ne pas afficher les catégories vides
-        if [ ${#ids_in_category[@]} -eq 0 ]; then continue; fi
-
-        # print_table_line
-        print_center_element " $(echo "$category_title") " "$YELLOW"
+        mapfile -t packages_to_install < <(get_packages_by_category "$category_name")
 
         local packages_to_print=()
-        for id in "${ids_in_category[@]}"; do
-            local desc=${INSTALLABLES_DESC[$id]}
-            if [[ "${INSTALL_STATUS[$id]}" == "installed" ]]; then
+        for pkg_def in "${packages_to_install[@]}"; do
+            local id; id=$(get_package_info "$pkg_def" id)
+            local desc; desc=$(get_package_info "$pkg_def" desc)
+            local check_cmd; check_cmd=$(get_package_info "$pkg_def" check)
+
+            if eval "$check_cmd" &>/dev/null; then
+                ((installed++))
+                AUDIT_STATUS[$id]="installed"
                 packages_to_print+=("$desc" "$GREENHI")
+                #print_left_element "✓ $desc" "$GREEN"
             else
+                ((missing++))
+                AUDIT_STATUS[$id]="missing"
+                # packages_to_print+=("✗ $desc" "$REDHI")
                 packages_to_print+=("$desc" "$REDHI")
+
             fi
         done
         print_grid 4 "${packages_to_print[@]}"
     done
-}
-
-
-function run_audit_display {
-	print_title_element "SYSTEM" "$BLUEHI"
-	print_table_line
-    print_system_info_row
-    print_audit_content
+    print_table_line
+    log "SUCCESS" "Audit finished : $installed installed, $missing missing."
     print_table_line
 }
 
 function show_installation_summary() {
-    local selected_ids=("$@")
-    local items_to_install=()
-
-    for id in "${selected_ids[@]}"; do
-        if [[ "${INSTALL_STATUS[$id]}" == "missing" ]]; then
-            items_to_install+=("$id")
-        fi
-    done
+    local items_to_install=("$@")
 
     if [ ${#items_to_install[@]} -eq 0 ]; then
         log "SUCCESS" "Everything is already installed. Nothing to do."
@@ -87,47 +57,29 @@ function show_installation_summary() {
     print_left_element "Total items to install: ${#items_to_install[@]}" "$BLUEHI"
     print_left_element "Internet connection:      Required" "$BLUEHI"
 
-    # Affichage groupé par catégorie
-    for category_info in "${CATEGORIES_ORDER[@]}"; do
-        local category_name="${category_info%%:*}"
-        local category_title="${category_info#*:}"
-        
+    for cat in "${CATEGORIES[@]}"; do
+        local category_id="${cat%%:*}"
+        local category_title="${cat#*:}"
+
         local items_in_this_category_for_grid=()
-        for id in "${items_to_install[@]}"; do
-            if [[ "${INSTALLABLES_CATEGORY[$id]}" == "$category_name" ]]; then
-                items_in_this_category_for_grid+=("${INSTALLABLES_DESC[$id]}" "$GREEN")
+        
+        for pkg_def in "${items_to_install[@]}"; do
+            # ...on vérifie s'il appartient à la catégorie actuelle.
+            if [[ "$(get_package_info "$pkg_def" category)" == "$category_id" ]]; then
+                items_in_this_category_for_grid+=("$(get_package_info "$pkg_def" desc)" "$GREEN")
             fi
         done
 
         if [ ${#items_in_this_category_for_grid[@]} -gt 0 ]; then
             print_center_element " $(echo "$category_title") " "$YELLOW"
-            # print_grid 3 "${items_in_this_category_for_grid[@]}" # 3 colonnes pour la grille
-			print_grid 4 "${items_in_this_category_for_grid[@]}" # 4 colonnes pour la grille
+            print_grid 4 "${items_in_this_category_for_grid[@]}"
         fi
     done
     print_table_line
-
     if [[ "$ASSUME_YES" != "true" ]]; then
         ask_question "Do you want to continue? [y/N]: " confirm
         [[ "$confirm" =~ ^[yY]$ ]]
     else
         return 0
     fi
-}
-
-function show_progress() {
-	local current="$1"
-	local total="$2"
-	local package="$3"
-	local operation="${4:-Installing}"
-
-	local percent=$((current * 100 / total))
-	local filled=$((percent / 2))
-	local empty=$((50 - filled))
-
-	printf "\r\033[K"
-	printf "["
-	printf "%*s" "$filled" '' | tr ' ' '#'
-	printf "%*s" "$empty" '' | tr ' ' '-'
-	printf "] %3d%% (%d/%d) - %s: %s" "$percent" "$current" "$total" "$operation" "$package"
 }
