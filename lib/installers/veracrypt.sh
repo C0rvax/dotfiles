@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 function install_veracrypt {
 	check_package "veracrypt"

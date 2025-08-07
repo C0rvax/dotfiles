@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function get_package {
 	local package_name="$1"
 

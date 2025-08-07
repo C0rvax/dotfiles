@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 function setup_lxqt {
 	if [[ "$DESKTOP" == "lxqt" ]]; then

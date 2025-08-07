@@ -1,4 +1,4 @@
-# #!/bin/bash
+#!/bin/bash
 
 # function select_installables_interactive {
 #     local selected_level
@@ -104,8 +104,6 @@
 #     SELECTED_IDS=("${ids_to_consider[@]}")
 # }
 
-#!/bin/bash
-# Contient tout ce qui est lié à la sélection des paquets.
 select_installation_type() {
     print_table_line
 	echo "| Choisissez votre type d'installation:                                                              |"

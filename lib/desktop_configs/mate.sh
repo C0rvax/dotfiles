@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 function setup_mate {
 	if [[ "$DESKTOP" == "mate" ]]; then

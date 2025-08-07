@@ -1,6 +1,5 @@
 #!/bin/bash
-# Définition des options du script (ton code existant est parfait)
-# ...
+
 
 declare -gA AUDIT_STATUS
 declare -gA PACKAGES_BY_LEVEL_RESULT=()

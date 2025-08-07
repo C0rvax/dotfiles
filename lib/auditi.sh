@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Contient tout ce qui est lié à l'audit et à son affichage.
 function audit_packages() {
     local installed=0
