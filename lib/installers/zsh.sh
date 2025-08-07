@@ -9,7 +9,8 @@ function install_zsh {
 
     if [[ "$DRY_RUN" == "true" ]]; then
         log "INFO" "[DRY-RUN] Would install Zsh and Oh My Zsh from local submodule."
-        log "INFO" "Zsh configuration files would be linked from '$dotfiles_dir/home/.zsh' to '$HOME/.zsh' and '$HOME/.zshrc'."
+        log "INFO" "Zsh configuration files would be linked from '$dotfiles_dir/home/'"
+        log "INFO" "to '$HOME/.zsh' and '$HOME/.zshrc'."
         return 0
     fi
     if [ ! -d "$omz_source_path" ] || [ -z "$(ls -A "$omz_source_path")" ]; then

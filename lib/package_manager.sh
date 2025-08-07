@@ -65,7 +65,11 @@ function get_packages_by_category() {
     done < <(get_all_packages)
 }
 
-function p_update {
+function package_update {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would update package lists for $DISTRO."
+        return 0
+    fi
 	log "INFO" "Updating package lists for $DISTRO..."
 	case "$DISTRO" in
 	"arch")
@@ -87,7 +91,11 @@ function p_update {
 	esac
 }
 
-function p_clean {
+function package_clean {
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "[DRY-RUN] Would clean up unused packages for $DISTRO."
+        return 0
+    fi
 	log "INFO" "Cleaning up unused packages for $DISTRO..."
 	case "$DISTRO" in
 	"arch")

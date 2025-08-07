@@ -60,8 +60,8 @@ esac
 setup_vlc
 # set-bin
 
-p_update
-p_clean
+package_update
+package_clean
 
 log "SUCCESS" "Post-install script finished! Please reboot your system for all changes to take effect."
 print_table_line

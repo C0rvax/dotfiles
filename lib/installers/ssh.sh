@@ -4,8 +4,9 @@ function setup_ssh_and_git {
     log "INFO" "Setting up SSH and Git configurations..."
     
     if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "[DRY-RUN] Would check for SSH key, create if missing, prompt to add to Git provider, and configure Git user."
-        return
+        log "INFO" "[DRY-RUN] Would check for SSH key, create if missing, prompt to add to Git provider,"
+        log "INFO" "and configure Git user."
+        return 0
     fi
 
     if [ -f "$HOME/.ssh/id_ed25519" ]; then
