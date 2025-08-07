@@ -129,6 +129,9 @@ function run_package_installation() {
     local packages_to_install=()
     case "$install_type" in
     base)
+        local pak=("$(get_packages_by_level "base")")
+        echo "Paquets de base sélectionnés : ${pak[@]}"
+        #mapfile -t pakages_to_install << ${pak[@]}
         mapfile -t packages_to_install < <(get_packages_by_level "base")
         ;;
     full)
