@@ -41,7 +41,7 @@ select_installation_type() {
     echo "2) Complète (base + applications)"
     echo "3) Personnalisée"
     
-    read -p "Votre choix [1-3]: " choice
+    read -p "Votre choix [1-3]: " choice </dev/tty
     
     case "$choice" in
         1) echo "base" ;;
@@ -55,11 +55,11 @@ function select_optional_packages() {
     local optional_packages_to_add=()
     local temp_packages=()
 
-    echo
-    echo "Paquets optionnels disponibles:"
+    echo >&2
+    echo "Paquets optionnels disponibles:" >&2
 
     # Développement embarqué
-    read -p "Inclure les outils de développement embarqué? [y/N]: " embedded
+    read -p "Inclure les outils de développement embarqué? [y/N]: " embedded </dev/tty
     if [[ "$embedded" =~ ^[yY]$ ]]; then
         # On utilise mapfile pour lire proprement la sortie dans un tableau temporaire
         mapfile -t temp_packages < <(get_packages_by_category "embedded")
@@ -68,7 +68,7 @@ function select_optional_packages() {
     fi
 
     # Bureautique
-    read -p "Inclure LibreOffice? [y/N]: " office
+    read -p "Inclure LibreOffice? [y/N]: " office </dev/tty
     if [[ "$office" =~ ^[yY]$ ]]; then
         mapfile -t temp_packages < <(get_packages_by_category "office")
         optional_packages_to_add+=("${temp_packages[@]}")
@@ -127,7 +127,7 @@ function run_package_installation() {
 
     # 3. Collecte des paquets à installer (ne change pas)
     local packages_to_install=()
-    echo "Paquets à installer pour le type '$install_type':"
+    echo "Paquets à installer pour le type: '$install_type'\n"
     case "$install_type" in
     base)
         local pak=("$(get_packages_by_level "base")")
