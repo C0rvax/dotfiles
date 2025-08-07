@@ -1,5 +1,22 @@
 #!/bin/bash
 
+function print_system_info_row {
+	local all_dots="............................................................"
+	local items_to_print=()
+
+	local distro_desc="Distribution"
+	local distro_pad_len=$((42 - ${#distro_desc} - ${#DISTRO}))
+	local distro_pad=${all_dots:0:$distro_pad_len}
+	items_to_print+=("${distro_desc} ${distro_pad} ${DISTRO}" "$BLUE")
+
+	local desktop_desc="Desktop Env"
+	local desktop_pad_len=$((42 - ${#desktop_desc} - ${#DESKTOP}))
+	local desktop_pad=${all_dots:0:$desktop_pad_len}
+	items_to_print+=("${desktop_desc} ${desktop_pad} ${DESKTOP}" "$BLUE")
+
+	print_grid 2 "${items_to_print[@]}"
+}
+
 get_display_width() {
     local str="$1"
     local clean_str=$(printf '%s' "$str" | sed 's/\x1b\[[0-9;]*m//g')
