@@ -23,8 +23,6 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
-# typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
-
 if [ -f "$HOME/.zsh/myconfig.zsh" ]; then
     source "$HOME/.zsh/myconfig.zsh"
 fi
