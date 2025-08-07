@@ -123,7 +123,7 @@ function run_package_installation() {
     if [[ "$ASSUME_YES" == "true" ]]; then
         install_type="base"
     else
-        install_type=$(select_installation_type)
+        install_type="$(select_installation_type)"
     fi
 
     # 3. Collecte des paquets à installer (ne change pas)
