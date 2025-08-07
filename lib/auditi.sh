@@ -49,10 +49,9 @@ function show_installation_summary() {
     local selected_ids=("$@")
     local items_to_install=()
 
-    echo "Items to install: ${selected_ids[@]}"
     for item in "${selected_ids[@]}"; do
         local id; id=$(get_package_info "$item" id)
-        if [[ "${INSTALL_STATUS[$id]}" == "missing" ]]; then
+        if [[ "${AUDIT_STATUS[$id]}" == "missing" ]]; then
             items_to_install+=("$item")
         fi
     done
