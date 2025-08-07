@@ -18,15 +18,8 @@ function setup_ssh_and_git {
     print_table_line
     log "INFO" "Your public SSH key is:"
     local key=$(cat "$HOME/.ssh/id_ed25519.pub")
-    print_left_element "$key" "$CYAN"
-    log "WARNING" "ACTION REQUIRED: You must add this public key to your Git provider (GitHub, GitLab, etc.)"
-    log "INFO" "1. Go to your SSH keys settings on the website."
-    log "INFO" "2. Click 'Add SSH key'."
-    log "INFO" "3. Paste the key above."
-
-    if [[ "$ASSUME_YES" != "true" ]]; then
-        ask_question "Press [Enter] when you have added the key to your Git provider..." response
-    fi
+    log "WARNING" "$key"
+    log "INFO" "Add this public key to your Git provider (GitHub, GitLab, etc.)"
 
     setup_github_known_hosts
     setup_git

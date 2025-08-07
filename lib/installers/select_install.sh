@@ -20,7 +20,6 @@ function select_installables_interactive {
         esac
     fi
 
-    # Construire la liste des IDs à installer
     local ids_to_consider=()
     for id in "${!INSTALLABLES_LEVEL[@]}"; do
         local level=${INSTALLABLES_LEVEL[$id]}
@@ -51,7 +50,6 @@ function select_installables_interactive {
             done
         fi
     fi
-
     SELECTED_IDS=("${ids_to_consider[@]}")
 }
 
