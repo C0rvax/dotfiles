@@ -62,48 +62,49 @@ function select_optional_packages() {
 function select_installables_tui {
     log "INFO" "Launching TUI package selector..."
 
-    # Le TUI sélectionne par catégorie. On lui passe les titres.
+    # Créer un tableau associatif pour mapper le titre affiché au nom de catégorie
     local category_titles=()
-    declare -gA TITLE_TO_CAT_NAME_MAP # Pour retrouver le nom de la variable après sélection
-    for category_info in "${CATEGORIES[@]}"; do
-        local cat_name="${category_info%%:*}"
-        local cat_title="${category_info#*:}"
-        local clean_title=$(echo "$cat_title" | sed -e 's/--- //' -e 's/ ---//' -e 's/ (Optionnel)//')
-        category_titles+=("$clean_title")
-        TITLE_TO_CAT_NAME_MAP["$clean_title"]="$cat_name"
+    declare -A TITLE_TO_CAT_NAME_MAP
+    for cat in "${CATEGORIES[@]}"; do
+        local category_name="${cat%%:*}"
+        local category_title="${cat#*:}"
+        
+        category_titles+=("$category_title")
+        TITLE_TO_CAT_NAME_MAP["$category_title"]="$category_name"
     done
     
-    # Compilation du sélecteur (inchangé)
+    # Compilation du sélecteur (si nécessaire)
     if [ ! -x ./selector ]; then
         log "WARNING" "'selector' not compiled. Attempting compilation..."
         if ! command -v gcc &> /dev/null || ! gcc selector.c -o selector -lncurses; then
             log "ERROR" "Failed to compile 'selector'. Aborting."
             exit 1
-        else
-            log "SUCCESS" "'selector' compiled."
         fi
     fi
 
+    # Lancer le sélecteur C et capturer les titres sélectionnés
     local selected_output
     selected_output=$(./selector "${category_titles[@]}")
     
-    if [ -z "$selected_output" ]; then
-        log "WARNING" "No categories selected or operation cancelled. Exiting."
-        return
+    # Si l'utilisateur annule (sortie vide), on ne renvoie rien.
+    if [[ -z "$selected_output" ]]; then
+        log "WARNING" "No categories selected or operation cancelled."
+        return 0
     fi
     
+    # Convertir la chaîne de sortie en tableau de titres
     local selected_titles=()
     mapfile -t selected_titles <<< "$selected_output"
 
-    local ids_to_consider=()
+    # Boucler sur les titres sélectionnés
     for title in "${selected_titles[@]}"; do
+        # Retrouver le nom de la catégorie (ex: "dev") à partir du titre (ex: "Development")
         local cat_name=${TITLE_TO_CAT_NAME_MAP["$title"]}
-        if [ -n "$cat_name" ]; then
-            # Utiliser l'indirection pour obtenir les IDs de la catégorie
-            local ids_in_category_ref="${cat_name}[@]"
-            ids_to_consider+=("${!ids_in_category_ref}")
+        
+        if [[ -n "$cat_name" ]]; then
+            # Utiliser votre fonction existante pour récupérer toutes les définitions de paquets
+            # de cette catégorie et les IMPRIMER sur la sortie standard.
+            get_packages_by_category "$cat_name"
         fi
     done
-    
-    SELECTED_IDS=("${ids_to_consider[@]}")
 }
