@@ -49,8 +49,9 @@ function show_installation_summary() {
     local selected_ids=("$@")
     local items_to_install=()
 
+    echo "Items to install: ${selected_ids[@]}"
     for item in "${selected_ids[@]}"; do
-        local id=$(get_package_info "$item" id)
+        local id; id=$(get_package_info "$item" id)
         if [[ "${INSTALL_STATUS[$id]}" == "missing" ]]; then
             items_to_install+=("$item")
         fi
@@ -210,9 +211,7 @@ function run_package_installation() {
             ;;
     esac
 
-    if [ ${#packages_to_install[@]} -gt 0 ]; then
-        show_installation_summary "${packages_to_install[@]}"
-    else
+    if ! show_installation_summary "${packages_to_install[@]}"; then
         log "INFO" "No packages selected for installation. Exiting."
         print_table_line
         exit 0
