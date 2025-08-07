@@ -19,6 +19,7 @@
 
 ## ⚠️ BUGS
 
+- [ ] Fix node
 - [ ] Fichiers cachés kde
 - [ ] Gestion sudo
 - [ ] Icons ?
