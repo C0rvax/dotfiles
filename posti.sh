@@ -31,6 +31,7 @@ source lib/ui.sh
 source config/package.conf
 source lib/package_manageri.sh
 source lib/auditi.sh
+source lib/install_select.sh
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
 
