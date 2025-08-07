@@ -163,7 +163,7 @@ function display_logo {
 		if [[ ${#line} -gt max_width ]]; then
 			max_width=${#line}
 		fi
-	done <<< "${LOGO[0]}"
+	done <<< "${DOT_LOGO[0]}"
 
 	local left_padding=$(((TABLE_WIDTH - max_width - 2) / 2))
 	[[ $left_padding -lt 1 ]] && left_padding=1
