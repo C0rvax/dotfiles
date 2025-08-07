@@ -69,3 +69,45 @@ function get_packages_by_category() {
         fi
     done < <(get_all_packages)
 }
+
+function p_update {
+	log "INFO" "Updating package lists for $DISTRO..."
+	case "$DISTRO" in
+	"arch")
+		sudo pacman -Sy --noconfirm >>"$LOG_FILE" 2>&1
+		;;
+	"ubuntu" | "debian")
+		sudo apt-get update -y >>"$LOG_FILE" 2>&1
+		;;
+	"fedora")
+		sudo dnf check-update -y >>"$LOG_FILE" 2>&1
+		;;
+	"opensuse")
+		sudo zypper refresh >>"$LOG_FILE" 2>&1
+		;;
+	*)
+		log "ERROR" "Unsupported distribution for update."
+		return 1
+		;;
+	esac
+}
+
+function p_clean {
+	log "INFO" "Cleaning up unused packages for $DISTRO..."
+	case "$DISTRO" in
+	"arch")
+		if [[ -n "$(pacman -Qdtq)" ]]; then
+			sudo pacman -Rns $(pacman -Qdtq) --noconfirm >>"$LOG_FILE" 2>&1
+		fi
+		;;
+	"ubuntu" | "debian")
+		sudo apt-get autoclean -y >>"$LOG_FILE" 2>&1 && sudo apt-get autoremove -y >>"$LOG_FILE" 2>&1
+		;;
+	"fedora")
+		sudo dnf autoremove -y >>"$LOG_FILE" 2>&1
+		;;
+	"opensuse")
+		sudo zypper clean --all >>"$LOG_FILE" 2>&1
+		;;
+	esac
+}
