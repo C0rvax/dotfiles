@@ -15,18 +15,6 @@ function setup_github_known_hosts {
 }
 
 function setup_git {
-	log "INFO" "Configuring Git global settings..."
-    if [[ "$ASSUME_YES" != "true" ]]; then
-        ask_question "Do You want to set git user and email ? [y/n]" rep
-        if [[ "$rep" =~ ^[yYoO]$ ]]; then
-            ask_question "Enter your name: " git_name
-            ask_question "Enter your email: " git_email
-            git config --global user.name "$git_name"
-            git config --global user.email "$git_email"
-            log "SUCCESS" "Git global config set!"
-        else
-            log "WARNING" "Git global config skipped!"
-        fi
-    fi
-	
+    git config --global user.name "$GIT_USER"
+    git config --global user.email "$GIT_EMAIL"
 }
