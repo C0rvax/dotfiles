@@ -12,7 +12,7 @@ function install_fonts {
     mkdir -p "$icons_dir"
 
     log "INFO" "Installing MesloLGS Fonts"
-    if check_file "$fonts_dir/MesloLGS NF Regular.ttf"; then
+    if [ -s "$fonts_dir/MesloLGS NF Regular.ttf" ]; then
         log "INFO" "Fonts seem to be already downloaded."
     else
         safe_download "$URL_FONT_MESLO_REGULAR" "$fonts_dir/MesloLGS NF Regular.ttf" "MesloLGS Regular Font"
@@ -27,7 +27,7 @@ function install_fonts {
     fi
 
     log "INFO" "Installing Buuf Nestort Icons"
-    if check_directory "$icons_dir/$BUUF_ICONS_NAME"; then
+    if [ -d "$icons_dir/$BUUF_ICONS_NAME" ]; then
         log "INFO" "Icon pack already exists."
     else
         safe_git_clone "$BUUF_ICONS_REPO" "$icons_dir/$BUUF_ICONS_NAME" "Buuf Nestort Icon Pack"

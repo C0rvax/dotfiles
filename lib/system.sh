@@ -48,22 +48,6 @@ function detect_desktop {
 	fi
 }
 
-function check_file {
-	if [ -f "${1}" ]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
-function check_directory {
-	if [ -d "${1}" ]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
 function safe_download {
     local url="$1"
     local output="$2"

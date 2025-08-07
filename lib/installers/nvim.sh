@@ -10,7 +10,7 @@ function install_nvim {
     local nvim_path="$appimage_dir/nvim.appimage"
     local clang_path="$dotfiles_dir/home/clang-format"
 
-    if check_file "$nvim_path"; then
+    if [ -f "$nvim_path" ]; then
         log "INFO" "NeoVim AppImage is already installed."
     else
         log "INFO" "Installing NeoVim AppImage..."

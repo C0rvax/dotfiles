@@ -53,7 +53,7 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 
 4.  **Rendez le script principal exécutable** :
     ```bash
-    chmod +x postInstall.sh
+    chmod +x dotf.sh
     ```
 
 5.  **Exécutez le script** (sans `sudo` !) en utilisant l'une des options ci-dessous.
@@ -66,16 +66,16 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 
 ```bash
 # Lancer le script en mode interactif standard (recommandé pour la première fois)
-./postInstall.sh
+./dotf.sh
 
 # Lancer l'interface TUI pour une sélection fine par catégorie (en travaux)
-./postInstall.sh --select tui
+./dotf.sh --select tui
 
 # Simuler une installation complète sans rien modifier, en affichant toutes les étapes
-./postInstall.sh --dry-run --verbose
+./dotf.sh --dry-run --verbose
 
 # Lancer une installation de base entièrement automatisée (pour un script de provisioning)
-./postInstall.sh --yes
+./dotf.sh --yes
 ```
 
 ### Aide et détail des options
@@ -100,28 +100,29 @@ Options:
 dotfiles/
 │
 ├── config/
-│   ├── packages.conf    # Définit tous les paquets, leurs catégories et commandes d'installation.
-│   └── settings.conf    # Variables globales : URLs, thèmes, chemins, etc.
+│   ├── packages.conf       # Définit tous les paquets, leurs catégories et commandes d'installation.
+│   └── settings.conf       # Variables globales : URLs, thèmes, chemins, etc.
 │
 ├── home/
-│   ├── .zshrc           # Fichier de configuration Zsh principal.
-│   ├── .config/nvim/    # Configuration Neovim.
-│   └── ...              # Tous les "dotfiles" destinés à être liés dans votre /home.
+│   ├── .zshrc              # Fichier de configuration Zsh principal.
+│   ├── .config/nvim/       # Configuration Neovim.
+│   └── ...                 # Tous les "dotfiles" destinés à être liés dans votre /home.
 │
 ├── lib/
-│   ├── desktop_configs/ # Scripts pour chaque environnement de bureau (KDE, GNOME...).
-│   ├── installers/      # Modules pour les installations complexes (Docker, Node.js...).
-│   ├── audit.sh         # Fonctions d'audit et de rapport système.
-│   ├── package_manager.sh # Abstraction du gestionnaire de paquets (apt, pacman...).
-│   ├── system.sh        # Détection du système, logging, fonctions utilitaires.
-│   └── ui.sh            # Fonctions pour l'affichage de l'interface (tableaux, couleurs...).
+│   ├── desktop_configs/    # Scripts pour chaque environnement de bureau (KDE, GNOME...).
+│   ├── installers/         # Modules pour les installations complexes (Docker, Node.js...).                  #
+│   ├── install_select.sh   # Fonctions de selection d'installation (interactif ou TUI).
+│   ├── audit.sh            # Fonctions d'audit et de rapport système.
+│   ├── package_manager.sh  # Abstraction du gestionnaire de paquets (apt, pacman...).
+│   ├── system.sh           # Détection du système, logging, fonctions utilitaires.
+│   └── ui.sh               # Fonctions pour l'affichage de l'interface (tableaux, couleurs...).
 │
 ├── vendor/
-│   └── oh-my-zsh/       # Sous-module "fournisseur" pour le framework Oh My Zsh.
+│   └── oh-my-zsh/          # Sous-module "fournisseur" pour le framework Oh My Zsh.
 │
-├── .gitmodules          # Déclare les sous-modules Git (oh-my-zsh, p10k, plugins zsh...).
-├── postInstall.sh       # Point d'entrée principal qui orchestre l'ensemble du script.
-└── selector.c           # Code source en C pour l'interface de sélection TUI.
+├── .gitmodules             # Déclare les sous-modules Git (oh-my-zsh, p10k, plugins zsh...).
+├── postInstall.sh          # Point d'entrée principal qui orchestre l'ensemble du script.
+└── selector.c              # Code source en C pour l'interface de sélection TUI.
 ```
 ---
 
