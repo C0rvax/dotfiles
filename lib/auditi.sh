@@ -89,26 +89,26 @@ install_selected_packages() {
     local current=0
     local total=${#packages[@]}
     
-    echo "Installation en cours..."
+    sudo -v || { log "ERROR" "Sudo authentication failed. Exiting."; exit 1; }
+    clear
+    print_table_header "INSTALLATION IN PROGRESS"
     
     for pkg_def in "${packages[@]}"; do
         ((current++))
-        local id=$(get_package_info "$pkg_def" id)
         local desc=$(get_package_info "$pkg_def" desc)
-        local check_cmd=$(get_package_info "$pkg_def" check)
         local install_cmd=$(get_package_info "$pkg_def" install)
         
-        printf "[%d/%d] %s... " "$current" "$total" "$desc"
+        log "INFO" "Processing ($current/$total): ${desc}"
+        #printf "[%d/%d] %s... " "$current" "$total" "$desc"
         
         if eval "$install_cmd" 2>/dev/null; then
-            echo "✓"
+            log "SUCCESS" "'${desc}' installed successfully."
         else
-            echo "✗ échec"
+            log "ERROR" "Failed to install '${desc}'. Check log for details."
         fi
+        print_table_line
     done
 }
-
-# === WORKFLOW PRINCIPAL ===
 
 function run_package_installation() {
     audit_packages
@@ -116,7 +116,7 @@ function run_package_installation() {
     local packages_to_install=()
     case "$SELECT_MODE" in
         tui)
-            mapfile -t packages_to_install < <(select_base_packages_tui)
+            mapfile -t packages_to_install < <(select_installables_tui)
             ;;
         interactive)
             mapfile -t packages_to_install < <(select_base_packages)
@@ -134,10 +134,9 @@ function run_package_installation() {
             ;;
     esac
 
-    #echo "Packages sélectionnés pour l'installation : ${packages_to_install[@]}"
     local uninstalled_packages=()
     for item in "${packages_to_install[@]}"; do
-        if [[ -z "$item" ]]; then continue; fi # Sécurité pour ignorer les lignes vides
+        if [[ -z "$item" ]]; then continue; fi
         local id; id=$(get_package_info "$item" id)
         if [[ "${AUDIT_STATUS[$id]}" == "missing" ]]; then
             uninstalled_packages+=("$item")
@@ -151,4 +150,5 @@ function run_package_installation() {
     fi
 
     install_selected_packages "${uninstalled_packages[@]}"
+    log "SUCCESS" "Installation completed successfully."
 }

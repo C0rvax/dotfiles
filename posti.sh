@@ -37,16 +37,32 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 declare -gA AUDIT_STATUS
 
-#prompt_for_sudo
 display_logo
 detect_distro
 detect_desktop
 
 run_package_installation
 
+print_table_header "FINAL CONFIGURATIONS"
+log "INFO" "Applying final desktop and system configurations..."
+
+case "$DESKTOP" in
+    kde)      setup_kde ;;
+    gnome)    setup_gnome ;;
+    xfce)     setup_xfce ;;
+    lxde)     setup_lxde ;;
+    lxqt)     setup_lxqt ;;
+    mate)     setup_mate ;;
+    cinnamon) setup_cinnamon ;;
+    *) log "WARNING" "No specific desktop configuration for '$DESKTOP'." ;;
+esac
+
+setup_vlc
+# set-bin
+
 p_update
 p_clean
-# setup_vlc etc...
-log "SUCCESS" "Script terminé ! Un redémarrage est conseillé."
+
+log "SUCCESS" "Post-install script finished! Please reboot your system for all changes to take effect."
 print_table_line
 exit 0
