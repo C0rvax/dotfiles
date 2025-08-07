@@ -36,6 +36,7 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 # --- Étape 1: Affichage initial et Audit ---
 trap "cleanup_sudo_config" EXIT SIGINT SIGTERM
+declare -gA AUDIT_STATUS
 #ensure_sudo_global_timestamp
 prompt_for_sudo
 #start_sudo_keep_alive

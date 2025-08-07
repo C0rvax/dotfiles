@@ -188,32 +188,65 @@ get_packages_by_category() {
 	done
 }
 
-audit_packages() {
-	local total=0
-	local installed=0
-	local missing=0
+# audit_packages() {
+# 	local total=0
+# 	local installed=0
+# 	local missing=0
 
-	echo "Vérification de votre système..."
+# 	echo "Vérification de votre système..."
 
-	get_all_packages | while read -r pkg_def; do
-		local id=$(get_package_info "$pkg_def" id)
-		local desc=$(get_package_info "$pkg_def" desc)
-		local check_cmd=$(get_package_info "$pkg_def" check)
+# 	get_all_packages | while read -r pkg_def; do
+# 		local id=$(get_package_info "$pkg_def" id)
+# 		local desc=$(get_package_info "$pkg_def" desc)
+# 		local check_cmd=$(get_package_info "$pkg_def" check)
 
-		((total++))
+# 		((total++))
 
-		if eval "$check_cmd" >/dev/null; then
-			((installed++))
-			echo "✓ $desc"
-		else
-			((missing++))
-			echo "✗ $desc"
-			echo "$missing"
-		fi
-	done
+# 		if eval "$check_cmd" &>/dev/null; then
+# 			((installed++))
+# 			echo "✓ $desc"
+# 		else
+# 			((missing++))
+# 			echo "✗ $desc"
+# 			echo "$missing"
+# 		fi
+# 	done
 
-	echo
-	echo "Résumé: $installed installés, $missing manquants"
+# 	echo
+# 	echo "Résumé: $installed installés, $missing manquants"
+# }
+
+function audit_packages() {
+    local installed=0
+    local missing=0
+
+    # On utilise mapfile pour charger tous les paquets en une fois, c'est plus propre
+    mapfile -t all_packages < <(get_all_packages)
+    local total=${#all_packages[@]}
+
+    log "INFO" "Lancement de l'audit de ${total} paquets..."
+    print_table_line
+
+    for pkg_def in "${all_packages[@]}"; do
+        local id; id=$(get_package_info "$pkg_def" id)
+        local desc; desc=$(get_package_info "$pkg_def" desc)
+        local check_cmd; check_cmd=$(get_package_info "$pkg_def" check)
+
+        # On exécute la vérification en masquant TOUTES les sorties
+        if eval "$check_cmd" &>/dev/null; then
+            ((installed++))
+            AUDIT_STATUS[$id]="installed"
+            print_left_element "✓ $desc" "$GREEN"
+        else
+            ((missing++))
+            AUDIT_STATUS[$id]="missing"
+            print_left_element "✗ $desc" "$RED"
+        fi
+    done
+
+    print_table_line
+    log "SUCCESS" "Audit terminé : $installed installés, $missing manquants."
+    print_table_line
 }
 
 # === SÉLECTION INTERACTIVE ===
@@ -257,35 +290,68 @@ select_optional_packages() {
 
 # === INSTALLATION PRINCIPALE ===
 
-install_selected_packages() {
-	local packages=("$@")
-	local current=0
-	local total=${#packages[@]}
+# install_selected_packages() {
+# 	local packages=("$@")
+# 	local current=0
+# 	local total=${#packages[@]}
 
-	echo "Installation en cours..."
+# 	echo "Installation en cours..."
 
-	for pkg_def in "${packages[@]}"; do
-		((current++))
-		local id=$(get_package_info "$pkg_def" id)
-		local desc=$(get_package_info "$pkg_def" desc)
-		local check_cmd=$(get_package_info "$pkg_def" check)
-		local install_cmd=$(get_package_info "$pkg_def" install)
+# 	for pkg_def in "${packages[@]}"; do
+# 		((current++))
+# 		local id=$(get_package_info "$pkg_def" id)
+# 		local desc=$(get_package_info "$pkg_def" desc)
+# 		local check_cmd=$(get_package_info "$pkg_def" check)
+# 		local install_cmd=$(get_package_info "$pkg_def" install)
 
-		printf "[%d/%d] %s... " "$current" "$total" "$desc"
+# 		printf "[%d/%d] %s... " "$current" "$total" "$desc"
 
-		# Vérifier si déjà installé
-		if eval "$check_cmd" 2>/dev/null; then
-			echo "déjà installé"
-			continue
-		fi
+# 		# Vérifier si déjà installé
+# 		if eval "$check_cmd" 2>/dev/null; then
+# 			echo "déjà installé"
+# 			continue
+# 		fi
 
-		# Installer
-		if eval "$install_cmd" 2>/dev/null; then
-			echo "✓"
-		else
-			echo "✗ échec"
-		fi
-	done
+# 		# Installer
+# 		if eval "$install_cmd" 2>/dev/null; then
+# 			echo "✓"
+# 		else
+# 			echo "✗ échec"
+# 		fi
+# 	done
+# }
+
+function install_selected_packages() {
+    local packages_to_process=("$@")
+    local current=0
+    local total=${#packages_to_process[@]}
+
+    log "INFO" "Début de l'installation de $total paquets..."
+    print_table_line
+
+    for pkg_def in "${packages_to_process[@]}"; do
+        ((current++))
+        local id; id=$(get_package_info "$pkg_def" id)
+        local desc; desc=$(get_package_info "$pkg_def" desc)
+        local install_cmd; install_cmd=$(get_package_info "$pkg_def" install)
+
+        # On ne VÉRIFIE PLUS, on CONSULTE le résultat de l'audit !
+        if [[ "${AUDIT_STATUS[$id]}" == "installed" ]]; then
+            log "SUCCESS" "($current/$total) Déjà installé : $desc"
+            continue
+        fi
+
+        log "INFO" "($current/$total) Installation : $desc"
+        
+        if eval "$install_cmd"; then
+            log "SUCCESS" "($current/$total) OK : $desc installé avec succès."
+            # On met à jour le statut au cas où une étape ultérieure en aurait besoin
+            AUDIT_STATUS[$id]="installed"
+        else
+            log "ERROR" "($current/$total) ÉCHEC : L'installation de $desc a échoué."
+        fi
+        print_table_line
+    done
 }
 
 # === WORKFLOW PRINCIPAL ===
