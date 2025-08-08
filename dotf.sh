@@ -3,13 +3,14 @@
 VERBOSE=false
 DRY_RUN=false
 ASSUME_YES=false
-SELECT_MODE="interactive" # 'interactive' ou 'tui'
+SELECT_MODE="interactive" # 'interactive' or 'tui'
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         -v|--verbose) VERBOSE=true; shift ;;
         -d|--dry-run) DRY_RUN=true; shift ;;
         -y|--yes) ASSUME_YES=true; shift ;;
+        -t|--tui) SELECT_MODE="tui"; shift ;;
         -h|--help)
             echo "Usage: postInstall.sh [options]"
             echo "Options:"
@@ -17,10 +18,9 @@ while [[ "$#" -gt 0 ]]; do
             echo "  -d, --dry-run       Simulate installation without making changes"
             echo "  -y, --yes           Assume 'yes' answer to prompts"
             echo "  -h, --help          Show this help message"
-            echo "  -s, --select        Select installation mode (interactive or tui)"
+            echo "  -t, --tui           Switch to TUI mode for package selection"
             exit 0
             ;;
-        -s|--select) SELECT_MODE="$2"; shift 2 ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
 done
