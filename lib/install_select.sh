@@ -88,7 +88,7 @@ function select_installables_tui {
 
     if [ ! -x ./selector ]; then
         log "WARNING" "'selector' not compiled. Attempting compilation..."
-        if ! command -v gcc &> /dev/null || ! gcc selector.c -o selector -lncursesw; then
+        if ! command -v gcc &> /dev/null || ! gcc selec.c -o selector -lncursesw; then
             log "ERROR" "Failed to compile 'selector'. Aborting."
             exit 1
         fi
