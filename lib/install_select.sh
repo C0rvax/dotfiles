@@ -45,13 +45,13 @@ function select_optional_packages() {
     local temp_packages=()
 
     ask_question "Include EMBEDDED packages (avr-libc, etc.)? [y/N]" embedded >&2
-    if [[ "$embedded" =~ ^[yY]$ ]]; then
+    if [[ "$embedded" =~ ^[yYoO]$ ]]; then
         mapfile -t temp_packages < <(get_packages_by_category "embedded")
         optional_packages_to_add+=("${temp_packages[@]}")
     fi
 
     ask_question "Inclure LibreOffice? [y/N]: " office >&2
-    if [[ "$office" =~ ^[yY]$ ]]; then
+    if [[ "$office" =~ ^[yYoO]$ ]]; then
         mapfile -t temp_packages < <(get_packages_by_category "office")
         optional_packages_to_add+=("${temp_packages[@]}")
     fi

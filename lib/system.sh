@@ -9,6 +9,15 @@ function detect_distro {
 	fi
 }
 
+function sync_clock {
+    if command -v timedatectl &> /dev/null; then
+        sudo timedatectl set-ntp true
+        # sleep 2
+    else
+        log "WARNING" "timedatectl command not found, skipping clock synchronization."
+    fi
+}
+
 function log() {
     local level="$1"
     shift

@@ -37,6 +37,7 @@ for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 declare -gA AUDIT_STATUS
 
+sync_clock
 if [[ "$SELECT_MODE" != "tui" ]]; then
     display_logo
 fi
