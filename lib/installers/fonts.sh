@@ -6,11 +6,14 @@ function install_fonts {
 	local themes_dir="$dotfiles_dir/home/themes"
 	local fonts_source_dir="$themes_dir/fonts"
 	local icons_source_dir="$themes_dir/icons/$BUUF_ICONS_NAME"
+	
 
 	#local sys_fonts_dir="/usr/share/fonts/truetype/custom"
 	#local icons_dest_dir="/usr/share/icons/$BUUF_ICONS_NAME"
 	local fonts_dest_dir="$HOME/.local/share/fonts"
-	local icons_dest_dir="$HOME/.local/share/icons/$BUUF_ICONS_NAME"
+	local icons_dest_dir="$HOME/.local/share/icons"
+	local icons_dest="$HOME/.local/share/icons/$BUUF_ICONS_NAME"
+
 
 	local exit_code=0
 	if [[ "$DRY_RUN" == "true" ]]; then
@@ -33,7 +36,7 @@ function install_fonts {
 		fi
 	fi
 
-	if [ -L "$icons_dest_dir" ]; then
+	if [ -L "$icons_dest" ]; then
 		log "INFO" "Icon symlink already exists."
 		return exit_code
 	else
@@ -42,12 +45,12 @@ function install_fonts {
 			return 1
 		else
 			mkdir -p "$icons_dest_dir"
-			ln -sfn "$icons_source_dir" "$icons_dest_dir"
+			ln -sfn "$icons_source_dir" "$icons_dest"
 		fi
 	fi
 
-	if [ -f "$icons_dest_dir/index.theme" ]; then
-		gtk-update-icon-cache -f -t "$icons_dest_dir" >>${LOG_FILE} 2>&1
+	if [ -f "$icons_dest/index.theme" ]; then
+		gtk-update-icon-cache -f -t "$icons_dest" >>${LOG_FILE} 2>&1
 	else
 		log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
 	fi
