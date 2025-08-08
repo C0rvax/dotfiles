@@ -6,7 +6,7 @@ CC = gcc
 name = selector
 SRC = select.c
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -I./include
 LDFLAGS = -lncursesw
 
 DEB_DEPS = gcc libncurses-dev
@@ -23,31 +23,7 @@ name: install_deps $(SRC)
 	@echo "✅ TUI selector compiled successfully."
 
 install_deps:
-	@# Détection de la distribution et installation des paquets
-	@if [ -f /etc/os-release ]; then \
-		. /etc/os-release; \
-		if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then \
-			if ! dpkg -s $(DEB_DEPS) >/dev/null 2>&1; then \
-				echo "Dependencies missing. Installing for Debian/Ubuntu..."; \
-				sudo apt-get update -y && sudo apt-get install -y $(DEB_DEPS); \
-			fi; \
-		elif [[ "$ID" == "arch" ]]; then \
-			if ! pacman -Q $(ARCH_DEPS) >/dev/null 2>&1; then \
-				echo "Dependencies missing. Installing for Arch Linux..."; \
-				sudo pacman -S --noconfirm $(ARCH_DEPS); \
-			fi; \
-		elif [[ "$ID" == "fedora" ]]; then \
-			if ! dnf list installed $(FEDORA_DEPS) >/dev/null 2>&1; then \
-				echo "Dependencies missing. Installing for Fedora..."; \
-				sudo dnf install -y $(FEDORA_DEPS); \
-			fi; \
-		else \
-			echo "⚠️ Unsupported distribution for automatic dependency installation. Please install 'gcc' and 'ncurses' manually."; \
-		fi \
-	else \
-		echo "❌ Cannot detect Linux distribution from /etc/os-release."; \
-		exit 1; \
-	fi
+	sudo apt-get update -y && sudo apt-get install -y $(DEB_DEPS)
 
 clean:
 	@echo "Cleaning compiled files..."

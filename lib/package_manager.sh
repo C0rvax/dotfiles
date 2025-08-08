@@ -65,6 +65,25 @@ function get_packages_by_category() {
     done < <(get_all_packages)
 }
 
+function get_packages_by_tags() {
+    local tags_str="$1"
+    local IFS=','
+    read -ra tags_array <<< "$tags_str"
+
+    while read -r pkg_def; do
+        [[ -n "$pkg_def" ]] || continue
+        
+        local pkg_tags_str=$(get_package_info "$pkg_def" tags)
+        
+        for profile_tag in "${tags_array[@]}"; do
+            if [[ ",$pkg_tags_str," == *",$profile_tag,"* ]]; then
+                echo "$pkg_def"
+                break
+            fi
+        done
+    done < <(get_all_packages)
+}
+
 function package_update {
     if [[ "$DRY_RUN" == "true" ]]; then
         log "INFO" "[DRY-RUN] Would update package lists for $DISTRO."

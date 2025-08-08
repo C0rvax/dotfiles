@@ -25,20 +25,14 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-source config/settings.conf
-source config/packages.conf
-source lib/system.sh
-source lib/ui.sh
-source lib/package_manager.sh
-source lib/audit.sh
-source lib/install_select.sh
+for f in config/*.conf; do source "$f"; done
+for f in lib/*.sh; do source "$f"; done
 for f in lib/installers/*.sh; do source "$f"; done
 for f in lib/desktop_configs/*.sh; do source "$f"; done
 
 declare -gA AUDIT_STATUS
 
-setup_time_and_network
-#sync_clock
+sync_clock
 
 if [[ "$SELECT_MODE" != "tui" ]]; then
     display_logo
@@ -72,26 +66,3 @@ package_clean
 log "SUCCESS" "Post-install script finished! Please reboot your system for all changes to take effect."
 print_table_line
 exit 0
-
-function setup_time_and_network {
-    log "INFO" "Waiting for network connectivity (critical for VMs)..."
-    # Boucle jusqu'à ce que le ping vers un serveur fiable réussisse.
-    while ! ping -c 1 -W 1 8.8.8.8 &> /dev/null; do
-        echo -n "."
-        sleep 1
-    done
-    echo
-    log "SUCCESS" "Network connection is active."
-
-    log "INFO" "Synchronizing system time..."
-    if command -v timedatectl &>/dev/null; then
-        # On redémarre le service de temps au cas où il serait confus par le snapshot.
-        sudo systemctl restart systemd-timesyncd.service
-        # On active la synchronisation NTP
-        sudo timedatectl set-ntp true
-        sleep 2 # On laisse le temps à la synchro de se faire.
-        log "SUCCESS" "System time has been synchronized."
-    else
-        log "WARNING" "timedatectl command not found. Cannot guarantee time is correct."
-    fi
-}
