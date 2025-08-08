@@ -22,7 +22,7 @@ function install_zsh {
     log "INFO" "Linking Oh My Zsh from local submodule..."
     ln -sfn "$omz_source_path" "$omz_target_path"
 
-local zsh_path
+    local zsh_path
     zsh_path=$(which zsh)
 
     if [ -z "$zsh_path" ]; then

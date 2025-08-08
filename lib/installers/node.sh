@@ -14,7 +14,7 @@ function install_node {
 
     # Downloading NVM install script
     if ! safe_download "$URL_NVM_INSTALL" "$nvm_install_script" "NVM install script"; then
-        return 1 # safe_download gère le log d'erreur
+        return 1
     fi
 
     # Executing the downloaded script
@@ -43,7 +43,5 @@ function install_node {
         log "ERROR" "Could not use the installed Node.js version"
         return 1
     fi
-
-    log "SUCCESS" "Node.js installed successfully"
     return 0
 }
