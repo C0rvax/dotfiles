@@ -38,10 +38,10 @@ Pin: origin packages.mozilla.org
 Pin-Priority: 1000
 ' | sudo tee /etc/apt/preferences.d/mozilla > /dev/null
 
-    if ! sudo apt-get update >> "$LOG_FILE" 2>&1; then
-        log "ERROR" "apt-get update failed after adding Mozilla repo. Check '$LOG_FILE' for details."
-        return 1
-    fi
+    # if ! sudo apt-get update >> "$LOG_FILE" 2>&1; then
+    #     log "ERROR" "apt-get update failed after adding Mozilla repo. Check '$LOG_FILE' for details."
+    #     return 1
+    # fi
 
     if ! sudo apt-get install firefox firefox-l10n-fr -y >> "$LOG_FILE" 2>&1; then
         log "ERROR" "Failed to install Firefox packages from Mozilla repo. Check '$LOG_FILE' for details."
