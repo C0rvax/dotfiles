@@ -35,8 +35,6 @@ function install_nvim {
             log "ERROR" "Could not make '$nvim_path' executable"
             return 1
         fi
-        
-        log "SUCCESS" "NeoVim AppImage installed successfully."
     fi
 
     log "INFO" "Linking Neovim configuration..."

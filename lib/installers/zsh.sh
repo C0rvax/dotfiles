@@ -35,8 +35,6 @@ function install_zsh {
         log "INFO" "Setting Zsh as the default shell..."
         if ! sudo chsh -s "$zsh_path" "$USER"; then
             log "ERROR" "Failed to set Zsh as default shell. Please do it manually."
-        else
-            log "SUCCESS" "Zsh is now the default shell."
         fi
     fi
 }

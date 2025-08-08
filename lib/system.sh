@@ -75,8 +75,6 @@ function safe_download {
         rm -f "$output"  # Clean up the empty file
         return 1
     fi
-
-    log "SUCCESS" "$description downloaded successfully"
     return 0
 }
 
@@ -103,7 +101,5 @@ function safe_git_clone {
         log "INFO" "   Repo: $repo_url"
         return 1
     fi
-
-    log "SUCCESS" "$description cloned successfully"
     return 0
 }
