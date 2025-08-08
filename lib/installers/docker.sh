@@ -8,7 +8,7 @@ function install_docker {
 			return 0
 		fi
         log "INFO" "Installing Docker on $DISTRO..."
-		for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg > ${LOG_FILE} 2>&1; done
+		for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg >> ${LOG_FILE} 2>&1; done
 
 		sudo apt-get update >> ${LOG_FILE} 2>&1
 		sudo apt-get install -y ca-certificates curl >> ${LOG_FILE} 2>&1
