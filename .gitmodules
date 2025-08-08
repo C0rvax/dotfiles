@@ -13,3 +13,6 @@
 [submodule "vendor/oh-my-zsh"]
 	path = vendor/oh-my-zsh
 	url = https://github.com/ohmyzsh/ohmyzsh.git
+[submodule "home/themes/icons/buuf_nestort"]
+	path = home/themes/icons/buuf_nestort
+	url = https://git.disroot.org/eudaimon/buuf-nestort.git
