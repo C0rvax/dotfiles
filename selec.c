@@ -212,21 +212,60 @@
 // }
 
 #include "include/select.h"
+#include "include/select.h"
+#include <stdio.h> // Pour fprintf et stderr
+
+// --- Prototypes ---
+void parse_input(t_ui_state *state);
+void init_ncurses_and_windows(t_ui_state *state);
+void main_loop(t_ui_state *state);
+void draw_ui(t_ui_state *state);
+void draw_profile_win(t_ui_state *state);
+void draw_package_win(t_ui_state *state);
+bool package_in_profile(const t_package *pkg, const t_profile *prof);
+void free_all(t_ui_state *state);
 
 int main(void) {
-    t_ui_state state = {0};
-
     setlocale(LC_ALL, "");
+    t_ui_state state = {0};
+    
+    // ================== MODIFICATION CLÉ ==================
+    // 1. Initialiser ncurses en se connectant au VRAI terminal AVANT TOUTE CHOSE.
+    FILE *tty_fp = fopen("/dev/tty", "r+");
+    if (!tty_fp) {
+        // Si on ne peut pas ouvrir le terminal, il est inutile de continuer.
+        // On écrit sur stderr car stdout est redirigé vers un fichier.
+        fprintf(stderr, "Fatal Error: Could not open /dev/tty. Cannot start TUI.\n");
+        return 1;
+    }
+    SCREEN *main_screen = newterm(NULL, tty_fp, tty_fp);
+    set_term(main_screen);
+
+    // 2. Maintenant que ncurses contrôle le terminal, on peut lire les données
+    // depuis l'entrée standard (le pipe) sans risque de conflit.
     parse_input(&state);
-    init_ui(&state);
+    
+    // Vérification : si aucune donnée n'a été lue, on quitte proprement.
+    if (state.profile_count == 0 || state.package_count == 0) {
+        fprintf(stderr, "Error: No profile or package data received on stdin. Exiting.\n");
+        // Nettoyage avant de quitter
+        endwin();
+        delscreen(main_screen);
+        fclose(tty_fp);
+        free_all(&state);
+        return 1;
+    }
+    
+    // 3. Lancer l'interface graphique textuelle
+    init_ncurses_and_windows(&state);
     main_loop(&state);
 
-    // Nettoyage final
-    delwin(state.profile_win);
-    delwin(state.package_win);
+    // 4. Nettoyage final
     endwin();
+    delscreen(main_screen);
+    fclose(tty_fp);
 
-    // Afficher le nom du profil sélectionné sur stdout
+    // 5. Afficher le nom du profil sélectionné sur stdout (qui sera capturé par le script shell)
     if (state.highlighted_profile != -1) {
         printf("%s\n", state.profiles[state.highlighted_profile].name);
     }
@@ -235,198 +274,195 @@ int main(void) {
     return 0;
 }
 
-void main_loop(t_ui_state *state) {
-    int ch;
-    draw_ui(state);
 
-    while ((ch = getch()) != 'q' && ch != 'Q' && ch != 10) {
-        switch (ch) {
-            case KEY_UP:
-                state->highlighted_profile--;
-                if (state->highlighted_profile < 0) {
-                    state->highlighted_profile = state->profile_count - 1;
-                }
-                break;
-            case KEY_DOWN:
-                state->highlighted_profile++;
-                if (state->highlighted_profile >= state->profile_count) {
-                    state->highlighted_profile = 0;
-                }
-                break;
-        }
-        draw_ui(state);
-    }
-    // Si l'utilisateur quitte avec 'q', on annule la sélection.
-    if (ch == 'q' || ch == 'Q') {
-        state->highlighted_profile = -1;
-    }
-}
-
-// Fonction de dessin principale
-void draw_ui(t_ui_state *state) {
-    draw_profile_win(state);
-    draw_package_win(state);
-    wrefresh(state->profile_win);
-    wrefresh(state->package_win);
-}
-
-// Dessine le menu de gauche (profils)
-void draw_profile_win(t_ui_state *state) {
-    werase(state->profile_win);
-    box(state->profile_win, 0, 0);
-    mvwprintw(state->profile_win, 1, 2, "Installation Profiles");
-    mvwhline(state->profile_win, 2, 1, ACS_HLINE, getmaxx(state->profile_win) - 2);
-
-    for (int i = 0; i < state->profile_count; i++) {
-        if (i == state->highlighted_profile) {
-            wattron(state->profile_win, A_REVERSE);
-        }
-        mvwprintw(state->profile_win, 4 + i, 2, "%s", state->profiles[i].name);
-        if (i == state->highlighted_profile) {
-            wattroff(state->profile_win, A_REVERSE);
-        }
-    }
-}
-
-// Dessine la grille de paquets à droite
-void draw_package_win(t_ui_state *state) {
-    werase(state->package_win);
-    box(state->package_win, 0, 0);
-    
-    t_profile *current_profile = &state->profiles[state->highlighted_profile];
-    mvwprintw(state->package_win, 1, 2, "Packages for profile: %s", current_profile->name);
-    mvwprintw(state->package_win, 2, 2, "%s", current_profile->description);
-    mvwhline(state->package_win, 3, 1, ACS_HLINE, getmaxx(state->package_win) - 2);
-
-    int max_y, max_x;
-    getmaxyx(state->package_win, max_y, max_x);
-    int col_width = 25; // Largeur fixe pour la compacité
-    int num_cols = (max_x - 2) / col_width;
-    int y = 5, x = 2;
-
-    for (int i = 0; i < state->package_count; i++) {
-        t_package *pkg = &state->packages[i];
-        bool to_be_installed = package_in_profile(pkg, current_profile);
-
-        int color_pair = 0;
-        if (pkg->is_installed) {
-            color_pair = 2; // Vert
-        } else if (to_be_installed) {
-            color_pair = 1; // Fond blanc
-        }
-
-        if (color_pair) wattron(state->package_win, COLOR_PAIR(color_pair));
-        
-        mvwprintw(state->package_win, y, x, "%-.*s", col_width - 1, pkg->description);
-        
-        if (color_pair) wattroff(state->package_win, COLOR_PAIR(color_pair));
-
-        x += col_width;
-        if (x + col_width > max_x) {
-            x = 2;
-            y++;
-            if (y >= max_y - 1) break; // Sortir si on remplit la fenêtre
-        }
-    }
-}
-
-// Vérifie si un paquet appartient à un profil en comparant les tags
-bool package_in_profile(const t_package *pkg, const t_profile *prof) {
-    if (strcmp(prof->name, "CUSTOM") == 0) {
-        // Logique custom à implémenter, pour l'instant on n'installe rien par défaut
-        return false;
-    }
-
-    char *pkg_tags_copy = strdup(pkg->tags_str);
-    char *prof_tags_copy = strdup(prof->tags_str);
-    char *pkg_tag = strtok(pkg_tags_copy, ",");
-    bool found = false;
-
-    while (pkg_tag) {
-        char *p_tags_temp = strdup(prof_tags_copy);
-        char *prof_tag = strtok(p_tags_temp, ",");
-        while (prof_tag) {
-            if (strcmp(pkg_tag, prof_tag) == 0) {
-                found = true;
-                break;
-            }
-            prof_tag = strtok(NULL, ",");
-        }
-        free(p_tags_temp);
-        if (found) break;
-        pkg_tag = strtok(NULL, ",");
-    }
-
-    free(pkg_tags_copy);
-    free(prof_tags_copy);
-    return found;
-}
-
-
-// --- Fonctions utilitaires ---
-
-void init_ui(t_ui_state *state) {
-    initscr();
-    cbreak(); noecho(); curs_set(0); keypad(stdscr, TRUE);
-    start_color();
-
-    // Paire 1: Texte noir, fond blanc (pour "sera installé")
-    init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    // Paire 2: Texte vert (pour "déjà installé")
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);
-
-    int max_y, max_x;
-    getmaxyx(stdscr, max_y, max_x);
-    int profile_win_width = 30;
-
-    state->profile_win = newwin(max_y, profile_win_width, 0, 0);
-    state->package_win = newwin(max_y, max_x - profile_win_width, 0, profile_win_width);
-    state->highlighted_profile = 0; // "OFFICE" par défaut
-}
+// =====================================================================
+// ===                  FONCTIONS INCHANGÉES                       ===
+// =====================================================================
 
 void parse_input(t_ui_state *state) {
     char line[1024];
     bool reading_packages = false;
 
-    // Lire les profils
-    while (fgets(line, sizeof(line), stdin)) {
+    while (fgets(line, sizeof(line), stdin) != NULL) {
         line[strcspn(line, "\n")] = 0;
-        if (strcmp(line, "---PACKAGES---") == 0) {
-            reading_packages = true;
-            break;
+
+        if (!reading_packages) {
+            if (strcmp(line, "---PACKAGES---") == 0) {
+                reading_packages = true;
+                continue;
+            }
+            
+            char *name = strtok(line, ":");
+            char *desc = strtok(NULL, ":");
+            char *tags = strtok(NULL, "");
+
+            if (name && desc && tags) {
+                state->profiles = realloc(state->profiles, (state->profile_count + 1) * sizeof(t_profile));
+                state->profiles[state->profile_count++] = (t_profile){strdup(name), strdup(desc), strdup(tags)};
+            }
+        } else {
+            char *desc = strtok(line, ":");
+            char *tags = strtok(NULL, ":");
+            char *status = strtok(NULL, "");
+
+            if (desc && tags && status) {
+                state->packages = realloc(state->packages, (state->package_count + 1) * sizeof(t_package));
+                state->packages[state->package_count++] = (t_package){
+                    .description = strdup(desc),
+                    .tags_str = strdup(tags),
+                    .is_installed = (strcmp(status, "installed") == 0)
+                };
+            }
         }
-        state->profiles = realloc(state->profiles, (state->profile_count + 1) * sizeof(t_profile));
-        char *name = strtok(line, ":");
-        char *desc = strtok(NULL, ":");
-        char *tags = strtok(NULL, "");
-        state->profiles[state->profile_count++] = (t_profile){strdup(name), strdup(desc), strdup(tags)};
+    }
+}
+
+void init_ncurses_and_windows(t_ui_state *state) {
+    cbreak(); noecho(); curs_set(0); keypad(stdscr, TRUE); start_color();
+    // Couleurs: 1=Selectionné (inversé), 2=Installé (vert), 3=Normal (blanc sur noir)
+    init_pair(1, COLOR_BLACK, COLOR_WHITE); 
+    init_pair(2, COLOR_GREEN, COLOR_BLACK);
+    // init_pair(2, COLOR_GREEN, -1);
+    init_pair(3, COLOR_WHITE, COLOR_BLACK);
+    // init_pair(3, COLOR_WHITE, -1);
+    
+    int max_y, max_x; getmaxyx(stdscr, max_y, max_x);
+    int profile_win_width = 30;
+    
+    state->profile_win = newwin(max_y, profile_win_width, 0, 0);
+    state->package_win = newwin(max_y, max_x - profile_win_width, 0, profile_win_width);
+    state->highlighted_profile = 0;
+}
+
+void main_loop(t_ui_state *state) {
+    int ch; 
+    draw_ui(state);
+    while ((ch = getch()) != 'q' && ch != 'Q' && ch != 10) {
+        switch (ch) {
+            case KEY_UP: 
+                state->highlighted_profile = (state->highlighted_profile == 0) ? state->profile_count - 1 : state->highlighted_profile - 1; 
+                break;
+            case KEY_DOWN: 
+                state->highlighted_profile = (state->highlighted_profile + 1) % state->profile_count; 
+                break;
+        }
+        draw_ui(state);
+    }
+    // Si l'utilisateur quitte avec 'q', on ne sélectionne rien.
+    if (ch == 'q' || ch == 'Q') {
+        state->highlighted_profile = -1;
+    }
+}
+
+void draw_ui(t_ui_state *state) {
+    clear();
+    draw_profile_win(state); 
+    draw_package_win(state);
+    wrefresh(state->profile_win); 
+    wrefresh(state->package_win);
+    doupdate();
+}
+
+void draw_profile_win(t_ui_state *state) {
+    werase(state->profile_win); 
+    box(state->profile_win, 0, 0);
+    mvwprintw(state->profile_win, 1, 2, "Installation Profiles");
+    mvwhline(state->profile_win, 2, 1, ACS_HLINE, getmaxx(state->profile_win) - 2);
+    
+    for (int i = 0; i < state->profile_count; i++) {
+        if (i == state->highlighted_profile) wattron(state->profile_win, COLOR_PAIR(1));
+        mvwprintw(state->profile_win, 4 + i, 2, "%s", state->profiles[i].name);
+        if (i == state->highlighted_profile) wattroff(state->profile_win, COLOR_PAIR(1));
+    }
+}
+
+void draw_package_win(t_ui_state *state) {
+    werase(state->package_win); 
+    box(state->package_win, 0, 0);
+    
+    t_profile *current_profile = &state->profiles[state->highlighted_profile];
+    wattron(state->package_win, A_BOLD);
+    mvwprintw(state->package_win, 1, 2, "Profile: %s", current_profile->name);
+    wattroff(state->package_win, A_BOLD);
+    mvwprintw(state->package_win, 2, 2, "%s", current_profile->description);
+    mvwhline(state->package_win, 3, 1, ACS_HLINE, getmaxx(state->package_win) - 2);
+    
+    int max_y, max_x; getmaxyx(state->package_win, max_y, max_x);
+    int col_width = 28; 
+    int num_cols = (max_x > 2) ? (max_x - 4) / col_width : 0;
+    if (num_cols == 0) return;
+    
+    int y = 5, x = 2;
+    for (int i = 0; i < state->package_count; i++) {
+        t_package *pkg = &state->packages[i];
+        
+        if (package_in_profile(pkg, current_profile)) {
+            if (pkg->is_installed) {
+                wattron(state->package_win, COLOR_PAIR(2)); // Vert pour déjà installé
+                mvwprintw(state->package_win, y, x, "✓ %-*s", col_width - 3, pkg->description);
+                wattroff(state->package_win, COLOR_PAIR(2));
+            } else {
+                wattron(state->package_win, COLOR_PAIR(3) | A_BOLD); // Blanc gras pour à installer
+                mvwprintw(state->package_win, y, x, "□ %-*s", col_width - 3, pkg->description);
+                wattroff(state->package_win, COLOR_PAIR(3) | A_BOLD);
+            }
+            
+            x += col_width;
+            if (x + col_width > max_x) {
+                x = 2;
+                y++;
+                if (y >= max_y - 1) break;
+            }
+        }
+    }
+}
+
+bool package_in_profile(const t_package *pkg, const t_profile *prof) {
+    if (strcmp(prof->name, "CUSTOM") == 0) return false;
+
+    char *pkg_tags_copy = strdup(pkg->tags_str);
+    char *prof_tags_copy = strdup(prof->tags_str);
+    if (!pkg_tags_copy || !prof_tags_copy) { 
+        free(pkg_tags_copy); free(prof_tags_copy); return false; 
+    }
+
+    char *pkg_tag_saveptr;
+    char *pkg_tag = strtok_r(pkg_tags_copy, ",", &pkg_tag_saveptr);
+    bool found = false;
+
+    while (pkg_tag) {
+        char *p_tags_temp = strdup(prof_tags_copy);
+        if (!p_tags_temp) break;
+
+        char *prof_tag_saveptr;
+        char *prof_tag = strtok_r(p_tags_temp, ",", &prof_tag_saveptr);
+        while (prof_tag) {
+            if (strcmp(pkg_tag, prof_tag) == 0) { 
+                found = true; 
+                break; 
+            }
+            prof_tag = strtok_r(NULL, ",", &prof_tag_saveptr);
+        }
+        free(p_tags_temp);
+        if (found) break;
+        pkg_tag = strtok_r(NULL, ",", &pkg_tag_saveptr);
     }
     
-    // Lire les paquets
-    while (fgets(line, sizeof(line), stdin)) {
-         line[strcspn(line, "\n")] = 0;
-        state->packages = realloc(state->packages, (state->package_count + 1) * sizeof(t_package));
-        char *desc = strtok(line, ":");
-        char *tags = strtok(NULL, ":");
-        char *status = strtok(NULL, "");
-        state->packages[state->package_count++] = (t_package){
-            .description = strdup(desc),
-            .tags_str = strdup(tags),
-            .is_installed = (strcmp(status, "installed") == 0)
-        };
-    }
+    free(pkg_tags_copy); 
+    free(prof_tags_copy);
+    return found;
 }
 
 void free_all(t_ui_state *state) {
     for (int i = 0; i < state->profile_count; i++) {
-        free(state->profiles[i].name);
-        free(state->profiles[i].description);
+        free(state->profiles[i].name); 
+        free(state->profiles[i].description); 
         free(state->profiles[i].tags_str);
     }
     free(state->profiles);
 
     for (int i = 0; i < state->package_count; i++) {
-        free(state->packages[i].description);
+        free(state->packages[i].description); 
         free(state->packages[i].tags_str);
     }
     free(state->packages);

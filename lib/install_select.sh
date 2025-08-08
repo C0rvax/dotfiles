@@ -125,77 +125,68 @@ function select_optional_packages() {
 function select_installables_tui() {
     log "INFO" "Launching profile selection TUI..."
 
-    # S'assurer que le sélecteur est compilé
     if [ ! -x ./selector ]; then
-        log "WARNING" "'selector' not found. Attempting to compile via 'make'..."
+        log "WARNING" "'selector' not found. Trying to 'make'..."
         if ! make; then
-             log "ERROR" "Failed to compile 'selector' with make. Aborting."
+             log "ERROR" "Failed to compile 'selector'. Aborting."
              exit 1
         fi
     fi
 
-    # Préparer les données à envoyer au programme C
-    local tui_input
-    # 1. Envoyer les profils
-    printf "%s\n" "${PROFILES[@]}"
-    # 2. Séparateur
-    echo "---PACKAGES---"
-    # 3. Envoyer tous les paquets avec leur statut d'installation
-    get_all_packages_for_tui
+    # 1. Créer un fichier temporaire pour stocker le résultat du TUI
+    local output_file
+    output_file=$(mktemp)
+    # 'trap' est une sécurité : il supprime le fichier même si le script est interrompu
+    trap 'rm -f "$output_file"' RETURN
 
-    # Lancer le TUI et récupérer le nom du profil sélectionné
-    local selected_profile_name
-    selected_profile_name=$({
+    # 2. Exécuter le TUI.
+    #    - On lui envoie les données via le pipe (`|`) comme avant.
+    #    - MAIS on redirige sa sortie finale vers notre fichier temporaire (`> "$output_file"`).
+    #    - Le shell attend simplement la fin du programme, il ne bloque PAS la sortie.
+    {
         printf "%s\n" "${PROFILES[@]}"
         echo "---PACKAGES---"
         get_all_packages_for_tui
-    } | ./selector)
+    } | ./selector > "$output_file"
+
+    # 3. Lire le nom du profil choisi depuis le fichier temporaire
+    local selected_profile_name
+    selected_profile_name=$(cat "$output_file")
     
     if [[ -z "$selected_profile_name" ]]; then
-        log "WARNING" "No profile selected or operation cancelled. Exiting."
-        exit 0
+        log "WARNING" "No profile selected or operation cancelled."
+        return 0
     fi
 
     log "SUCCESS" "Profile selected: $selected_profile_name"
 
-    # Trouver les tags correspondants au profil sélectionné
+    # 4. Le reste de la logique est inchangé
     local selected_tags=""
     for profile_def in "${PROFILES[@]}"; do
-        local name="${profile_def%%:*}"
-        if [[ "$name" == "$selected_profile_name" ]]; then
+        if [[ "$profile_def" == "$selected_profile_name:"* ]]; then
             selected_tags="${profile_def##*:}"
             break
         fi
     done
     
     if [[ -z "$selected_tags" ]]; then
-        log "ERROR" "Could not find tags for profile '$selected_profile_name'. Aborting."
-        exit 1
+        log "ERROR" "Could not find tags for profile '$selected_profile_name'."
+        return 1
     fi
     
-    # Récupérer la liste unique de paquets pour ce profil
-    get_packages_by_tags "$selected_tags" | sort -u
+    get_packages_by_tags "$selected_tags"
 }
 
-# La fonction get_all_packages_for_tui doit être mise à jour pour utiliser les tags
+# Assurez-vous que cette fonction est aussi présente et correcte
 function get_all_packages_for_tui() {
-    declare -A CAT_TITLE_MAP
-    for cat_def in "${CATEGORIES[@]}"; do
-        local name="${cat_def%%:*}"
-        local title="${cat_def#*:}"
-        CAT_TITLE_MAP["$name"]="$title"
-    done
-
     while read -r pkg_def; do
         [[ -n "$pkg_def" ]] || continue
         
         local id=$(get_package_info "$pkg_def" id)
-        local category_name=$(get_package_info "$pkg_def" category)
-        local tags=$(get_package_info "$pkg_def" tags)
         local desc=$(get_package_info "$pkg_def" desc)
+        local tags=$(get_package_info "$pkg_def" tags)
         local status=${AUDIT_STATUS[$id]:-missing} 
         
-        # Format pour le programme C: "description:tags:status"
         echo "$desc:$tags:$status"
     done < <(get_all_packages)
 }

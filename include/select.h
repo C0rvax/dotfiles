@@ -73,5 +73,6 @@ void draw_profile_win(t_ui_state *state);
 void draw_package_win(t_ui_state *state);
 bool package_in_profile(const t_package *pkg, const t_profile *prof);
 void free_all(t_ui_state *state);
+void init_ui_windows(t_ui_state *state);
 
 #endif /* __SELECT_H__ */

@@ -34,8 +34,9 @@ get_package_info() {
         desc) echo "${parts[1]}" ;;
         level) echo "${parts[2]}" ;;
         category) echo "${parts[3]}" ;;
-        check) echo "${parts[4]}" ;;
-        install) echo "${parts[5]}" ;;
+        tags)     echo "${parts[4]}" ;;
+        check) echo "${parts[5]}" ;;
+        install) echo "${parts[6]}" ;;
     esac
 }
 
