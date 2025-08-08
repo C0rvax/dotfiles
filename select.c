@@ -2,16 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// --- Prototypes ---
-void parse_input(t_ui_state *state);
-void init_ncurses_and_windows(t_ui_state *state);
-void main_loop(t_ui_state *state);
-void draw_ui(t_ui_state *state);
-void draw_profile_win(t_ui_state *state);
-void draw_package_win(t_ui_state *state);
-bool package_in_profile(const t_package *pkg, const t_profile *prof);
-void free_all(t_ui_state *state);
-
 int main(void) {
     setlocale(LC_ALL, "");
     t_ui_state state = {0};
@@ -50,9 +40,6 @@ int main(void) {
     return 0;
 }
 
-// =====================================================================
-// ===        PARSING ROBUSTE (CORRECTION DU PANNEAU DE DROITE)      ===
-// =====================================================================
 void parse_input(t_ui_state *state) {
     char line[1024];
     bool reading_packages = false;
@@ -110,17 +97,12 @@ void parse_input(t_ui_state *state) {
     }
 }
 
-
-// =====================================================================
-// ===   CORRECTION DU SCINTILLEMENT ET AMÉLIORATIONS DE L'AFFICHAGE  ===
-// =====================================================================
-
 void init_ncurses_and_windows(t_ui_state *state) {
     cbreak(); noecho(); curs_set(0); start_color();
 
     init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    init_pair(2, COLOR_GREEN, -1);
-    init_pair(3, COLOR_WHITE, -1);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(3, COLOR_WHITE, COLOR_GREEN);
     
     int max_y, max_x; getmaxyx(stdscr, max_y, max_x);
     int profile_win_width = 30;
@@ -137,12 +119,13 @@ void main_loop(t_ui_state *state) {
     int ch; 
     draw_ui(state);
     
-    // On lit la touche DEPUIS la fenêtre des profils pour éviter le scintillement
     while ((ch = wgetch(state->profile_win)) != 'q' && ch != 'Q' && ch != 10) {
         switch (ch) {
+            case 'k':
             case KEY_UP: 
                 state->highlighted_profile = (state->highlighted_profile == 0) ? state->profile_count - 1 : state->highlighted_profile - 1; 
                 break;
+            case 'j':
             case KEY_DOWN: 
                 state->highlighted_profile = (state->highlighted_profile + 1) % state->profile_count; 
                 break;

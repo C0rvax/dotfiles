@@ -133,16 +133,10 @@ function select_installables_tui() {
         fi
     fi
 
-    # 1. Créer un fichier temporaire pour stocker le résultat du TUI
     local output_file
     output_file=$(mktemp)
-    # 'trap' est une sécurité : il supprime le fichier même si le script est interrompu
     trap 'rm -f "$output_file"' RETURN
 
-    # 2. Exécuter le TUI.
-    #    - On lui envoie les données via le pipe (`|`) comme avant.
-    #    - MAIS on redirige sa sortie finale vers notre fichier temporaire (`> "$output_file"`).
-    #    - Le shell attend simplement la fin du programme, il ne bloque PAS la sortie.
     {
         printf "%s\n" "${PROFILES[@]}"
         echo "---PACKAGES---"
@@ -160,7 +154,6 @@ function select_installables_tui() {
 
     log "SUCCESS" "Profile selected: $selected_profile_name"
 
-    # 4. Le reste de la logique est inchangé
     local selected_tags=""
     for profile_def in "${PROFILES[@]}"; do
         if [[ "$profile_def" == "$selected_profile_name:"* ]]; then
@@ -177,7 +170,6 @@ function select_installables_tui() {
     get_packages_by_tags "$selected_tags"
 }
 
-# Assurez-vous que cette fonction est aussi présente et correcte
 function get_all_packages_for_tui() {
     while read -r pkg_def; do
         [[ -n "$pkg_def" ]] || continue

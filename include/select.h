@@ -64,9 +64,8 @@ typedef struct {
 // void	parse_input(t_packageItem **packages, int *pkg_count, t_categoryItem **cats, int *cat_count);
 // void	free_memory(t_packageItem *pkgs, int pkg_count, t_categoryItem *cats, int cat_count);
 
-
 void parse_input(t_ui_state *state);
-void init_ui(t_ui_state *state);
+void init_ncurses_and_windows(t_ui_state *state);
 void main_loop(t_ui_state *state);
 void draw_ui(t_ui_state *state);
 void draw_profile_win(t_ui_state *state);
