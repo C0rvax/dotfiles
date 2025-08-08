@@ -1,47 +1,56 @@
 #!/bin/bash
 
 function install_fonts {
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "[DRY-RUN] Would install custom fonts and icons."
-        log "INFO" "MesloLGS NF fonts would be downloaded to '$HOME/Themes/Fonts'."
-        log "INFO" "Buuf Nestort icons would be cloned to '$HOME/Themes/Icons/$BUUF_ICONS_NAME'."
-        return 0
-    fi
-    local themes_dir="$HOME/Themes"
-    local fonts_dir="$themes_dir/Fonts"
-    local icons_dir="$themes_dir/Icons"
-    local sys_fonts_dir="/usr/share/fonts/truetype/custom"
-    local icon_dest_dir="/usr/share/icons/$BUUF_ICONS_NAME"
+	local dotfiles_dir
+	dotfiles_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd) # Chemin vers la racine du dépôt
+	local themes_dir="$dotfiles_dir/themes"
+	local fonts_source_dir="$themes_dir/fonts"
+	local icons_source_dir="$themes_dir/icons/$BUUF_ICONS_NAME"
 
-    log "INFO" "Installing custom fonts and icons..."
-    mkdir -p "$fonts_dir"
-    mkdir -p "$icons_dir"
+	#local sys_fonts_dir="/usr/share/fonts/truetype/custom"
+	#local icon_dest_dir="/usr/share/icons/$BUUF_ICONS_NAME"
+	local user_fonts_dir="$HOME/.local/share/fonts"
+	local icon_dest_dir="$HOME/.local/share/icons/$BUUF_ICONS_NAME"
 
-    log "INFO" "Installing MesloLGS Fonts"
-    if [ -s "$fonts_dir/MesloLGS NF Regular.ttf" ]; then
-        log "INFO" "Fonts seem to be already downloaded."
-    else
-        safe_download "$URL_FONT_MESLO_REGULAR" "$fonts_dir/MesloLGS NF Regular.ttf" "MesloLGS Regular Font"
-        safe_download "$URL_FONT_MESLO_BOLD" "$fonts_dir/MesloLGS NF Bold.ttf" "MesloLGS Bold Font"
-        safe_download "$URL_FONT_MESLO_ITALIC" "$fonts_dir/MesloLGS NF Italic.ttf" "MesloLGS Italic Font"
-        safe_download "$URL_FONT_MESLO_BOLD_ITALIC" "$fonts_dir/MesloLGS NF Bold Italic.ttf" "MesloLGS Bold Italic Font"
+	local err=0
+	if [[ "$DRY_RUN" == "true" ]]; then
+		log "INFO" "[DRY-RUN] Would install custom fonts and icons."
+		log "INFO" "MesloLGS NF fonts would be copied to '$user_fonts_dir'."
+		log "INFO" "Buuf Nestort icons would be cloned to '$icon_dest_dir'."
+		return exit_code
+	fi
 
-        log "INFO" "Copying fonts to system directory..."
-        sudo mkdir -p "$sys_fonts_dir"
-        sudo cp "$fonts_dir"/*.ttf "$sys_fonts_dir/" >> ${LOG_FILE} 2>&1
-        sudo fc-cache -fv "$sys_fonts_dir" >> ${LOG_FILE} 2>&1
-    fi
+	if [ -s "$user_fonts_dir/MesloLGS NF Regular.ttf" ]; then
+		log "INFO" "Fonts seem to be already installed."
+	else
+		if [ ! -d "$fonts_source_dir" ] || [ -z "$(ls -A $fonts_source_dir/*.ttf 2>/dev/null)" ]; then
+			log "ERROR" "Font source directory '$fonts_source_dir' is empty or does not exist."
+			exit_code=1
+		else
+			mkdir -p "$user_fonts_dir"
+			cp "$fonts_source_dir"/*.ttf "$user_fonts_dir/" >>${LOG_FILE} 2>&1
+			fc-cache -fv "$user_fonts_dir" >>${LOG_FILE} 2>&1
+		fi
+	fi
 
-    log "INFO" "Installing Buuf Nestort Icons"
-    if [ -d "$icons_dir/$BUUF_ICONS_NAME" ]; then
-        log "INFO" "Icon pack already exists."
-    else
-        safe_git_clone "$BUUF_ICONS_REPO" "$icons_dir/$BUUF_ICONS_NAME" "Buuf Nestort Icon Pack"
-    fi
-    sudo ln -sfn "$icons_dir/$BUUF_ICONS_NAME" "$icon_dest_dir"
-    if [ -f "$icon_dest_dir/index.theme" ]; then
-        sudo gtk-update-icon-cache -f -t "$icon_dest_dir" >> ${LOG_FILE} 2>&1
-    else
-        log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
-    fi
+	if [ -L "$icon_dest_dir" ]; then
+		log "INFO" "Icon symlink already exists."
+		return exit_code
+	else
+		if [ ! -d "$icons_source_dir" ]; then
+			log "ERROR" "Icons source directory '$icons_source_dir' does not exist."
+			return 1
+		else
+			mkdir -p "$icons_source_dir"
+			ln -sfn "$icons_source_dir" "$icon_dest_dir"
+		fi
+	fi
+
+	if [ -f "$icon_dest_dir/index.theme" ]; then
+		gtk-update-icon-cache -f -t "$icon_dest_dir" >>${LOG_FILE} 2>&1
+	else
+		log "WARNING" "index.theme not found for Buuf icons, skipping cache update."
+	fi
+	return exit_code
 }
+
