@@ -1,4 +1,6 @@
 
+SHELL := /bin/bash
+
 CC = gcc
 
 name = selector
@@ -46,7 +48,6 @@ install_deps:
 		echo "❌ Cannot detect Linux distribution from /etc/os-release."; \
 		exit 1; \
 	fi
-
 
 clean:
 	@echo "Cleaning compiled files..."
