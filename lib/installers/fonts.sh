@@ -3,7 +3,7 @@
 function install_fonts {
 	local dotfiles_dir
 	dotfiles_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd) # Chemin vers la racine du dépôt
-	local themes_dir="$dotfiles_dir/themes"
+	local themes_dir="$dotfiles_dir/home/themes"
 	local fonts_source_dir="$themes_dir/fonts"
 	local icons_source_dir="$themes_dir/icons/$BUUF_ICONS_NAME"
 
@@ -12,7 +12,7 @@ function install_fonts {
 	local user_fonts_dir="$HOME/.local/share/fonts"
 	local icon_dest_dir="$HOME/.local/share/icons/$BUUF_ICONS_NAME"
 
-	local err=0
+	local exit_code=0
 	if [[ "$DRY_RUN" == "true" ]]; then
 		log "INFO" "[DRY-RUN] Would install custom fonts and icons."
 		log "INFO" "MesloLGS NF fonts would be copied to '$user_fonts_dir'."

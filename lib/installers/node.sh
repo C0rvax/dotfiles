@@ -19,7 +19,7 @@ function install_node {
 
     # Executing the downloaded script
     log "INFO" "Executing NVM installer..."
-    if ! bash "$nvm_install_script" > "$LOG_FILE" 2>&1; then
+    if ! bash "$nvm_install_script" >> "$LOG_FILE" 2>&1; then
         log "ERROR" "NVM installation script failed."
         return 1
     fi
@@ -34,12 +34,12 @@ function install_node {
     fi
 
     # Install Node.js
-    if ! nvm install node > ${LOG_FILE} 2>&1; then
+    if ! nvm install node >> ${LOG_FILE} 2>&1; then
         log "ERROR" "Failed to install Node.js"
         return 1
     fi
 
-    if ! nvm use node > ${LOG_FILE} 2>&1; then
+    if ! nvm use node >> ${LOG_FILE} 2>&1; then
         log "ERROR" "Could not use the installed Node.js version"
         return 1
     fi

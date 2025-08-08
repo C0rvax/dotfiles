@@ -38,7 +38,7 @@ Ce dépôt contient mon framework personnel de scripts Bash, conçu pour automat
 
 1.  **Clonez ce dépôt** sur votre machine :
     ```bash
-    git clone --recursive https://github.com/C0rvax/dotfiles.git
+    git clone https://github.com/C0rvax/dotfiles.git
     ```
 
 2.  **Naviguez dans le dossier** du projet :
