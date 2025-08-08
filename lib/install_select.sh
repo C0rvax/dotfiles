@@ -59,69 +59,6 @@ function select_optional_packages() {
     printf '%s\n' "${optional_packages_to_add[@]}"
 }
 
-# function get_all_packages_for_tui() {
-#     declare -A CAT_TITLE_MAP
-#     for cat_def in "${CATEGORIES[@]}"; do
-#         local name="${cat_def%%:*}"
-#         local title="${cat_def#*:}"
-#         CAT_TITLE_MAP["$name"]="$title"
-#     done
-
-#     while read -r pkg_def; do
-#         [[ -n "$pkg_def" ]] || continue
-        
-#         local id=$(get_package_info "$pkg_def" id)
-#         local category_name=$(get_package_info "$pkg_def" category)
-#         local level=$(get_package_info "$pkg_def" level)
-#         local desc=$(get_package_info "$pkg_def" desc)
-#         local category_title=${CAT_TITLE_MAP[$category_name]:-$category_name}
-#         # Ajout de status pour l'audit
-#         local status=${AUDIT_STATUS[$id]:-missing} 
-        
-#         # Ajout de status pour l'audit
-#         echo "$category_name:$category_title:$level:$desc:$status"
-#     done < <(get_all_packages)
-# }
-
-# function select_installables_tui {
-#     log "INFO" "Launching advanced TUI package selector..."
-
-#     if [ ! -x ./selector ]; then
-#         log "WARNING" "'selector' not compiled. Attempting compilation..."
-#         if ! command -v gcc &> /dev/null || ! gcc selec.c -o selector -lncursesw; then
-#             log "ERROR" "Failed to compile 'selector'. Aborting."
-#             exit 1
-#         fi
-#     fi
-
-#     local selected_output
-#     selected_output=$( {
-#         echo "${DOT_LOGO[0]}"
-#         echo "---DATA---"
-#         get_all_packages_for_tui
-#     } | ./selector )
-    
-#     if [[ -z "$selected_output" ]]; then
-#         log "WARNING" "No packages selected or operation cancelled."
-#         return 0
-#     fi
-    
-#     local all_packages_defs
-#     mapfile -t all_packages_defs < <(get_all_packages)
-    
-#     local selected_descriptions
-#     mapfile -t selected_descriptions <<< "$selected_output"
-    
-#     for desc in "${selected_descriptions[@]}"; do
-#         for pkg_def in "${all_packages_defs[@]}"; do
-#             if [[ "$(get_package_info "$pkg_def" desc)" == "$desc" ]]; then
-#                 echo "$pkg_def"
-#                 break
-#             fi
-#         done
-#     done
-# }
-
 function select_installables_tui() {
     log "INFO" "Launching profile selection TUI..."
 

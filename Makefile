@@ -46,6 +46,6 @@ dry_run:
 	@$(DOTFILES_SCRIPT) --d
 
 tui:
-	@$(DOTFILES_SCRIPT) -s tui
+	@$(DOTFILES_SCRIPT) -t
 
 .PHONY: all clean pclean re help install_deps

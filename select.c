@@ -212,8 +212,6 @@ void draw_package_win(t_ui_state *state) {
     }
 }
 
-
-// Utilisation de strtok_r qui est plus sûr, mais le bug était ailleurs
 bool package_in_profile(const t_package *pkg, const t_profile *prof) {
     if (strcmp(prof->name, "CUSTOM") == 0) return false;
 
