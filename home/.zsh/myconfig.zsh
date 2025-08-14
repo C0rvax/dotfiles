@@ -46,4 +46,3 @@ alias maj="agu && agg && agd"
 alias nmaj="nagu && nagg && nagd"
 
 # Remember
-alias savealiases='alias > ~/.bash_aliases'
