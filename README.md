@@ -1,8 +1,6 @@
-Voici la traduction du fichier README.md en anglais :
-
 # Linux Dotfiles - Automated System Provisioning
 
-![42 Project](https://img.shields.io/badge/42%20Project-Dotfiles-blue) ![Language](https://img.shields.io/badge/Language-Bash-informational) ![Automation](https://img.shields.io/badge/Automation-Scripts-orange) ![OS](https://img.shields.io/badge/OS-Linux-critical) ![Tool](https://img.shields.io/badge/Interface-TUI-green)
+![Language](https://img.shields.io/badge/Language-Bash-informational) ![Automation](https://img.shields.io/badge/Automation-Scripts-orange) ![OS](https://img.shields.io/badge/OS-Linux-critical) ![Tool](https://img.shields.io/badge/Interface-TUI-green)
 
 This repository hosts my personal framework of Bash scripts, designed to automate and standardize the configuration of a new development environment on a freshly installed Linux machine. The main goal is to transform a base operating system into a complete, personalized, and reproducible work environment with just a few commands.
 
