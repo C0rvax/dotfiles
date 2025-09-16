@@ -154,7 +154,9 @@ dotfiles/
 ├── .gitmodules             # Declares Git submodules (oh-my-zsh, p10k, zsh plugins...).
 ├── dotf.sh                 # Main entry point that orchestrates the entire script.
 └── selector.c              # C source code for the TUI selection interface.
-```---
+```
+
+---
 
 ## 💻 Technologies Used
 
