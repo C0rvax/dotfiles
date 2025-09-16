@@ -34,6 +34,7 @@ alias nvio="~/AppImage/nvim.appimage -O"
 alias proc="ps -Af"
 alias glog="git log --graph --oneline --decorate"
 alias chgedit="git config core.editor ~/AppImage/nvim.appimage"
+alias duwd="du --max-depth=1 -h ."
 
 # Update
 alias agu="sudo apt-get update"
