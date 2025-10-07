@@ -24,8 +24,7 @@ alias vala='clear && valgrind --track-fds=yes --track-origins=yes --leak-check=f
 alias valm='clear && valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --tool=memcheck --keep-debuginfo=yes --trace-children=yes --suppressions=valgrind/valgrind.doc --quiet ./minishell'
 alias flcc='clear && cc -Wall -Wextra -Werror'
 alias flgcc='clear && gcc -Wall -Wextra -Werror'
-alias cdbr="rm -rf compile_flags.txt compile_commands.json .cache/"
-alias cdb="cdbr ; compiledb -n make && echo '-I\ninclude/' >> compile_flags.txt"
+alias cdb="rm -rf .cache/ compile_commands.json && compiledb -n make"
 alias ircser="valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./ircserv 6667 port"
 
 # Edit rc
