@@ -1,6 +1,8 @@
 return {
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
+    -- Vous pouvez décommenter la ligne suivante pour épingler à une version spécifique
+--     version = "1.11.0",
     opts = {
       ensure_installed = {
         "stylua", --Formater for lua
@@ -14,6 +16,17 @@ return {
         "typescript-language-server",
         "superhtml",
         },
+    },
+  },
+  {
+    "mason-org/mason-lspconfig.nvim",
+    dependencies = {
+      "mason-org/mason.nvim",
+      "neovim/nvim-lspconfig",
+    },
+    -- Vous pouvez décommenter la ligne suivante pour épingler à une version spécifique
+    -- version = "1.32.0",
+    opts = {
     },
   },
 }

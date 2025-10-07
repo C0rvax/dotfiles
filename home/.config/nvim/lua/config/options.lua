@@ -9,6 +9,7 @@ local opt = vim.opt
 
 opt.wildignorecase = true
 opt.relativenumber = false
+vim.o.modeline = false
 opt.shiftwidth = 4
 opt.tabstop = 4
 opt.autoindent = true

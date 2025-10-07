@@ -1,6 +1,12 @@
+# Activate alias completion
+setopt completealiases
+
 # File explo
 alias gt42='~/Code/42/'
 alias gtdot='~/dotfiles/'
+alias gtcv='~/Documents/CV/'
+alias gte='~/Code/Embedded/'
+alias gtdoc='~/Documents/'
 alias 42i='~/Code/42/inception/'
 alias 42tr='~/Code/42/transcendence/'
 alias 42e='~/Code/42/42_embedded/'
@@ -29,6 +35,7 @@ alias vimrc="nvi ~/.config/nvim"
 alias pince="sudo -E ~/AppImage/PINCE-x86_64.AppImage"
 
 # Exec
+alias logan="~/AppImage/Logic-2.4.36-linux-x64.AppImage --no-sandbox"
 alias nvi="~/AppImage/nvim.appimage"
 alias nvio="~/AppImage/nvim.appimage -O"
 alias proc="ps -Af"
